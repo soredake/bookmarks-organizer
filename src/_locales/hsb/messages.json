@@ -175,5 +175,14 @@
   },
   "whitelist_reset_confirmation_msg": {
     "message": "Ma so běła lisćina woprawdźe wróćo stajić?"
+  },
+  "option_flaresolverr_show_result": {
+    "message": "Wuslědk FlareSolverr pod wotkazami pokazać"
+  },
+  "flaresolverr_result_label": {
+    "message": "Wuslědk FlareSolverr"
+  },
+  "flaresolverr_timeout": {
+    "message": "Čas za naprašowanje je wotběženy"
   }
 }

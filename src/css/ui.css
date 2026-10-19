@@ -535,6 +535,12 @@ button#reset-whitelist {
   position: relative;
 }
 
+#results .flare-solverr-result {
+  padding-left: 24px;
+  color: var(--color-body-text-reduced-opacity);
+  font-size: 13px;
+}
+
 #results .default-wrapper .name::before, #results .duplicates-item > li > a::before {
   content: '';
   position: absolute;
@@ -824,6 +830,16 @@ button#reset-whitelist {
 #options-form .form-group label {
   display: block;
   margin-bottom: 8px;
+}
+
+#options-form .form-group.option-checkbox label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#options-form .form-group.option-checkbox input {
+  margin: 0;
 }
 
 #options-form .description {

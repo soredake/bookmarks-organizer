@@ -175,5 +175,14 @@
   },
   "whitelist_reset_confirmation_msg": {
     "message": "Wilt u de witte lijst echt herinitialiseren?"
+  },
+  "option_flaresolverr_show_result": {
+    "message": "FlareSolverr-resultaat onder links tonen"
+  },
+  "flaresolverr_result_label": {
+    "message": "FlareSolverr-resultaat"
+  },
+  "flaresolverr_timeout": {
+    "message": "Time-out bij aanvraag"
   }
 }

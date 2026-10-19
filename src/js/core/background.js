@@ -6,6 +6,8 @@ const MIN_PROGRESS = 0.01;
 const TIMEOUT_500_MS = 500;
 const DEFAULT_REQUEST_TIMEOUT_IN_SECONDS = 15;
 const FLARESOLVERR_REQUEST_TIMEOUT_IN_SECONDS = 90;
+const HTTP_ERROR_STATUS = 400;
+const HTTP_STATUS_UPPER_BOUND = 600;
 const DEFAULT_REQUEST_DELAY_IN_SECONDS = 1;
 const MILLISECONDS_PER_SECOND = 1000;
 const FLARESOLVERR_TIMEOUT_GRACE_IN_MS = 5000;
@@ -65,6 +67,9 @@ const bookmarksorganizer = {
    * @type {boolean}
    */
   useFlareSolverr : false,
+
+  /** @type {boolean} */
+  showFlareSolverrResult : false,
 
   /**
    * FlareSolverr API endpoint.
@@ -556,7 +561,8 @@ const bookmarksorganizer = {
       requestTimeout : DEFAULT_REQUEST_TIMEOUT_IN_SECONDS,
       requestDelay : DEFAULT_REQUEST_DELAY_IN_SECONDS,
       useFlareSolverr : false,
-      flareSolverrUrl : 'http://localhost:8191/v1'
+      flareSolverrUrl : 'http://localhost:8191/v1',
+      showFlareSolverrResult : false
     });
 
     // eslint-disable-next-line require-atomic-updates
@@ -570,6 +576,8 @@ const bookmarksorganizer = {
 
     // eslint-disable-next-line require-atomic-updates
     bookmarksorganizer.useFlareSolverr = options.useFlareSolverr === true;
+    // eslint-disable-next-line require-atomic-updates
+    bookmarksorganizer.showFlareSolverrResult = bookmarksorganizer.useFlareSolverr && options.showFlareSolverrResult === true;
     try {
       const flareSolverrUrl = new URL(options.flareSolverrUrl);
       if ((flareSolverrUrl.protocol === 'http:' || flareSolverrUrl.protocol === 'https:') && !flareSolverrUrl.username && !flareSolverrUrl.password) {
@@ -743,7 +751,10 @@ const bookmarksorganizer = {
             }
             break;
           default:
-            // do nothing
+            if (checkedBookmark.status >= HTTP_ERROR_STATUS && checkedBookmark.status < HTTP_STATUS_UPPER_BOUND && (type === 'all' || type === 'errors')) {
+              bookmarksorganizer.bookmarkErrors++;
+              bookmarksorganizer.bookmarksResult.push(checkedBookmark);
+            }
         }
 
         bookmarksorganizer.updateProgressUi();
@@ -949,11 +960,25 @@ const bookmarksorganizer = {
       clearTimeout(timeoutId);
 
       const result = await response.json();
-      if (!response.ok || result.status !== 'ok' || !result.solution) {
-        throw new Error(result.message || `FlareSolverr returned HTTP ${response.status}`);
+      if (response.ok && result.status === 'ok' && result.solution) {
+        // continue with the successful solution below
+      }
+      else {
+        const detail = result.message || 'FlareSolverr returned an error';
+        let errorMessage = detail;
+        if (!response.ok) {
+          errorMessage = `FlareSolverr HTTP ${response.status}: ${detail}`;
+        }
+
+        throw new Error(errorMessage);
       }
 
       const { solution } = result;
+      if (bookmarksorganizer.showFlareSolverrResult) {
+        // eslint-disable-next-line require-atomic-updates
+        bookmark.flareSolverrResult = `HTTP ${solution.status}`;
+      }
+
       // eslint-disable-next-line require-atomic-updates
       bookmark.status = Number.isInteger(solution.status) ? solution.status : STATUS.FETCH_ERROR;
 
@@ -994,6 +1019,16 @@ const bookmarksorganizer = {
 
         return bookmark;
       }
+      if (bookmarksorganizer.showFlareSolverrResult) {
+        let flareSolverrResult = error.message;
+        if (error.name === 'AbortError') {
+          flareSolverrResult = browser.i18n.getMessage('flaresolverr_timeout');
+        }
+
+        // eslint-disable-next-line require-atomic-updates
+        bookmark.flareSolverrResult = flareSolverrResult;
+      }
+
       // eslint-disable-next-line require-atomic-updates
       bookmark.status = error.name === 'AbortError' ? STATUS.TIMEOUT : STATUS.FETCH_ERROR;
 

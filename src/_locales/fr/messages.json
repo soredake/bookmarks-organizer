@@ -175,5 +175,14 @@
   },
   "whitelist_reset_confirmation_msg": {
     "message": "Souhaitez-vous vraiment réinitialiser la liste blanche ?"
+  },
+  "option_flaresolverr_show_result": {
+    "message": "Afficher le résultat de FlareSolverr sous les liens"
+  },
+  "flaresolverr_result_label": {
+    "message": "Résultat de FlareSolverr"
+  },
+  "flaresolverr_timeout": {
+    "message": "Délai de la requête dépassé"
   }
 }

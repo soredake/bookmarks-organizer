@@ -175,5 +175,14 @@
   },
   "whitelist_reset_confirmation_msg": {
     "message": "Ma se běła lisćina napšawdu slědk stajiś?"
+  },
+  "option_flaresolverr_show_result": {
+    "message": "Wuslědk FlareSolverr pód wotkazami pokazać"
+  },
+  "flaresolverr_result_label": {
+    "message": "Wuslědk FlareSolverr"
+  },
+  "flaresolverr_timeout": {
+    "message": "Čas za napšašowanje je wotběženy"
   }
 }

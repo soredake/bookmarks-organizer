@@ -199,5 +199,14 @@
   },
   "whitelist_reset_confirmation_msg": {
     "message": "Do you really want to reset the whitelist?"
+  },
+  "option_flaresolverr_show_result": {
+    "message": "Show FlareSolverr result under links"
+  },
+  "flaresolverr_result_label": {
+    "message": "FlareSolverr result"
+  },
+  "flaresolverr_timeout": {
+    "message": "Request timed out"
   }
 }

@@ -175,5 +175,14 @@
   },
   "whitelist_reset_confirmation_msg": {
     "message": "Soll die Whitelist wirklich zurückgesetzt werden?"
+  },
+  "option_flaresolverr_show_result": {
+    "message": "FlareSolverr-Ergebnis unter Links anzeigen"
+  },
+  "flaresolverr_result_label": {
+    "message": "FlareSolverr-Ergebnis"
+  },
+  "flaresolverr_timeout": {
+    "message": "Zeitüberschreitung der Anfrage"
   }
 }

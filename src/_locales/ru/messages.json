@@ -199,5 +199,14 @@
   },
   "whitelist_reset_confirmation_msg": {
     "message": "Вы действительно хотите сбросить белый список?"
+  },
+  "option_flaresolverr_show_result": {
+    "message": "Показывать результат FlareSolverr под ссылками"
+  },
+  "flaresolverr_result_label": {
+    "message": "Результат FlareSolverr"
+  },
+  "flaresolverr_timeout": {
+    "message": "Время ожидания запроса истекло"
   }
 }

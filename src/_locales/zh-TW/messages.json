@@ -175,5 +175,14 @@
   },
   "whitelist_reset_confirmation_msg": {
     "message": "確定要重設白名單？"
+  },
+  "option_flaresolverr_show_result": {
+    "message": "在連結下方顯示 FlareSolverr 結果"
+  },
+  "flaresolverr_result_label": {
+    "message": "FlareSolverr 結果"
+  },
+  "flaresolverr_timeout": {
+    "message": "要求逾時"
   }
 }

@@ -175,5 +175,14 @@
   },
   "whitelist_reset_confirmation_msg": {
     "message": "Vill du verkligen återställa vitlistan?"
+  },
+  "option_flaresolverr_show_result": {
+    "message": "Visa FlareSolverr-resultat under länkar"
+  },
+  "flaresolverr_result_label": {
+    "message": "FlareSolverr-resultat"
+  },
+  "flaresolverr_timeout": {
+    "message": "Tidsgränsen för begäran överskreds"
   }
 }

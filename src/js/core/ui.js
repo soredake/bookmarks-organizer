@@ -748,6 +748,11 @@ const ui = {
       elUrl.setAttribute('target', '_blank');
       elUrl.setAttribute('rel', 'noopener');
 
+      if (bookmark.flareSolverrResult) {
+        const elFlareSolverrResult = template.querySelector('.flare-solverr-result');
+        elFlareSolverrResult.textContent = `${browser.i18n.getMessage('flaresolverr_result_label')}: ${bookmark.flareSolverrResult}`;
+      }
+
       if (bookmark.status) {
         switch (bookmark.status) {
           case STATUS.REDIRECT:

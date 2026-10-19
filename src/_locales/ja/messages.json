@@ -175,5 +175,14 @@
   },
   "whitelist_reset_confirmation_msg": {
     "message": "本当にホワイトリストをリセットしますか？"
+  },
+  "option_flaresolverr_show_result": {
+    "message": "リンクの下にFlareSolverrの結果を表示"
+  },
+  "flaresolverr_result_label": {
+    "message": "FlareSolverrの結果"
+  },
+  "flaresolverr_timeout": {
+    "message": "リクエストがタイムアウトしました"
   }
 }

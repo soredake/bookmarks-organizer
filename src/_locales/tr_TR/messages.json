@@ -175,5 +175,14 @@
   },
   "whitelist_reset_confirmation_msg": {
     "message": "Beyaz listeyi gerçekten sıfırlamak istiyor musunuz?"
+  },
+  "option_flaresolverr_show_result": {
+    "message": "FlareSolverr sonucunu bağlantıların altında göster"
+  },
+  "flaresolverr_result_label": {
+    "message": "FlareSolverr sonucu"
+  },
+  "flaresolverr_timeout": {
+    "message": "İstek zaman aşımına uğradı"
   }
 }

@@ -175,5 +175,14 @@
   },
   "whitelist_reset_confirmation_msg": {
     "message": "Do you really want to reset the whitelist?"
+  },
+  "option_flaresolverr_show_result": {
+    "message": "Zobrazit výsledek FlareSolverr pod odkazy"
+  },
+  "flaresolverr_result_label": {
+    "message": "Výsledek FlareSolverr"
+  },
+  "flaresolverr_timeout": {
+    "message": "Vypršel časový limit požadavku"
   }
 }

@@ -175,5 +175,14 @@
   },
   "whitelist_reset_confirmation_msg": {
     "message": "Czy na pewno chcesz wyczyścić białą listę?"
+  },
+  "option_flaresolverr_show_result": {
+    "message": "Pokaż wynik FlareSolverr pod linkami"
+  },
+  "flaresolverr_result_label": {
+    "message": "Wynik FlareSolverr"
+  },
+  "flaresolverr_timeout": {
+    "message": "Przekroczono limit czasu żądania"
   }
 }
