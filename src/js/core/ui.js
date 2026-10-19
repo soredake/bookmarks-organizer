@@ -75,6 +75,9 @@ const ui = {
    */
   errors : 0,
 
+  /** @type {Array<Object>} */
+  partialBookmarks : [],
+
   /**
    * boolean, indicates whether the "no results" message should be shown or not.
    *
@@ -314,7 +317,24 @@ const ui = {
    */
   stopCheck () {
     elStopButton.disabled = true;
-    browser.runtime.sendMessage({ message : 'stop' });
+    browser.runtime.sendMessage({ message : 'stop' }).catch(() => null);
+
+    if (ui.mode === 'broken-bookmarks') {
+      // End the visible check locally from the most recent results snapshot.
+      // A stalled background request must not trap the UI behind its spinner.
+      ui.handleResponse({
+        message : 'finished',
+        mode : ui.mode,
+        bookmarks : ui.partialBookmarks,
+        totalBookmarks : parseInt(elTotalBookmarks.textContent) || 0,
+        checkedBookmarks : parseInt(elCheckedBookmarks.textContent) || 0,
+        bookmarksErrors : ui.errors,
+        bookmarksWarnings : ui.warnings,
+        disableConfirmations : ui.disableConfirmations,
+        debug : [],
+        stopped : true
+      });
+    }
   },
 
   /**
@@ -352,6 +372,7 @@ const ui = {
       }
     }
     else if (response.message === 'started') {
+      ui.partialBookmarks = [];
       elCheckStatus.classList.add('hidden');
       elCheckStatus.textContent = '';
       elButton.classList.add('hidden');
@@ -408,6 +429,9 @@ const ui = {
       ui.markedBookmarks = response.bookmarks_errors + response.bookmarks_warnings;
       ui.warnings = response.bookmarks_warnings;
       ui.errors = response.bookmarks_errors;
+      if (Array.isArray(response.partial_bookmarks)) {
+        ui.partialBookmarks = response.partial_bookmarks;
+      }
     }
     else if (response.message === 'finished') {
       ui.disableConfirmations = response.disableConfirmations;

@@ -185,6 +185,9 @@ const bookmarksorganizer = {
   /** @type {Set<Function>} */
   activeRequestCancellations : new Set(),
 
+  /** @type {number} */
+  lastPartialResultsCount : -1,
+
   /**
    * Internal variable. The index of the bookmark being checked.
    *
@@ -626,6 +629,7 @@ const bookmarksorganizer = {
     bookmarksorganizer.bookmarkErrors = 0;
     bookmarksorganizer.bookmarkWarnings = 0;
     bookmarksorganizer.bookmarksResult = [];
+    bookmarksorganizer.lastPartialResultsCount = -1;
     bookmarksorganizer.additionalData = [];
     bookmarksorganizer.debug = [];
     bookmarksorganizer.mode = mode;
@@ -1896,14 +1900,39 @@ const bookmarksorganizer = {
       progress = MIN_PROGRESS;
     }
 
-    browser.runtime.sendMessage({
+    const progressMessage = {
       message : 'update-counters',
       total_bookmarks : bookmarksorganizer.totalBookmarks,
       checked_bookmarks : bookmarksorganizer.checkedBookmarks,
       bookmarks_errors : bookmarksorganizer.bookmarkErrors,
       bookmarks_warnings : bookmarksorganizer.bookmarkWarnings,
       progress : progress
-    });
+    };
+
+    if (bookmarksorganizer.lastPartialResultsCount !== bookmarksorganizer.bookmarksResult.length) {
+      const resultsById = new Map(bookmarksorganizer.bookmarksResult.map((bookmark) => [bookmark.id, { ...bookmark }]));
+      const collectedById = new Map(bookmarksorganizer.collectedBookmarks.map((bookmark) => [bookmark.id, bookmark]));
+      for (const bookmark of Array.from(resultsById.values())) {
+        let { parentId } = bookmark;
+        while (parentId && !resultsById.has(parentId)) {
+          const parent = collectedById.get(parentId);
+          if (!parent) {
+            break;
+          }
+
+          resultsById.set(parentId, { ...parent });
+          const { parentId : nextParentId } = parent;
+          parentId = nextParentId;
+        }
+      }
+
+      const resultTree = bookmarksorganizer.buildResultArray(Array.from(resultsById.values()));
+      const { children = [] } = resultTree[0] || {};
+      progressMessage.partial_bookmarks = children;
+      bookmarksorganizer.lastPartialResultsCount = bookmarksorganizer.bookmarksResult.length;
+    }
+
+    browser.runtime.sendMessage(progressMessage);
   },
 
   /**
