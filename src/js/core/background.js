@@ -1476,20 +1476,23 @@ const bookmarksorganizer = {
    * @returns {Promise.<Array.<*>>} - Promise
    */
   async processBookmarks (mode, type, queue_size) {
-    const limiter = bookmarksorganizer.throttle(queue_size);
-    const tasks = [];
     let bookmarksToProcess = bookmarksorganizer.collectedBookmarks;
 
     if (bookmarksorganizer.shuffleUrls) {
       bookmarksToProcess = bookmarksorganizer.shuffleBookmarksByDomain(bookmarksToProcess);
     }
 
-    const executeTask = function (aBookmark, aMode, aType) {
-      return async function () {
+    let nextBookmarkIndex = 0;
+    const executeWorker = async function () {
+      while (!bookmarksorganizer.stopRequested) {
+        const bookmarkIndex = nextBookmarkIndex++;
+        if (bookmarkIndex >= bookmarksToProcess.length) {
+          return;
+        }
+
+        const aBookmark = bookmarksToProcess[bookmarkIndex];
         try {
-          if (!bookmarksorganizer.stopRequested) {
-            await bookmarksorganizer.checkForBrokenBookmark(aBookmark, aMode, aType);
-          }
+          await bookmarksorganizer.checkForBrokenBookmark(aBookmark, mode, type);
         }
         catch (error) {
           if (aBookmark.url) {
@@ -1498,7 +1501,7 @@ const bookmarksorganizer = {
             // eslint-disable-next-line require-atomic-updates
             aBookmark.status = bookmarksorganizer.stopRequested ? STATUS.UNKNOWN : STATUS.FETCH_ERROR;
 
-            if ((aType === 'all' || aType === 'errors') && !bookmarksorganizer.bookmarksResult.some(({ id }) => id === aBookmark.id)) {
+            if ((type === 'all' || type === 'errors') && !bookmarksorganizer.bookmarksResult.some(({ id }) => id === aBookmark.id)) {
               if (!bookmarksorganizer.stopRequested) {
                 bookmarksorganizer.bookmarkErrors++;
               }
@@ -1511,17 +1514,12 @@ const bookmarksorganizer = {
             }
           }
         }
-        finally {
-          limiter.give();
-        }
+      }
       };
-    };
 
-    for (const bookmark of bookmarksToProcess) {
-      tasks.push(limiter.take().then(executeTask(bookmark, mode, type)));
-    }
-
-    await Promise.allSettled(tasks);
+    const workerCount = Math.min(queue_size, bookmarksToProcess.length);
+    const workers = Array.from({ length : workerCount }, () => executeWorker());
+    await Promise.allSettled(workers);
   },
 
   /**
