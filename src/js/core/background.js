@@ -160,6 +160,12 @@ const bookmarksorganizer = {
   /** @type {Array<{resolve: Function, cancelled: boolean}>} */
   flareSolverrWaiters : [],
 
+  /** @type {number} */
+  activeDirectRequests : 0,
+
+  /** @type {Array<{resolve: Function, cancelled: boolean}>} */
+  directRequestWaiters : [],
+
   /** @type {Set<string>} */
   flareSolverrDirectOnlyDomains : new Set(),
 
@@ -510,6 +516,11 @@ const bookmarksorganizer = {
         waiter.resolve(false);
       });
       bookmarksorganizer.flareSolverrWaiters = [];
+      bookmarksorganizer.directRequestWaiters.forEach((waiter) => {
+        waiter.cancelled = true;
+        waiter.resolve(false);
+      });
+      bookmarksorganizer.directRequestWaiters = [];
       bookmarksorganizer.activeControllers.forEach((controller) => controller.abort());
     }
     else if (response.message === 'edit') {
@@ -587,6 +598,8 @@ const bookmarksorganizer = {
     });
     bookmarksorganizer.activeFlareSolverrRequests = 0;
     bookmarksorganizer.flareSolverrWaiters = [];
+    bookmarksorganizer.activeDirectRequests = 0;
+    bookmarksorganizer.directRequestWaiters = [];
     bookmarksorganizer.flareSolverrDirectOnlyDomains = new Set();
     bookmarksorganizer.internalCounter = 0;
     bookmarksorganizer.checkedBookmarks = 0;
@@ -685,7 +698,7 @@ const bookmarksorganizer = {
 
     switch (mode) {
       case 'broken-bookmarks':
-        await bookmarksorganizer.processBookmarks(mode, type, bookmarksorganizer.maxConcurrentRequests);
+        await bookmarksorganizer.processBookmarks(mode, type);
         break;
       case 'duplicates':
         const bookmarks = await browser.bookmarks.getTree();
@@ -865,11 +878,20 @@ const bookmarksorganizer = {
 
     let timeoutId = null;
     let controller = null;
+    let directSlotAcquired = false;
 
     try {
       await bookmarksorganizer.waitForRequestDelay();
 
       if (bookmarksorganizer.stopRequested) {
+        // eslint-disable-next-line require-atomic-updates
+        bookmark.status = STATUS.UNKNOWN;
+
+        return bookmark;
+      }
+
+      directSlotAcquired = await bookmarksorganizer.acquireDirectRequestSlot();
+      if (!directSlotAcquired) {
         // eslint-disable-next-line require-atomic-updates
         bookmark.status = STATUS.UNKNOWN;
 
@@ -890,6 +912,8 @@ const bookmarksorganizer = {
       clearTimeout(timeoutId);
       const challenge = await bookmarksorganizer.isCloudflareChallengeResponse(response);
       controller.abort();
+      bookmarksorganizer.releaseDirectRequestSlot();
+      directSlotAcquired = false;
 
       if (response.status === STATUS.NOT_FOUND) {
         // eslint-disable-next-line require-atomic-updates
@@ -1014,6 +1038,9 @@ const bookmarksorganizer = {
       clearTimeout(timeoutId);
       if (controller) {
         bookmarksorganizer.activeControllers.delete(controller);
+      }
+      if (directSlotAcquired) {
+        bookmarksorganizer.releaseDirectRequestSlot();
       }
     }
 
@@ -1364,6 +1391,43 @@ const bookmarksorganizer = {
   },
 
   /**
+   * Acquires a direct HTTP slot using the configured maximum, independently of FlareSolverr.
+   *
+   * @returns {Promise<boolean>} - whether a slot was acquired
+   */
+  acquireDirectRequestSlot () {
+    if (bookmarksorganizer.stopRequested) {
+      return Promise.resolve(false);
+    }
+    if (bookmarksorganizer.activeDirectRequests < bookmarksorganizer.maxConcurrentRequests) {
+      bookmarksorganizer.activeDirectRequests++;
+
+      return Promise.resolve(true);
+    }
+
+    return new Promise((resolve) => {
+      bookmarksorganizer.directRequestWaiters.push({ resolve : resolve, cancelled : false });
+    });
+  },
+
+  /**
+   * Releases a direct HTTP slot and grants it to the next queued request.
+   *
+   * @returns {void}
+   */
+  releaseDirectRequestSlot () {
+    bookmarksorganizer.activeDirectRequests--;
+    let waiter = bookmarksorganizer.directRequestWaiters.shift();
+    while (waiter && waiter.cancelled) {
+      waiter = bookmarksorganizer.directRequestWaiters.shift();
+    }
+    if (waiter) {
+      bookmarksorganizer.activeDirectRequests++;
+      waiter.resolve(true);
+    }
+  },
+
+  /**
    * Releases a FlareSolverr slot and grants it to the next queued bookmark.
    *
    * @returns {void}
@@ -1471,55 +1535,45 @@ const bookmarksorganizer = {
    *                 <strong>Supported values:</strong> broken-bookmarks, duplicates, empty-names
    * @param {string} type - The requested type of results<br /><br />
    *                 <strong>Supported values:</strong> errors, warnings, all
-   * @param {int} queue_size - do not process more than queue_size bookmarks at the same time
    *
    * @returns {Promise.<Array.<*>>} - Promise
    */
-  async processBookmarks (mode, type, queue_size) {
+  async processBookmarks (mode, type) {
     let bookmarksToProcess = bookmarksorganizer.collectedBookmarks;
 
     if (bookmarksorganizer.shuffleUrls) {
       bookmarksToProcess = bookmarksorganizer.shuffleBookmarksByDomain(bookmarksToProcess);
     }
 
-    let nextBookmarkIndex = 0;
-    const executeWorker = async function () {
-      while (!bookmarksorganizer.stopRequested) {
-        const bookmarkIndex = nextBookmarkIndex++;
-        if (bookmarkIndex >= bookmarksToProcess.length) {
-          return;
-        }
-
-        const aBookmark = bookmarksToProcess[bookmarkIndex];
-        try {
+    const tasks = bookmarksToProcess.map(async (aBookmark) => {
+      try {
+        if (!bookmarksorganizer.stopRequested) {
           await bookmarksorganizer.checkForBrokenBookmark(aBookmark, mode, type);
         }
-        catch (error) {
-          if (aBookmark.url) {
-            // A cancelled in-flight task still belongs in the partial results. Treat
-            // it as unknown, since stopping the scan does not prove the link is dead.
-            // eslint-disable-next-line require-atomic-updates
-            aBookmark.status = bookmarksorganizer.stopRequested ? STATUS.UNKNOWN : STATUS.FETCH_ERROR;
+      }
+      catch (error) {
+        if (aBookmark.url) {
+          // A cancelled in-flight task still belongs in the partial results. Treat
+          // it as unknown, since stopping the scan does not prove the link is dead.
+          // eslint-disable-next-line require-atomic-updates
+          aBookmark.status = bookmarksorganizer.stopRequested ? STATUS.UNKNOWN : STATUS.FETCH_ERROR;
 
-            if ((type === 'all' || type === 'errors') && !bookmarksorganizer.bookmarksResult.some(({ id }) => id === aBookmark.id)) {
-              if (!bookmarksorganizer.stopRequested) {
-                bookmarksorganizer.bookmarkErrors++;
-              }
-              bookmarksorganizer.bookmarksResult.push(aBookmark);
+          if ((type === 'all' || type === 'errors') && !bookmarksorganizer.bookmarksResult.some(({ id }) => id === aBookmark.id)) {
+            if (!bookmarksorganizer.stopRequested) {
+              bookmarksorganizer.bookmarkErrors++;
             }
+            bookmarksorganizer.bookmarksResult.push(aBookmark);
+          }
 
-            if (bookmarksorganizer.stopRequested) {
-              bookmarksorganizer.checkedBookmarks++;
-              bookmarksorganizer.updateProgressUi();
-            }
+          if (bookmarksorganizer.stopRequested) {
+            bookmarksorganizer.checkedBookmarks++;
+            bookmarksorganizer.updateProgressUi();
           }
         }
       }
-      };
+    });
 
-    const workerCount = Math.min(queue_size, bookmarksToProcess.length);
-    const workers = Array.from({ length : workerCount }, () => executeWorker());
-    await Promise.allSettled(workers);
+    await Promise.allSettled(tasks);
   },
 
   /**
