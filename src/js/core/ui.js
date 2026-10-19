@@ -1189,6 +1189,8 @@ elFox.addEventListener('click', ui.handleFoxMessageClick);
 elRepairAllRedirects.addEventListener('click', ui.repairAllRedirects);
 elDeleteAllBookmarksWithErrors.addEventListener('click', ui.deleteAllBookmarksWithErrors);
 elSearch.addEventListener('input', ui.applySearchFieldFilter);
-elSettingsButton.addEventListener('click', () => browser.runtime.openOptionsPage());
+elSettingsButton.addEventListener('click', () => {
+  window.location.href = browser.runtime.getURL('html/options.html');
+});
 
 browser.runtime.onMessage.addListener(ui.handleResponse);
