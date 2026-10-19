@@ -1230,6 +1230,8 @@ const bookmarksorganizer = {
         cache : 'no-store',
         headers : { 'Content-Type' : 'application/json' },
         method : 'POST',
+        // Do not follow endpoint redirects: fetch may rewrite POST to GET for 301/302/303.
+        redirect : 'error',
         body : JSON.stringify({
           cmd : 'request.get',
           url : bookmark.url,
