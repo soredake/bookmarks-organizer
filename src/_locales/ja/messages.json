@@ -50,6 +50,12 @@
   "button_reset_whitelist": {
     "message": "ホワイトリストをリセット…"
   },
+  "button_return": {
+    "message": "戻る"
+  },
+  "button_save_options": {
+    "message": "保存"
+  },
   "close_overlay": {
     "message": "閉じる"
   },

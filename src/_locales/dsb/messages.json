@@ -50,6 +50,12 @@
   "button_reset_whitelist": {
     "message": "Běłu lisćinu slědk stajiś…"
   },
+  "button_return": {
+    "message": "Slědk"
+  },
+  "button_save_options": {
+    "message": "Składowaś"
+  },
   "close_overlay": {
     "message": "Zacyniś"
   },

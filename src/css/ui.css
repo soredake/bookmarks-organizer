@@ -141,6 +141,14 @@ button#btn-cancel {
   border-color: var(--color-status-error);
 }
 
+button#save-options {
+  margin-left: 10px;
+}
+
+button#return-button {
+  margin-left: 10px;
+}
+
 button#reset-whitelist {
   margin-left: 10px;
   border-color: var(--color-status-error);

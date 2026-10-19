@@ -50,6 +50,12 @@
   "button_reset_whitelist": {
     "message": "reset whitelist…"
   },
+  "button_return": {
+    "message": "Back"
+  },
+  "button_save_options": {
+    "message": "Save"
+  },
   "close_overlay": {
     "message": "Close"
   },

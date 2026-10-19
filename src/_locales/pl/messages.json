@@ -50,6 +50,12 @@
   "button_reset_whitelist": {
     "message": "wyczyść białą listę…"
   },
+  "button_return": {
+    "message": "Wstecz"
+  },
+  "button_save_options": {
+    "message": "Zapisz"
+  },
   "close_overlay": {
     "message": "Zamknij"
   },

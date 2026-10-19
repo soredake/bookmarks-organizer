@@ -50,6 +50,12 @@
   "button_reset_whitelist": {
     "message": "svuota la whitelist…"
   },
+  "button_return": {
+    "message": "Indietro"
+  },
+  "button_save_options": {
+    "message": "Salva"
+  },
   "close_overlay": {
     "message": "Chiudi"
   },

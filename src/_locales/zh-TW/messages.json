@@ -50,6 +50,12 @@
   "button_reset_whitelist": {
     "message": "重設白名單……"
   },
+  "button_return": {
+    "message": "返回"
+  },
+  "button_save_options": {
+    "message": "儲存"
+  },
   "close_overlay": {
     "message": "關閉"
   },

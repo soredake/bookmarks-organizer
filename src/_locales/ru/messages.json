@@ -50,6 +50,12 @@
   "button_reset_whitelist": {
     "message": "сбросить белый список…"
   },
+  "button_return": {
+    "message": "Назад"
+  },
+  "button_save_options": {
+    "message": "Сохранить"
+  },
   "close_overlay": {
     "message": "Закрыть"
   },

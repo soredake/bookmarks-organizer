@@ -50,6 +50,12 @@
   "button_reset_whitelist": {
     "message": "reset whitelist…"
   },
+  "button_return": {
+    "message": "Zpět"
+  },
+  "button_save_options": {
+    "message": "Uložit"
+  },
   "close_overlay": {
     "message": "Zavřít"
   },

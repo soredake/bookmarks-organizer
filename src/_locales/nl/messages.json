@@ -50,6 +50,12 @@
   "button_reset_whitelist": {
     "message": "witte lijst herinitialiseren…"
   },
+  "button_return": {
+    "message": "Terug"
+  },
+  "button_save_options": {
+    "message": "Opslaan"
+  },
   "close_overlay": {
     "message": "Sluiten"
   },

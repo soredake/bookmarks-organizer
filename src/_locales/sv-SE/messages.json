@@ -50,6 +50,12 @@
   "button_reset_whitelist": {
     "message": "Återställ vitlistan…"
   },
+  "button_return": {
+    "message": "Tillbaka"
+  },
+  "button_save_options": {
+    "message": "Spara"
+  },
   "close_overlay": {
     "message": "Stäng"
   },
