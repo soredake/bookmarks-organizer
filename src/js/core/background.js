@@ -7,8 +7,6 @@ const TIMEOUT_500_MS = 500;
 const DEFAULT_REQUEST_TIMEOUT_IN_SECONDS = 15;
 const FLARESOLVERR_REQUEST_TIMEOUT_IN_SECONDS = 200;
 const PREVIOUS_DEFAULT_FLARESOLVERR_TIMEOUT_IN_SECONDS = 90;
-const HTTP_OK_STATUS = 200;
-const HTTP_REDIRECTION_STATUS = 300;
 const HTTP_ERROR_STATUS = 400;
 const HTTP_SERVER_ERROR_STATUS = 500;
 const HTTP_STATUS_UPPER_BOUND = 600;
@@ -1197,10 +1195,11 @@ const bookmarksorganizer = {
    * @param {Promise<*>} requestPromise - fetch and any required body parsing
    * @param {AbortController} controller - controller for the request
    * @param {number} timeout - timeout in milliseconds
-   * @param {Object} options - per-request watchdog options
+   * @param {boolean} useAlarmWatchdog - whether to add an independent browser alarm watchdog
+   * @param {Function|null} onTimeout - work to perform immediately when this request expires
    * @returns {Promise<*>} - request result
    */
-  async withRequestTimeout (requestPromise, controller, timeout, options = {}) {
+  async withRequestTimeout (requestPromise, controller, timeout, useAlarmWatchdog = false, onTimeout = null) {
     let timeoutId = null;
     let alarmName = null;
     const abortError = new Error('Request aborted or timed out');
@@ -1208,7 +1207,6 @@ const bookmarksorganizer = {
     let cancelRequest = null;
     let rejectTimeout = null;
     let timeoutTriggered = false;
-    const { useAlarmWatchdog, onTimeout } = options;
     const deadline = Date.now() + timeout;
     const timeoutPromise = new Promise((resolve, reject) => {
       rejectTimeout = reject;
@@ -1269,81 +1267,6 @@ const bookmarksorganizer = {
         }
       }
     }
-  },
-
-  /**
-   * Sends the FlareSolverr POST through XHR so the browser's network layer also enforces its timeout.
-   *
-   * @param {string} url - the FlareSolverr /v1 endpoint
-   * @param {string} requestBody - serialized API request
-   * @param {number} timeout - timeout in milliseconds
-   * @param {AbortController} controller - request cancellation controller
-   * @returns {Promise<{response: {ok: boolean, status: number}, result: Object}>} - HTTP status and parsed JSON
-   */
-  sendFlareSolverrRequest (url, requestBody, timeout, controller) {
-    return new Promise((resolve, reject) => {
-      const request = new XMLHttpRequest();
-      const abortRequest = () => request.abort();
-      const removeAbortListener = () => controller.signal.removeEventListener('abort', abortRequest);
-      const cleanup = () => {
-        removeAbortListener();
-        request.onload = null;
-        request.onerror = null;
-        request.ontimeout = null;
-        request.onabort = null;
-      };
-
-      try {
-        request.open('POST', url, true);
-        request.timeout = timeout;
-        request.setRequestHeader('Content-Type', 'application/json');
-        request.onload = () => {
-          let result = null;
-          try {
-            result = JSON.parse(request.responseText);
-          }
-          catch (error) {
-            cleanup();
-            reject(error);
-
-            return;
-          }
-
-          cleanup();
-          resolve({
-            response : {
-              ok : request.status >= HTTP_OK_STATUS && request.status < HTTP_REDIRECTION_STATUS,
-              status : request.status
-            },
-            result : result
-          });
-        };
-        request.onerror = () => {
-          const error = new Error('FlareSolverr network request failed');
-          error.name = 'NetworkError';
-          cleanup();
-          reject(error);
-        };
-        request.ontimeout = () => {
-          const error = new Error('FlareSolverr network request timed out');
-          error.name = 'AbortError';
-          cleanup();
-          reject(error);
-        };
-        request.onabort = () => {
-          const error = new Error('FlareSolverr network request aborted');
-          error.name = 'AbortError';
-          cleanup();
-          reject(error);
-        };
-        controller.signal.addEventListener('abort', abortRequest, { once : true });
-        request.send(requestBody);
-      }
-      catch (error) {
-        cleanup();
-        reject(error);
-      }
-    });
   },
 
   /**
@@ -1426,16 +1349,22 @@ const bookmarksorganizer = {
       controller = new AbortController();
       bookmarksorganizer.activeControllers.add(controller);
       const flareSolverrTimeout = bookmarksorganizer.FLARESOLVERR_REQUEST_TIMEOUT_IN_MS;
-      const requestBody = JSON.stringify({
-        cmd : 'request.get',
-        url : bookmark.url,
-        maxTimeout : flareSolverrTimeout
-      });
-      const flareSolverrRequest = bookmarksorganizer.sendFlareSolverrRequest(bookmarksorganizer.flareSolverrUrl, requestBody, flareSolverrTimeout, controller);
-      const { response, result } = await bookmarksorganizer.withRequestTimeout(flareSolverrRequest, controller, flareSolverrTimeout, {
-        useAlarmWatchdog : true,
-        onTimeout : releaseSlot
-      });
+      const { response, result } = await bookmarksorganizer.withRequestTimeout((async () => {
+        const flareSolverrResponse = await fetch(bookmarksorganizer.flareSolverrUrl, {
+          cache : 'no-store',
+          headers : { 'Content-Type' : 'application/json' },
+          method : 'POST',
+          redirect : 'follow',
+          body : JSON.stringify({
+            cmd : 'request.get',
+            url : bookmark.url,
+            maxTimeout : flareSolverrTimeout
+          }),
+          signal : controller.signal
+        });
+
+        return { response : flareSolverrResponse, result : await flareSolverrResponse.json() };
+      })(), controller, flareSolverrTimeout, true, releaseSlot);
       flareSolverrHttpStatus = response.status;
       if (response.ok && result.status === 'ok' && result.solution) {
         // continue with the successful solution below
