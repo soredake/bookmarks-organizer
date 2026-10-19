@@ -1196,9 +1196,10 @@ const bookmarksorganizer = {
    * @param {AbortController} controller - controller for the request
    * @param {number} timeout - timeout in milliseconds
    * @param {boolean} useAlarmWatchdog - whether to add an independent browser alarm watchdog
+   * @param {Function|null} onTimeout - work to perform immediately when this request expires
    * @returns {Promise<*>} - request result
    */
-  async withRequestTimeout (requestPromise, controller, timeout, useAlarmWatchdog = false) {
+  async withRequestTimeout (requestPromise, controller, timeout, useAlarmWatchdog = false, onTimeout = null) {
     let timeoutId = null;
     let alarmName = null;
     const abortError = new Error('Request aborted or timed out');
@@ -1216,8 +1217,11 @@ const bookmarksorganizer = {
       }
 
       timeoutTriggered = true;
-      controller.abort();
       rejectTimeout(abortError);
+      controller.abort();
+      if (onTimeout) {
+        onTimeout();
+      }
     };
     const stopRequestPromise = new Promise((resolve, reject) => {
       cancelRequest = () => {
@@ -1304,9 +1308,17 @@ const bookmarksorganizer = {
   async checkFlareSolverrResponse (bookmark, attempt = 1) {
     let controller = null;
     let slotAcquired = false;
+    let slotReleased = false;
     let retry = false;
     let retryDirectly = false;
     let flareSolverrHttpStatus = null;
+    const releaseSlot = () => {
+      if (slotAcquired && !slotReleased) {
+        slotReleased = true;
+        slotAcquired = false;
+        bookmarksorganizer.releaseFlareSolverrSlot();
+      }
+    };
 
     try {
       await bookmarksorganizer.waitForRequestDelay('flareSolverr');
@@ -1352,7 +1364,7 @@ const bookmarksorganizer = {
         });
 
         return { response : flareSolverrResponse, result : await flareSolverrResponse.json() };
-      })(), controller, flareSolverrTimeout, true);
+      })(), controller, flareSolverrTimeout, true, releaseSlot);
       flareSolverrHttpStatus = response.status;
       if (response.ok && result.status === 'ok' && result.solution) {
         // continue with the successful solution below
@@ -1475,9 +1487,7 @@ const bookmarksorganizer = {
       if (controller) {
         bookmarksorganizer.activeControllers.delete(controller);
       }
-      if (slotAcquired) {
-        bookmarksorganizer.releaseFlareSolverrSlot();
-      }
+      releaseSlot();
     }
 
     if (retryDirectly && !bookmarksorganizer.stopRequested) {
