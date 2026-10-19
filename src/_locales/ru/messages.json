@@ -125,6 +125,15 @@
   "option_disable_confirmations": {
     "message": "Отключить запросы о подтверждении (не рекомендуется)"
   },
+  "option_flaresolverr_enabled": {
+    "message": "Использовать FlareSolverr"
+  },
+  "option_flaresolverr_url": {
+    "message": "Адрес API FlareSolverr"
+  },
+  "option_flaresolverr_description": {
+    "message": "При включении проверка ссылок будет выполняться через этот сервер FlareSolverr. Не открывайте сервер для общего доступа из интернета."
+  },
   "option_request_delay": {
     "message": "Задержка между запросами"
   },

@@ -28,6 +28,15 @@
           <input type="checkbox" name="debug_mode" id="debug-mode" />
           <label for="debug-mode"><span data-i18n="option_debug_mode"></span></label>
         </div>
+        <div class="checkbox">
+          <input type="checkbox" name="use_flaresolverr" id="use-flaresolverr" />
+          <label for="use-flaresolverr"><span data-i18n="option_flaresolverr_enabled">Use FlareSolverr</span></label>
+        </div>
+        <div class="form-group">
+          <label for="flaresolverr-url"><span data-i18n="option_flaresolverr_url">FlareSolverr API URL</span></label>
+          <input id="flaresolverr-url" type="url" name="flaresolverr_url" value="http://localhost:8191/v1" />
+          <div class="description" data-i18n="option_flaresolverr_description">When enabled, link checks are sent through this FlareSolverr server. Keep the server private.</div>
+        </div>
         <div class="form-group">
           <label for="request-timeout"><span data-i18n="option_request_timeout">Request timeout</span></label>
           <input id="request-timeout" type="number" name="request_timeout" min="1" step="1" />

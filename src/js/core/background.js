@@ -4,6 +4,10 @@
 
 const MIN_PROGRESS = 0.01;
 const TIMEOUT_500_MS = 500;
+const DEFAULT_REQUEST_TIMEOUT_IN_SECONDS = 15;
+const DEFAULT_REQUEST_DELAY_IN_SECONDS = 1;
+const MILLISECONDS_PER_SECOND = 1000;
+const FLARESOLVERR_TIMEOUT_GRACE_IN_MS = 5000;
 const UI_PAGE = 'html/ui.html';
 
 /**
@@ -52,6 +56,20 @@ const bookmarksorganizer = {
    * @type {int}
    */
   maxConcurrentRequests : 2,
+
+  /**
+   * Whether link checks should be sent through a configured FlareSolverr instance.
+   *
+   * @type {boolean}
+   */
+  useFlareSolverr : false,
+
+  /**
+   * FlareSolverr API endpoint.
+   *
+   * @type {string}
+   */
+  flareSolverrUrl : 'http://localhost:8191/v1',
 
   /**
    * Promise queue used to space out the start of individual network requests.
@@ -511,8 +529,10 @@ const bookmarksorganizer = {
       debugEnabled : false,
       disableConfirmations : false,
       maxConcurrentRequests : bookmarksorganizer.QUEUE_SIZE,
-      requestTimeout : 15,
-      requestDelay : 1
+      requestTimeout : DEFAULT_REQUEST_TIMEOUT_IN_SECONDS,
+      requestDelay : DEFAULT_REQUEST_DELAY_IN_SECONDS,
+      useFlareSolverr : false,
+      flareSolverrUrl : 'http://localhost:8191/v1'
     });
 
     // eslint-disable-next-line require-atomic-updates
@@ -524,13 +544,30 @@ const bookmarksorganizer = {
     // eslint-disable-next-line require-atomic-updates
     bookmarksorganizer.maxConcurrentRequests = Number.isInteger(parsedMaxConcurrentRequests) && parsedMaxConcurrentRequests > 0 ? parsedMaxConcurrentRequests : bookmarksorganizer.QUEUE_SIZE;
 
+    // eslint-disable-next-line require-atomic-updates
+    bookmarksorganizer.useFlareSolverr = options.useFlareSolverr === true;
+    try {
+      const flareSolverrUrl = new URL(options.flareSolverrUrl);
+      if ((flareSolverrUrl.protocol === 'http:' || flareSolverrUrl.protocol === 'https:') && !flareSolverrUrl.username && !flareSolverrUrl.password) {
+        if (flareSolverrUrl.pathname === '/') {
+          flareSolverrUrl.pathname = '/v1';
+        }
+
+        // eslint-disable-next-line require-atomic-updates
+        bookmarksorganizer.flareSolverrUrl = flareSolverrUrl.href.replace(/\/$/, '');
+      }
+    }
+    catch (error) {
+      // Keep the default endpoint when the stored value is invalid.
+    }
+
     const parsedRequestTimeout = parseInt(options.requestTimeout);
     // eslint-disable-next-line require-atomic-updates
-    bookmarksorganizer.TIMEOUT_IN_MS = (Number.isInteger(parsedRequestTimeout) && parsedRequestTimeout > 0 ? parsedRequestTimeout : 15) * 1000;
+    bookmarksorganizer.TIMEOUT_IN_MS = (Number.isInteger(parsedRequestTimeout) && parsedRequestTimeout > 0 ? parsedRequestTimeout : DEFAULT_REQUEST_TIMEOUT_IN_SECONDS) * MILLISECONDS_PER_SECOND;
 
     const parsedRequestDelay = parseInt(options.requestDelay);
     // eslint-disable-next-line require-atomic-updates
-    bookmarksorganizer.REQUEST_DELAY_IN_MS = (Number.isInteger(parsedRequestDelay) && parsedRequestDelay >= 0 ? parsedRequestDelay : 1) * 1000;
+    bookmarksorganizer.REQUEST_DELAY_IN_MS = (Number.isInteger(parsedRequestDelay) && parsedRequestDelay >= 0 ? parsedRequestDelay : DEFAULT_REQUEST_DELAY_IN_SECONDS) * MILLISECONDS_PER_SECOND;
     // eslint-disable-next-line require-atomic-updates
     bookmarksorganizer.requestStartQueue = Promise.resolve();
     // eslint-disable-next-line require-atomic-updates
@@ -672,7 +709,12 @@ const bookmarksorganizer = {
    */
   async checkHttpResponse (bookmark, method) {
     bookmark.attempts++;
-    let timeoutId;
+
+    if (bookmarksorganizer.useFlareSolverr) {
+      return bookmarksorganizer.checkFlareSolverrResponse(bookmark);
+    }
+
+    let timeoutId = null;
 
     try {
       await bookmarksorganizer.waitForRequestDelay();
@@ -782,13 +824,104 @@ const bookmarksorganizer = {
   },
 
   /**
+   * Checks a bookmark through the FlareSolverr request API.
+   *
+   * @param {bookmarks.BookmarkTreeNode} bookmark - a single bookmark
+   *
+   * @returns {bookmarks.BookmarkTreeNode} - the bookmark object
+   */
+  async checkFlareSolverrResponse (bookmark) {
+    let timeoutId = null;
+
+    try {
+      await bookmarksorganizer.waitForRequestDelay();
+
+      const controller = new AbortController();
+      timeoutId = setTimeout(() => controller.abort(), bookmarksorganizer.TIMEOUT_IN_MS + FLARESOLVERR_TIMEOUT_GRACE_IN_MS);
+
+      const response = await fetch(bookmarksorganizer.flareSolverrUrl, {
+        cache : 'no-store',
+        headers : { 'Content-Type' : 'application/json' },
+        method : 'POST',
+        body : JSON.stringify({
+          cmd : 'request.get',
+          url : bookmark.url,
+          maxTimeout : bookmarksorganizer.TIMEOUT_IN_MS
+        }),
+        signal : controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      const result = await response.json();
+      if (!response.ok || result.status !== 'ok' || !result.solution) {
+        throw new Error(result.message || `FlareSolverr returned HTTP ${response.status}`);
+      }
+
+      const { solution } = result;
+      // eslint-disable-next-line require-atomic-updates
+      bookmark.status = Number.isInteger(solution.status) ? solution.status : STATUS.FETCH_ERROR;
+
+      if (solution.url && solution.url !== bookmark.url) {
+        // eslint-disable-next-line require-atomic-updates
+        bookmark.status = STATUS.REDIRECT;
+        bookmark.newUrl = solution.url;
+
+        if (bookmark.url.indexOf('#') !== -1) {
+          bookmark.newUrl += bookmark.url.substring(bookmark.url.indexOf('#'));
+        }
+      }
+
+      if (bookmarksorganizer.debugEnabled) {
+        bookmarksorganizer.debug.push({
+          bookmark : {
+            id : bookmark.id,
+            parentId : bookmark.parentId,
+            title : bookmark.title,
+            url : bookmark.url,
+            status : bookmark.status
+          },
+          method : 'GET (FlareSolverr)',
+          cause : 'server-response',
+          response : {
+            url : solution.url,
+            status : solution.status,
+            message : result.message
+          }
+        });
+      }
+    }
+    catch (error) {
+      clearTimeout(timeoutId);
+      // eslint-disable-next-line require-atomic-updates
+      bookmark.status = error.name === 'AbortError' ? STATUS.TIMEOUT : STATUS.FETCH_ERROR;
+
+      if (bookmarksorganizer.debugEnabled) {
+        bookmarksorganizer.debug.push({
+          bookmark : {
+            id : bookmark.id,
+            parentId : bookmark.parentId,
+            title : bookmark.title,
+            url : bookmark.url,
+            status : bookmark.status
+          },
+          method : 'GET (FlareSolverr)',
+          cause : error.name === 'AbortError' ? 'timeout' : 'fetch-error',
+          response : error.message
+        });
+      }
+    }
+
+    return bookmark;
+  },
+
+  /**
    * Waits until the configured delay has elapsed since the previous network request started.
    *
-   * @returns {Promise<void>}
+   * @returns {Promise<void>} A promise that resolves when the next request may start.
    */
   async waitForRequestDelay () {
     const previousRequest = bookmarksorganizer.requestStartQueue;
-    let releaseRequest;
+    let releaseRequest = null;
 
     bookmarksorganizer.requestStartQueue = new Promise((resolve) => {
       releaseRequest = resolve;
@@ -798,9 +931,12 @@ const bookmarksorganizer = {
 
     const waitTime = bookmarksorganizer.lastRequestStartedAt + bookmarksorganizer.REQUEST_DELAY_IN_MS - Date.now();
     if (waitTime > 0) {
-      await new Promise((resolve) => setTimeout(resolve, waitTime));
+      await new Promise((resolve) => {
+        setTimeout(resolve, waitTime);
+      });
     }
 
+    // eslint-disable-next-line require-atomic-updates
     bookmarksorganizer.lastRequestStartedAt = Date.now();
     releaseRequest();
   },

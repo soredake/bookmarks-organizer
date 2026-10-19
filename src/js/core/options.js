@@ -3,12 +3,15 @@
 const DEFAULT_MAX_CONCURRENT_REQUESTS = 2;
 const DEFAULT_REQUEST_TIMEOUT = 15;
 const DEFAULT_REQUEST_DELAY = 1;
+const DEFAULT_FLARESOLVERR_URL = 'http://localhost:8191/v1';
 
 const elDebugMode = document.getElementById('debug-mode');
 const elDisableConfirmations = document.getElementById('disable-confirmations');
 const elMaxConcurrentRequests = document.getElementById('max-concurrent-requests');
 const elRequestTimeout = document.getElementById('request-timeout');
 const elRequestDelay = document.getElementById('request-delay');
+const elUseFlareSolverr = document.getElementById('use-flaresolverr');
+const elFlareSolverrUrl = document.getElementById('flaresolverr-url');
 const elResetWhitelistBtn = document.getElementById('reset-whitelist');
 const elReturnBtn = document.getElementById('return-button');
 
@@ -28,7 +31,9 @@ const options = {
       disableConfirmations : false,
       maxConcurrentRequests : DEFAULT_MAX_CONCURRENT_REQUESTS,
       requestTimeout : DEFAULT_REQUEST_TIMEOUT,
-      requestDelay : DEFAULT_REQUEST_DELAY
+      requestDelay : DEFAULT_REQUEST_DELAY,
+      useFlareSolverr : false,
+      flareSolverrUrl : DEFAULT_FLARESOLVERR_URL
     });
 
     elDebugMode.checked = option.debugEnabled;
@@ -36,13 +41,16 @@ const options = {
     elMaxConcurrentRequests.value = option.maxConcurrentRequests;
     elRequestTimeout.value = option.requestTimeout;
     elRequestDelay.value = option.requestDelay;
+    elUseFlareSolverr.checked = option.useFlareSolverr;
+    elFlareSolverrUrl.value = option.flareSolverrUrl;
+    elFlareSolverrUrl.disabled = !option.useFlareSolverr;
   }
 };
 
 document.addEventListener('DOMContentLoaded', options.load);
 
 elReturnBtn.addEventListener('click', () => {
-  window.location.href = 'ui.html';
+  window.location.assign('ui.html');
 });
 
 elDebugMode.addEventListener('change', (e) => {
@@ -80,6 +88,32 @@ elRequestDelay.addEventListener('change', (e) => {
 
   e.target.value = requestDelay;
   browser.storage.local.set({ requestDelay : requestDelay });
+});
+
+elUseFlareSolverr.addEventListener('change', (e) => {
+  elFlareSolverrUrl.disabled = !e.target.checked;
+  browser.storage.local.set({ useFlareSolverr : e.target.checked });
+});
+
+elFlareSolverrUrl.addEventListener('change', (e) => {
+  let flareSolverrUrl = DEFAULT_FLARESOLVERR_URL;
+
+  try {
+    const parsedUrl = new URL(e.target.value);
+    if ((parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:') && !parsedUrl.username && !parsedUrl.password) {
+      if (parsedUrl.pathname === '/') {
+        parsedUrl.pathname = '/v1';
+      }
+
+      flareSolverrUrl = parsedUrl.href.replace(/\/$/, '');
+    }
+  }
+  catch (error) {
+    // Keep the default URL when the configured value is invalid.
+  }
+
+  e.target.value = flareSolverrUrl;
+  browser.storage.local.set({ flareSolverrUrl : flareSolverrUrl });
 });
 
 elResetWhitelistBtn.addEventListener('click', (e) => {

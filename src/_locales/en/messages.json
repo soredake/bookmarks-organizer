@@ -125,6 +125,15 @@
   "option_disable_confirmations": {
     "message": "Disable confirmation messages (not recommended)"
   },
+  "option_flaresolverr_enabled": {
+    "message": "Use FlareSolverr"
+  },
+  "option_flaresolverr_url": {
+    "message": "FlareSolverr API URL"
+  },
+  "option_flaresolverr_description": {
+    "message": "When enabled, link checks are sent through this FlareSolverr server. Keep the server private."
+  },
   "option_request_delay": {
     "message": "Delay between requests"
   },
