@@ -413,6 +413,16 @@ const ui = {
       ui.disableConfirmations = response.disableConfirmations;
       ui.showStoppedStatus(response.stopped);
 
+      if (Number.isInteger(response.totalBookmarks)) {
+        elTotalBookmarks.textContent = response.totalBookmarks;
+        elCheckedBookmarks.textContent = response.checkedBookmarks;
+        elBookmarksErrors.textContent = response.bookmarksErrors;
+        elBookmarksWarnings.textContent = response.bookmarksWarnings;
+        ui.markedBookmarks = response.bookmarksErrors + response.bookmarksWarnings;
+        ui.errors = response.bookmarksErrors;
+        ui.warnings = response.bookmarksWarnings;
+      }
+
       ui.buildBookmarksTree(response.bookmarks);
       ui.hideEmptyCategories();
 

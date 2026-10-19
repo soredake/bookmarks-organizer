@@ -1441,12 +1441,36 @@ const bookmarksorganizer = {
       return;
     }
 
+    const resultsById = new Set(bookmarksorganizer.bookmarksResult.map(({ id }) => id));
+    const collectedById = new Map(bookmarksorganizer.collectedBookmarks.map((bookmark) => [bookmark.id, bookmark]));
+    const currentResults = bookmarksorganizer.bookmarksResult.slice();
+
+    for (const bookmark of currentResults) {
+      let { parentId } = bookmark;
+
+      while (parentId && !resultsById.has(parentId)) {
+        const parent = collectedById.get(parentId);
+        if (!parent) {
+          break;
+        }
+
+        bookmarksorganizer.bookmarksResult.push(parent);
+        resultsById.add(parent.id);
+        const { parentId : grandparentId } = parent;
+        parentId = grandparentId;
+      }
+    }
+
     const resultTree = bookmarksorganizer.buildResultArray(bookmarksorganizer.bookmarksResult);
     bookmarksorganizer.updateProgressUi();
     browser.runtime.sendMessage({
       message : 'finished',
       mode : mode,
       bookmarks : resultTree.length ? resultTree[0].children : [],
+      totalBookmarks : bookmarksorganizer.totalBookmarks,
+      checkedBookmarks : bookmarksorganizer.checkedBookmarks,
+      bookmarksErrors : bookmarksorganizer.bookmarkErrors,
+      bookmarksWarnings : bookmarksorganizer.bookmarkWarnings,
       disableConfirmations : bookmarksorganizer.disableConfirmations,
       debug : bookmarksorganizer.debug,
       stopped : bookmarksorganizer.stopRequested
@@ -1476,7 +1500,7 @@ const bookmarksorganizer = {
     for (const id in mappedArray) {
       if (Object.hasOwn(mappedArray, id)) {
         mappedElement = mappedArray[id];
-        if (mappedElement.parentId) {
+        if (mappedElement.parentId && mappedArray[mappedElement.parentId]) {
           mappedArray[mappedElement.parentId].children.push(mappedElement);
         }
         else {
