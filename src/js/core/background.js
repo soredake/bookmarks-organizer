@@ -26,25 +26,46 @@ const bookmarksorganizer = {
   MAX_ATTEMPTS : 2,
 
   /**
-   * Timeout for reaching a server in milliseconds. It's always 15 seconds, there is no user setting (yet).
+   * Timeout for reaching a server in milliseconds. It defaults to 15 seconds and can be changed in the add-on's settings.
    *
    * @type {int}
    */
   TIMEOUT_IN_MS : 15000,
 
   /**
-   * Never process more than QUEUE_SIZE bookmarks at the same time. Default is 10.
+   * Minimum time between the start of network requests in milliseconds.
    *
    * @type {int}
    */
-  QUEUE_SIZE : 10,
+  REQUEST_DELAY_IN_MS : 1000,
+
+  /**
+   * Never process more than QUEUE_SIZE bookmarks at the same time. Default is 2.
+   *
+   * @type {int}
+   */
+  QUEUE_SIZE : 2,
 
   /**
    * Maximum number of concurrent network requests. It defaults to QUEUE_SIZE and can be changed in the add-on's settings.
    *
    * @type {int}
    */
-  maxConcurrentRequests : 10,
+  maxConcurrentRequests : 2,
+
+  /**
+   * Promise queue used to space out the start of individual network requests.
+   *
+   * @type {Promise}
+   */
+  requestStartQueue : Promise.resolve(),
+
+  /**
+   * Timestamp when the previous network request was started.
+   *
+   * @type {int}
+   */
+  lastRequestStartedAt : 0,
 
   /**
    * Whether the internal skip list should be used or not. It's always true, there is no user setting (yet).
@@ -489,7 +510,9 @@ const bookmarksorganizer = {
     const options = await browser.storage.local.get({
       debugEnabled : false,
       disableConfirmations : false,
-      maxConcurrentRequests : bookmarksorganizer.QUEUE_SIZE
+      maxConcurrentRequests : bookmarksorganizer.QUEUE_SIZE,
+      requestTimeout : 15,
+      requestDelay : 1
     });
 
     // eslint-disable-next-line require-atomic-updates
@@ -500,6 +523,18 @@ const bookmarksorganizer = {
     const parsedMaxConcurrentRequests = parseInt(options.maxConcurrentRequests);
     // eslint-disable-next-line require-atomic-updates
     bookmarksorganizer.maxConcurrentRequests = Number.isInteger(parsedMaxConcurrentRequests) && parsedMaxConcurrentRequests > 0 ? parsedMaxConcurrentRequests : bookmarksorganizer.QUEUE_SIZE;
+
+    const parsedRequestTimeout = parseInt(options.requestTimeout);
+    // eslint-disable-next-line require-atomic-updates
+    bookmarksorganizer.TIMEOUT_IN_MS = (Number.isInteger(parsedRequestTimeout) && parsedRequestTimeout > 0 ? parsedRequestTimeout : 15) * 1000;
+
+    const parsedRequestDelay = parseInt(options.requestDelay);
+    // eslint-disable-next-line require-atomic-updates
+    bookmarksorganizer.REQUEST_DELAY_IN_MS = (Number.isInteger(parsedRequestDelay) && parsedRequestDelay >= 0 ? parsedRequestDelay : 1) * 1000;
+    // eslint-disable-next-line require-atomic-updates
+    bookmarksorganizer.requestStartQueue = Promise.resolve();
+    // eslint-disable-next-line require-atomic-updates
+    bookmarksorganizer.lastRequestStartedAt = 0;
 
     switch (mode) {
       case 'broken-bookmarks':
@@ -637,12 +672,15 @@ const bookmarksorganizer = {
    */
   async checkHttpResponse (bookmark, method) {
     bookmark.attempts++;
+    let timeoutId;
 
     try {
+      await bookmarksorganizer.waitForRequestDelay();
+
       const controller = new AbortController();
       const { signal } = controller;
 
-      setTimeout(() => controller.abort(), bookmarksorganizer.TIMEOUT_IN_MS);
+      timeoutId = setTimeout(() => controller.abort(), bookmarksorganizer.TIMEOUT_IN_MS);
 
       const response = await fetch(bookmark.url, {
         cache : 'no-store',
@@ -650,6 +688,7 @@ const bookmarksorganizer = {
         mode : 'no-cors',
         signal : signal
       });
+      clearTimeout(timeoutId);
 
       if (response.redirected) {
         // redirect to identical url. That's weird but there are cases in the real world…
@@ -706,6 +745,7 @@ const bookmarksorganizer = {
       }
     }
     catch (error) {
+      clearTimeout(timeoutId);
       let cause = 'fetch-error';
 
       if (error.name === 'AbortError') {
@@ -739,6 +779,30 @@ const bookmarksorganizer = {
     }
 
     return bookmark;
+  },
+
+  /**
+   * Waits until the configured delay has elapsed since the previous network request started.
+   *
+   * @returns {Promise<void>}
+   */
+  async waitForRequestDelay () {
+    const previousRequest = bookmarksorganizer.requestStartQueue;
+    let releaseRequest;
+
+    bookmarksorganizer.requestStartQueue = new Promise((resolve) => {
+      releaseRequest = resolve;
+    });
+
+    await previousRequest;
+
+    const waitTime = bookmarksorganizer.lastRequestStartedAt + bookmarksorganizer.REQUEST_DELAY_IN_MS - Date.now();
+    if (waitTime > 0) {
+      await new Promise((resolve) => setTimeout(resolve, waitTime));
+    }
+
+    bookmarksorganizer.lastRequestStartedAt = Date.now();
+    releaseRequest();
   },
 
   /**

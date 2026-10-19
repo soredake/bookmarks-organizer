@@ -761,6 +761,11 @@ button#reset-whitelist {
   margin-bottom: 8px;
 }
 
+#options-form .description {
+  margin-top: 6px;
+  font-size: 13px;
+}
+
 #options-form input[type='number'] {
   width: 100px;
 }

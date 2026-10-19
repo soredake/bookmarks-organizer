@@ -125,6 +125,21 @@
   "option_disable_confirmations": {
     "message": "Відключити запити про підтвердження (не рекомендується)"
   },
+  "option_request_delay": {
+    "message": "Затримка між запитами"
+  },
+  "option_request_delay_description": {
+    "message": "Час очікування перед перевіркою наступного елемента."
+  },
+  "option_request_timeout": {
+    "message": "Час очікування запиту"
+  },
+  "option_request_timeout_description": {
+    "message": "Якщо сторінка не завантажиться за цей час, запит вважатиметься невдалим."
+  },
+  "seconds": {
+    "message": "секунд"
+  },
   "settings_button_title": {
     "message": "Налаштування"
   },

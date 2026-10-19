@@ -125,6 +125,21 @@
   "option_disable_confirmations": {
     "message": "Отключить запросы о подтверждении (не рекомендуется)"
   },
+  "option_request_delay": {
+    "message": "Задержка между запросами"
+  },
+  "option_request_delay_description": {
+    "message": "Время ожидания перед проверкой следующего элемента."
+  },
+  "option_request_timeout": {
+    "message": "Тайм-аут запроса"
+  },
+  "option_request_timeout_description": {
+    "message": "Если страница не загрузится за это время, запрос будет считаться неудачным."
+  },
+  "seconds": {
+    "message": "секунд"
+  },
   "settings_button_title": {
     "message": "Настройки"
   },

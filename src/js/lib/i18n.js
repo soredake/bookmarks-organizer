@@ -49,8 +49,10 @@ const i18n = {
     for (let i = 0, len = nodes.length; i < len; i++) {
       const node = nodes[i];
       const children = Array.from(node.children);
-      const text = i18n.getMessage(node.dataset.i18n);
+      const text = i18n.getMessage(node.dataset.i18n) || node.textContent;
       const parts = text.split(/({\d+})/);
+
+      node.replaceChildren();
 
       parts.forEach((part) => {
         if ((/{\d+}/).test(part)) {

@@ -29,6 +29,18 @@
           <label for="debug-mode"><span data-i18n="option_debug_mode"></span></label>
         </div>
         <div class="form-group">
+          <label for="request-timeout"><span data-i18n="option_request_timeout">Request timeout</span></label>
+          <input id="request-timeout" type="number" name="request_timeout" min="1" step="1" />
+          <span data-i18n="seconds">seconds</span>
+          <div class="description" data-i18n="option_request_timeout_description">If a page does not load within this time, the request is considered failed.</div>
+        </div>
+        <div class="form-group">
+          <label for="request-delay"><span data-i18n="option_request_delay">Delay between requests</span></label>
+          <input id="request-delay" type="number" name="request_delay" min="0" step="1" />
+          <span data-i18n="seconds">seconds</span>
+          <div class="description" data-i18n="option_request_delay_description">How long to wait before checking the next item.</div>
+        </div>
+        <div class="form-group">
           <label for="max-concurrent-requests"><span data-i18n="option_max_concurrent_requests"></span></label>
           <input id="max-concurrent-requests" type="number" name="max_concurrent_requests" min="1" step="1" />
         </div>
