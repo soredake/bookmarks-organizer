@@ -178,6 +178,9 @@ const bookmarksorganizer = {
   /** @type {Function|null} */
   resolveStop : null,
 
+  /** @type {Set<Function>} */
+  activeRequestCancellations : new Set(),
+
   /**
    * Internal variable. The index of the bookmark being checked.
    *
@@ -524,6 +527,7 @@ const bookmarksorganizer = {
         waiter.resolve(false);
       });
       bookmarksorganizer.directRequestWaiters = [];
+      bookmarksorganizer.activeRequestCancellations.forEach((cancelRequest) => cancelRequest());
       bookmarksorganizer.activeControllers.forEach((controller) => controller.abort());
     }
     else if (response.message === 'edit') {
@@ -603,6 +607,7 @@ const bookmarksorganizer = {
     bookmarksorganizer.flareSolverrWaiters = [];
     bookmarksorganizer.activeDirectRequests = 0;
     bookmarksorganizer.directRequestWaiters = [];
+    bookmarksorganizer.activeRequestCancellations.clear();
     bookmarksorganizer.flareSolverrDirectOnlyDomains = new Set();
     bookmarksorganizer.internalCounter = 0;
     bookmarksorganizer.checkedBookmarks = 0;
@@ -880,7 +885,6 @@ const bookmarksorganizer = {
 
     bookmark.attempts++;
 
-    let timeoutId = null;
     let controller = null;
     let directSlotAcquired = false;
 
@@ -913,15 +917,18 @@ const bookmarksorganizer = {
       bookmarksorganizer.activeControllers.add(controller);
       const { signal } = controller;
 
-      timeoutId = setTimeout(() => controller.abort(), bookmarksorganizer.DIRECT_REQUEST_TIMEOUT_IN_MS);
+      const { response, challenge } = await bookmarksorganizer.withRequestTimeout((async () => {
+        const directResponse = await fetch(bookmark.url, {
+          cache : 'no-store',
+          method : method,
+          signal : signal
+        });
 
-      const response = await fetch(bookmark.url, {
-        cache : 'no-store',
-        method : method,
-        signal : signal
-      });
-      const challenge = await bookmarksorganizer.isCloudflareChallengeResponse(response);
-      clearTimeout(timeoutId);
+        return {
+          response : directResponse,
+          challenge : await bookmarksorganizer.isCloudflareChallengeResponse(directResponse)
+        };
+      })(), controller, bookmarksorganizer.DIRECT_REQUEST_TIMEOUT_IN_MS);
       controller.abort();
       bookmarksorganizer.releaseDirectRequestSlot();
       directSlotAcquired = false;
@@ -1006,7 +1013,6 @@ const bookmarksorganizer = {
       }
     }
     catch (error) {
-      clearTimeout(timeoutId);
       if (directSlotAcquired) {
         bookmarksorganizer.releaseDirectRequestSlot();
         directSlotAcquired = false;
@@ -1056,7 +1062,6 @@ const bookmarksorganizer = {
       }
     }
     finally {
-      clearTimeout(timeoutId);
       if (controller) {
         bookmarksorganizer.activeControllers.delete(controller);
       }
@@ -1180,6 +1185,45 @@ const bookmarksorganizer = {
   },
 
   /**
+   * Enforces a hard timeout and stop cancellation around a request, including response body reads.
+   *
+   * @param {Promise<*>} requestPromise - fetch and any required body parsing
+   * @param {AbortController} controller - controller for the request
+   * @param {number} timeout - timeout in milliseconds
+   * @returns {Promise<*>} - request result
+   */
+  async withRequestTimeout (requestPromise, controller, timeout) {
+    let timeoutId = null;
+    const abortError = new Error('Request aborted or timed out');
+    abortError.name = 'AbortError';
+    let cancelRequest = null;
+    const stopRequestPromise = new Promise((resolve, reject) => {
+      cancelRequest = () => {
+        controller.abort();
+        reject(abortError);
+      };
+      bookmarksorganizer.activeRequestCancellations.add(cancelRequest);
+    });
+
+    try {
+      return await Promise.race([
+        requestPromise,
+        new Promise((resolve, reject) => {
+          timeoutId = setTimeout(() => {
+            controller.abort();
+            reject(abortError);
+          }, timeout);
+        }),
+        stopRequestPromise
+      ]);
+    }
+    finally {
+      clearTimeout(timeoutId);
+      bookmarksorganizer.activeRequestCancellations.delete(cancelRequest);
+    }
+  },
+
+  /**
    * Checks a bookmark through the FlareSolverr request API.
    *
    * @param {bookmarks.BookmarkTreeNode} bookmark - a single bookmark
@@ -1189,7 +1233,6 @@ const bookmarksorganizer = {
    */
   // eslint-disable-next-line complexity
   async checkFlareSolverrResponse (bookmark, attempt = 1) {
-    let timeoutId = null;
     let controller = null;
     let slotAcquired = false;
     let retry = false;
@@ -1224,24 +1267,24 @@ const bookmarksorganizer = {
 
       controller = new AbortController();
       bookmarksorganizer.activeControllers.add(controller);
-      timeoutId = setTimeout(() => controller.abort(), bookmarksorganizer.FLARESOLVERR_REQUEST_TIMEOUT_IN_MS + FLARESOLVERR_TIMEOUT_GRACE_IN_MS);
+      const { response, result } = await bookmarksorganizer.withRequestTimeout((async () => {
+        const flareSolverrResponse = await fetch(bookmarksorganizer.flareSolverrUrl, {
+          cache : 'no-store',
+          headers : { 'Content-Type' : 'application/json' },
+          method : 'POST',
+          // Do not follow endpoint redirects: fetch may rewrite POST to GET for 301/302/303.
+          redirect : 'error',
+          body : JSON.stringify({
+            cmd : 'request.get',
+            url : bookmark.url,
+            maxTimeout : bookmarksorganizer.FLARESOLVERR_REQUEST_TIMEOUT_IN_MS
+          }),
+          signal : controller.signal
+        });
 
-      const response = await fetch(bookmarksorganizer.flareSolverrUrl, {
-        cache : 'no-store',
-        headers : { 'Content-Type' : 'application/json' },
-        method : 'POST',
-        // Do not follow endpoint redirects: fetch may rewrite POST to GET for 301/302/303.
-        redirect : 'error',
-        body : JSON.stringify({
-          cmd : 'request.get',
-          url : bookmark.url,
-          maxTimeout : bookmarksorganizer.FLARESOLVERR_REQUEST_TIMEOUT_IN_MS
-        }),
-        signal : controller.signal
-      });
+        return { response : flareSolverrResponse, result : await flareSolverrResponse.json() };
+      })(), controller, bookmarksorganizer.FLARESOLVERR_REQUEST_TIMEOUT_IN_MS + FLARESOLVERR_TIMEOUT_GRACE_IN_MS);
       flareSolverrHttpStatus = response.status;
-      const result = await response.json();
-      clearTimeout(timeoutId);
       if (response.ok && result.status === 'ok' && result.solution) {
         // continue with the successful solution below
       }
@@ -1313,7 +1356,6 @@ const bookmarksorganizer = {
       }
     }
     catch (error) {
-      clearTimeout(timeoutId);
       if (bookmarksorganizer.stopRequested && error.name === 'AbortError') {
         // eslint-disable-next-line require-atomic-updates
         bookmark.status = STATUS.UNKNOWN;
@@ -1358,7 +1400,6 @@ const bookmarksorganizer = {
       }
     }
     finally {
-      clearTimeout(timeoutId);
       if (controller) {
         bookmarksorganizer.activeControllers.delete(controller);
       }
