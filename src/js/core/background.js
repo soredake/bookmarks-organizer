@@ -18,6 +18,7 @@ const FLARESOLVERR_TIMEOUT_GRACE_IN_MS = 5000;
 const FLARESOLVERR_MAX_CONCURRENT_REQUESTS = 2;
 const RETRY_DELAY_MIN_IN_MS = 30000;
 const RETRY_DELAY_MAX_IN_MS = 60000;
+const FLARESOLVERR_JSON_PARSE_RETRY_DELAY_IN_MS = 5000;
 const CHALLENGE_BODY_MAX_LENGTH = 65536;
 const CLOUDFLARE_CHALLENGE_MARKERS = /cf-mitigated|__cf_chl_|cf-chl/i;
 const KNOWN_PROTECTED_DOMAINS = [
@@ -158,6 +159,9 @@ const bookmarksorganizer = {
 
   /** @type {Array<{resolve: Function, cancelled: boolean}>} */
   flareSolverrWaiters : [],
+
+  /** @type {Set<string>} */
+  flareSolverrDirectOnlyDomains : new Set(),
 
   /** @type {Promise<void>} */
   stopPromise : Promise.resolve(),
@@ -583,6 +587,7 @@ const bookmarksorganizer = {
     });
     bookmarksorganizer.activeFlareSolverrRequests = 0;
     bookmarksorganizer.flareSolverrWaiters = [];
+    bookmarksorganizer.flareSolverrDirectOnlyDomains = new Set();
     bookmarksorganizer.internalCounter = 0;
     bookmarksorganizer.checkedBookmarks = 0;
     bookmarksorganizer.bookmarkErrors = 0;
@@ -952,7 +957,7 @@ const bookmarksorganizer = {
       }
 
       const knownProtectedDomain = bookmarksorganizer.isKnownProtectedDomain(bookmark.url);
-      const shouldUseFlareSolverr = bookmarksorganizer.useFlareSolverr && response.status !== STATUS.NOT_FOUND && (
+      const shouldUseFlareSolverr = bookmarksorganizer.useFlareSolverr && !bookmarksorganizer.isDirectOnlyDomain(bookmark.url) && response.status !== STATUS.NOT_FOUND && (
         response.status === HTTP_FORBIDDEN_STATUS || response.status === HTTP_TOO_MANY_REQUESTS_STATUS || response.status === HTTP_SERVICE_UNAVAILABLE_STATUS || challenge || knownProtectedDomain
       );
       if (shouldUseFlareSolverr && !bookmarksorganizer.stopRequested) {
@@ -1001,7 +1006,7 @@ const bookmarksorganizer = {
         }
         await bookmarksorganizer.checkHttpResponse(bookmark, 'GET');
       }
-      else if (!bookmarksorganizer.stopRequested && bookmarksorganizer.useFlareSolverr && bookmarksorganizer.isKnownProtectedDomain(bookmark.url)) {
+      else if (!bookmarksorganizer.stopRequested && bookmarksorganizer.useFlareSolverr && !bookmarksorganizer.isDirectOnlyDomain(bookmark.url) && bookmarksorganizer.isKnownProtectedDomain(bookmark.url)) {
         return bookmarksorganizer.checkFlareSolverrResponse(bookmark);
       }
     }
@@ -1077,6 +1082,41 @@ const bookmarksorganizer = {
   },
 
   /**
+   * Adds the bookmark's host to the session's direct-only domain set.
+   *
+   * @param {string} url - the bookmark URL
+   * @returns {void}
+   */
+  addFlareSolverrDirectOnlyDomain (url) {
+    try {
+      const hostname = new URL(url).hostname.toLowerCase().replace(/^www\./, '');
+      if (hostname) {
+        bookmarksorganizer.flareSolverrDirectOnlyDomains.add(hostname);
+      }
+    }
+    catch (error) {
+      // Ignore invalid URLs; bookmark checks only pass HTTP URLs here.
+    }
+  },
+
+  /**
+   * Checks whether a URL's host is already marked direct-only for this session.
+   *
+   * @param {string} url - the bookmark URL
+   * @returns {boolean} - whether FlareSolverr must be skipped
+   */
+  isDirectOnlyDomain (url) {
+    try {
+      const hostname = new URL(url).hostname.toLowerCase().replace(/^www\./, '');
+
+      return Array.from(bookmarksorganizer.flareSolverrDirectOnlyDomains).some((domain) => hostname === domain || hostname.endsWith(`.${domain}`));
+    }
+    catch (error) {
+      return false;
+    }
+  },
+
+  /**
    * Waits a random 30–60 seconds before retrying, unless the user stops the check.
    *
    * @returns {Promise<void>} - resolves when the retry delay has elapsed or checking stops
@@ -1105,6 +1145,7 @@ const bookmarksorganizer = {
     let controller = null;
     let slotAcquired = false;
     let retry = false;
+    let retryDirectly = false;
     let flareSolverrHttpStatus = null;
 
     try {
@@ -1117,10 +1158,19 @@ const bookmarksorganizer = {
         return bookmark;
       }
 
+      if (bookmarksorganizer.isDirectOnlyDomain(bookmark.url)) {
+        return bookmark;
+      }
+
       slotAcquired = await bookmarksorganizer.acquireFlareSolverrSlot();
       if (!slotAcquired) {
+        // eslint-disable-next-line require-atomic-updates
         bookmark.status = STATUS.UNKNOWN;
 
+        return bookmark;
+      }
+
+      if (bookmarksorganizer.isDirectOnlyDomain(bookmark.url)) {
         return bookmark;
       }
 
@@ -1221,6 +1271,10 @@ const bookmarksorganizer = {
 
         return bookmark;
       }
+      if (error instanceof SyntaxError) {
+        bookmarksorganizer.addFlareSolverrDirectOnlyDomain(bookmark.url);
+        retryDirectly = true;
+      }
       if (bookmarksorganizer.showFlareSolverrResult) {
         let flareSolverrResult = error.message;
         if (error.name === 'AbortError') {
@@ -1261,6 +1315,21 @@ const bookmarksorganizer = {
       }
       if (slotAcquired) {
         bookmarksorganizer.releaseFlareSolverrSlot();
+      }
+    }
+
+    if (retryDirectly && !bookmarksorganizer.stopRequested) {
+      await Promise.race([
+        new Promise((resolve) => {
+          setTimeout(resolve, FLARESOLVERR_JSON_PARSE_RETRY_DELAY_IN_MS);
+        }),
+        bookmarksorganizer.stopPromise
+      ]);
+      if (!bookmarksorganizer.stopRequested) {
+        // eslint-disable-next-line require-atomic-updates
+        bookmark.attempts = 0;
+
+        return bookmarksorganizer.checkHttpResponse(bookmark, 'GET');
       }
     }
 
