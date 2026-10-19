@@ -208,5 +208,11 @@
   },
   "flaresolverr_timeout": {
     "message": "Request timed out"
+  },
+  "option_shuffle_urls": {
+    "message": "Shuffle URLs before checking"
+  },
+  "option_shuffle_urls_description": {
+    "message": "Try to avoid checking links from the same domain consecutively."
   }
 }

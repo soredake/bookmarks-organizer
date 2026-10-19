@@ -184,5 +184,11 @@
   },
   "flaresolverr_timeout": {
     "message": "Przekroczono limit czasu żądania"
+  },
+  "option_shuffle_urls": {
+    "message": "Losuj kolejność adresów URL przed sprawdzaniem"
+  },
+  "option_shuffle_urls_description": {
+    "message": "Staraj się nie sprawdzać kolejno linków z tej samej domeny."
   }
 }

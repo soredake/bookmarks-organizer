@@ -208,5 +208,11 @@
   },
   "flaresolverr_timeout": {
     "message": "Время ожидания запроса истекло"
+  },
+  "option_shuffle_urls": {
+    "message": "Перемешивать URL перед проверкой"
+  },
+  "option_shuffle_urls_description": {
+    "message": "Стараться не проверять ссылки одного домена подряд."
   }
 }

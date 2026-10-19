@@ -184,5 +184,11 @@
   },
   "flaresolverr_timeout": {
     "message": "İstek zaman aşımına uğradı"
+  },
+  "option_shuffle_urls": {
+    "message": "Kontrol etmeden önce URL’leri karıştır"
+  },
+  "option_shuffle_urls_description": {
+    "message": "Aynı alan adındaki bağlantıları art arda denetlemekten kaçınmaya çalışır."
   }
 }

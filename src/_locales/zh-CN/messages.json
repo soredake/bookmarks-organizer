@@ -184,5 +184,11 @@
   },
   "flaresolverr_timeout": {
     "message": "请求超时"
+  },
+  "option_shuffle_urls": {
+    "message": "检查前随机打乱 URL 顺序"
+  },
+  "option_shuffle_urls_description": {
+    "message": "尽量避免连续检查来自同一域名的链接。"
   }
 }

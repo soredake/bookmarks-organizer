@@ -184,5 +184,11 @@
   },
   "flaresolverr_timeout": {
     "message": "リクエストがタイムアウトしました"
+  },
+  "option_shuffle_urls": {
+    "message": "チェック前にURLをシャッフル"
+  },
+  "option_shuffle_urls_description": {
+    "message": "同じドメインのリンクが連続しないように並べ替えます。"
   }
 }

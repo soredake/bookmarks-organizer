@@ -184,5 +184,11 @@
   },
   "flaresolverr_timeout": {
     "message": "Délai de la requête dépassé"
+  },
+  "option_shuffle_urls": {
+    "message": "Mélanger les URL avant la vérification"
+  },
+  "option_shuffle_urls_description": {
+    "message": "Évite autant que possible de vérifier à la suite des liens du même domaine."
   }
 }

@@ -43,6 +43,13 @@
             <span data-i18n="option_flaresolverr_show_result">Show FlareSolverr result under checked links</span>
           </label>
         </div>
+        <div class="form-group option-checkbox">
+          <label for="shuffle-urls">
+            <input id="shuffle-urls" type="checkbox" name="shuffle_urls" />
+            <span data-i18n="option_shuffle_urls">Shuffle URLs before checking</span>
+          </label>
+          <div class="description" data-i18n="option_shuffle_urls_description">Try to avoid checking links from the same domain consecutively.</div>
+        </div>
         <div class="form-group">
           <label for="request-timeout"><span data-i18n="option_request_timeout">Request timeout</span></label>
           <input id="request-timeout" type="number" name="request_timeout" min="1" step="1" />

@@ -184,5 +184,11 @@
   },
   "flaresolverr_timeout": {
     "message": "Tempo limite da solicitação excedido"
+  },
+  "option_shuffle_urls": {
+    "message": "Embaralhar URLs antes da verificação"
+  },
+  "option_shuffle_urls_description": {
+    "message": "Tenta evitar a verificação consecutiva de links do mesmo domínio."
   }
 }

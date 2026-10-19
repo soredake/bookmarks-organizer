@@ -71,6 +71,9 @@ const bookmarksorganizer = {
   /** @type {boolean} */
   showFlareSolverrResult : false,
 
+  /** @type {boolean} */
+  shuffleUrls : false,
+
   /**
    * FlareSolverr API endpoint.
    *
@@ -562,7 +565,8 @@ const bookmarksorganizer = {
       requestDelay : DEFAULT_REQUEST_DELAY_IN_SECONDS,
       useFlareSolverr : false,
       flareSolverrUrl : 'http://localhost:8191/v1',
-      showFlareSolverrResult : false
+      showFlareSolverrResult : false,
+      shuffleUrls : false
     });
 
     // eslint-disable-next-line require-atomic-updates
@@ -578,6 +582,8 @@ const bookmarksorganizer = {
     bookmarksorganizer.useFlareSolverr = options.useFlareSolverr === true;
     // eslint-disable-next-line require-atomic-updates
     bookmarksorganizer.showFlareSolverrResult = bookmarksorganizer.useFlareSolverr && options.showFlareSolverrResult === true;
+    // eslint-disable-next-line require-atomic-updates
+    bookmarksorganizer.shuffleUrls = options.shuffleUrls === true;
     try {
       const flareSolverrUrl = new URL(options.flareSolverrUrl);
       if ((flareSolverrUrl.protocol === 'http:' || flareSolverrUrl.protocol === 'https:') && !flareSolverrUrl.username && !flareSolverrUrl.password) {
@@ -1155,6 +1161,11 @@ const bookmarksorganizer = {
   async processBookmarks (mode, type, queue_size) {
     const limiter = bookmarksorganizer.throttle(queue_size);
     const tasks = [];
+    let bookmarksToProcess = bookmarksorganizer.collectedBookmarks;
+
+    if (bookmarksorganizer.shuffleUrls) {
+      bookmarksToProcess = bookmarksorganizer.shuffleBookmarksByDomain(bookmarksToProcess);
+    }
 
     const executeTask = function (aBookmark, aMode, aType) {
       return async function () {
@@ -1169,11 +1180,86 @@ const bookmarksorganizer = {
       };
     };
 
-    for (const bookmark of bookmarksorganizer.collectedBookmarks) {
+    for (const bookmark of bookmarksToProcess) {
       tasks.push(limiter.take().then(executeTask(bookmark, mode, type)));
     }
 
     await Promise.all(tasks);
+  },
+
+  /**
+   * Shuffles URL bookmarks while spacing out entries from the same hostname when possible.
+   *
+   * @param {Array.<bookmarks.BookmarkTreeNode>} bookmarks - the bookmark entries to shuffle
+   *
+   * @returns {Array.<bookmarks.BookmarkTreeNode>} - bookmark entries with URLs in a balanced order
+   */
+  shuffleBookmarksByDomain (bookmarks) {
+    const groupsByDomain = new Map();
+
+    for (const bookmark of bookmarks) {
+      if (bookmark.url) {
+        let domain = `unknown-${bookmark.id}`;
+        try {
+          domain = new URL(bookmark.url).hostname.toLowerCase().replace(/^www\./, '') || domain;
+        }
+        catch (error) {
+          // Keep malformed and non-network URLs in their own groups.
+        }
+
+        if (!groupsByDomain.has(domain)) {
+          groupsByDomain.set(domain, []);
+        }
+
+        groupsByDomain.get(domain).push(bookmark);
+      }
+    }
+
+    for (const group of groupsByDomain.values()) {
+      for (let i = group.length - 1; i > 0; i--) {
+        const randomIndex = Math.floor(Math.random() * (i + 1));
+        [group[i], group[randomIndex]] = [group[randomIndex], group[i]];
+      }
+    }
+
+    const groups = Array.from(groupsByDomain, ([domain, items]) => ({ domain : domain, items : items }));
+    for (let i = groups.length - 1; i > 0; i--) {
+      const randomIndex = Math.floor(Math.random() * (i + 1));
+      [groups[i], groups[randomIndex]] = [groups[randomIndex], groups[i]];
+    }
+    groups.sort((firstGroup, secondGroup) => secondGroup.items.length - firstGroup.items.length);
+
+    const shuffledUrls = [];
+    let previousDomain = null;
+    while (groups.length > 0) {
+      let groupIndex = 0;
+      while (groupIndex < groups.length && groups[groupIndex].domain === previousDomain) {
+        groupIndex++;
+      }
+
+      if (groupIndex === groups.length) {
+        groupIndex = 0;
+      }
+
+      const [group] = groups.splice(groupIndex, 1);
+      shuffledUrls.push(group.items.pop());
+      previousDomain = group.domain;
+
+      if (group.items.length > 0) {
+        groups.push(group);
+        groups.sort((firstGroup, secondGroup) => secondGroup.items.length - firstGroup.items.length);
+      }
+    }
+
+    let urlIndex = 0;
+
+    return bookmarks.map((bookmark) => {
+      if (!bookmark.url) {
+        return bookmark;
+      }
+
+      return shuffledUrls[urlIndex++];
+    });
   },
 
   /**

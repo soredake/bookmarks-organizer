@@ -184,5 +184,11 @@
   },
   "flaresolverr_timeout": {
     "message": "Vypršel časový limit požadavku"
+  },
+  "option_shuffle_urls": {
+    "message": "Promíchat adresy URL před kontrolou"
+  },
+  "option_shuffle_urls_description": {
+    "message": "Pokusit se nekontrolovat odkazy ze stejné domény po sobě."
   }
 }

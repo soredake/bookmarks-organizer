@@ -184,5 +184,11 @@
   },
   "flaresolverr_timeout": {
     "message": "Tidsgränsen för begäran överskreds"
+  },
+  "option_shuffle_urls": {
+    "message": "Blanda URL:er före kontrollen"
+  },
+  "option_shuffle_urls_description": {
+    "message": "Försöker undvika att kontrollera länkar från samma domän direkt efter varandra."
   }
 }

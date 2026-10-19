@@ -208,5 +208,11 @@
   },
   "flaresolverr_timeout": {
     "message": "Час очікування запиту вичерпано"
+  },
+  "option_shuffle_urls": {
+    "message": "Перемішувати URL перед перевіркою"
+  },
+  "option_shuffle_urls_description": {
+    "message": "Намагатися не перевіряти посилання з одного домену поспіль."
   }
 }

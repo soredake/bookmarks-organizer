@@ -14,6 +14,7 @@ const elRequestDelay = document.getElementById('request-delay');
 const elUseFlareSolverr = document.getElementById('use-flaresolverr');
 const elFlareSolverrUrl = document.getElementById('flaresolverr-url');
 const elShowFlareSolverrResult = document.getElementById('show-flaresolverr-result');
+const elShuffleUrls = document.getElementById('shuffle-urls');
 const elResetWhitelistBtn = document.getElementById('reset-whitelist');
 const elReturnBtn = document.getElementById('return-button');
 
@@ -37,7 +38,8 @@ const options = {
       requestDelay : DEFAULT_REQUEST_DELAY,
       useFlareSolverr : false,
       flareSolverrUrl : DEFAULT_FLARESOLVERR_URL,
-      showFlareSolverrResult : false
+      showFlareSolverrResult : false,
+      shuffleUrls : false
     });
 
     elDebugMode.checked = option.debugEnabled;
@@ -67,6 +69,7 @@ const options = {
     elFlareSolverrUrl.disabled = !option.useFlareSolverr;
     elShowFlareSolverrResult.checked = option.showFlareSolverrResult;
     elShowFlareSolverrResult.disabled = !option.useFlareSolverr;
+    elShuffleUrls.checked = option.shuffleUrls;
   }
 };
 
@@ -161,6 +164,10 @@ elUseFlareSolverr.addEventListener('change', async (e) => {
 
 elShowFlareSolverrResult.addEventListener('change', (e) => {
   browser.storage.local.set({ showFlareSolverrResult : e.target.checked });
+});
+
+elShuffleUrls.addEventListener('change', (e) => {
+  browser.storage.local.set({ shuffleUrls : e.target.checked });
 });
 
 elFlareSolverrUrl.addEventListener('change', (e) => {

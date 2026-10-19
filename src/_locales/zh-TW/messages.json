@@ -184,5 +184,11 @@
   },
   "flaresolverr_timeout": {
     "message": "要求逾時"
+  },
+  "option_shuffle_urls": {
+    "message": "檢查前隨機打亂 URL 順序"
+  },
+  "option_shuffle_urls_description": {
+    "message": "盡量避免連續檢查來自同一網域的連結。"
   }
 }

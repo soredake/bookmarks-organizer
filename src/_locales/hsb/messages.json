@@ -184,5 +184,11 @@
   },
   "flaresolverr_timeout": {
     "message": "Čas za naprašowanje je wotběženy"
+  },
+  "option_shuffle_urls": {
+    "message": "URL před kontrolu poměšać"
+  },
+  "option_shuffle_urls_description": {
+    "message": "Spytajće so wotkazow ze samsneho domena njedirektnje za sobu přepruwować."
   }
 }

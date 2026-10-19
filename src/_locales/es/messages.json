@@ -184,5 +184,11 @@
   },
   "flaresolverr_timeout": {
     "message": "La solicitud agotó el tiempo de espera"
+  },
+  "option_shuffle_urls": {
+    "message": "Mezclar las URL antes de comprobarlas"
+  },
+  "option_shuffle_urls_description": {
+    "message": "Se intentará no comprobar seguidos enlaces del mismo dominio."
   }
 }

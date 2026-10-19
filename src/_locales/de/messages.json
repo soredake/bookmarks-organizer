@@ -184,5 +184,11 @@
   },
   "flaresolverr_timeout": {
     "message": "Zeitüberschreitung der Anfrage"
+  },
+  "option_shuffle_urls": {
+    "message": "URLs vor der Prüfung mischen"
+  },
+  "option_shuffle_urls_description": {
+    "message": "Es wird versucht, Links derselben Domain nicht direkt nacheinander zu prüfen."
   }
 }

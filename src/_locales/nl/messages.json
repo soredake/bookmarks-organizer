@@ -184,5 +184,11 @@
   },
   "flaresolverr_timeout": {
     "message": "Time-out bij aanvraag"
+  },
+  "option_shuffle_urls": {
+    "message": "URL’s schudden voordat ze worden gecontroleerd"
+  },
+  "option_shuffle_urls_description": {
+    "message": "Probeert links van hetzelfde domein niet direct na elkaar te controleren."
   }
 }
