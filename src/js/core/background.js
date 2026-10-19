@@ -5,6 +5,7 @@
 const MIN_PROGRESS = 0.01;
 const TIMEOUT_500_MS = 500;
 const DEFAULT_REQUEST_TIMEOUT_IN_SECONDS = 15;
+const FLARESOLVERR_REQUEST_TIMEOUT_IN_SECONDS = 90;
 const DEFAULT_REQUEST_DELAY_IN_SECONDS = 1;
 const MILLISECONDS_PER_SECOND = 1000;
 const FLARESOLVERR_TIMEOUT_GRACE_IN_MS = 5000;
@@ -585,8 +586,15 @@ const bookmarksorganizer = {
     }
 
     const parsedRequestTimeout = parseInt(options.requestTimeout);
+    let requestTimeout = DEFAULT_REQUEST_TIMEOUT_IN_SECONDS;
+    if (bookmarksorganizer.useFlareSolverr) {
+      requestTimeout = FLARESOLVERR_REQUEST_TIMEOUT_IN_SECONDS;
+    }
+    else if (Number.isInteger(parsedRequestTimeout) && parsedRequestTimeout > 0) {
+      requestTimeout = parsedRequestTimeout;
+    }
     // eslint-disable-next-line require-atomic-updates
-    bookmarksorganizer.TIMEOUT_IN_MS = (Number.isInteger(parsedRequestTimeout) && parsedRequestTimeout > 0 ? parsedRequestTimeout : DEFAULT_REQUEST_TIMEOUT_IN_SECONDS) * MILLISECONDS_PER_SECOND;
+    bookmarksorganizer.TIMEOUT_IN_MS = requestTimeout * MILLISECONDS_PER_SECOND;
 
     const parsedRequestDelay = parseInt(options.requestDelay);
     // eslint-disable-next-line require-atomic-updates

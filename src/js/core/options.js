@@ -2,6 +2,7 @@
 
 const DEFAULT_MAX_CONCURRENT_REQUESTS = 2;
 const DEFAULT_REQUEST_TIMEOUT = 15;
+const FLARESOLVERR_REQUEST_TIMEOUT = 90;
 const DEFAULT_REQUEST_DELAY = 1;
 const DEFAULT_FLARESOLVERR_URL = 'http://localhost:8191/v1';
 
@@ -31,6 +32,7 @@ const options = {
       disableConfirmations : false,
       maxConcurrentRequests : DEFAULT_MAX_CONCURRENT_REQUESTS,
       requestTimeout : DEFAULT_REQUEST_TIMEOUT,
+      requestTimeoutBeforeFlareSolverr : null,
       requestDelay : DEFAULT_REQUEST_DELAY,
       useFlareSolverr : false,
       flareSolverrUrl : DEFAULT_FLARESOLVERR_URL
@@ -39,7 +41,24 @@ const options = {
     elDebugMode.checked = option.debugEnabled;
     elDisableConfirmations.checked = option.disableConfirmations;
     elMaxConcurrentRequests.value = option.maxConcurrentRequests;
-    elRequestTimeout.value = option.requestTimeout;
+    let { requestTimeout } = option;
+
+    if (option.useFlareSolverr) {
+      let savedTimeout = requestTimeout;
+      if (Number.isInteger(option.requestTimeoutBeforeFlareSolverr) && option.requestTimeoutBeforeFlareSolverr > 0) {
+        savedTimeout = option.requestTimeoutBeforeFlareSolverr;
+      }
+
+      if (!Number.isInteger(option.requestTimeoutBeforeFlareSolverr) || option.requestTimeoutBeforeFlareSolverr <= 0) {
+        await browser.storage.local.set({ requestTimeoutBeforeFlareSolverr : savedTimeout });
+      }
+
+      requestTimeout = FLARESOLVERR_REQUEST_TIMEOUT;
+      await browser.storage.local.set({ requestTimeout : requestTimeout });
+    }
+
+    elRequestTimeout.value = requestTimeout;
+    elRequestTimeout.disabled = option.useFlareSolverr;
     elRequestDelay.value = option.requestDelay;
     elUseFlareSolverr.checked = option.useFlareSolverr;
     elFlareSolverrUrl.value = option.flareSolverrUrl;
@@ -75,6 +94,12 @@ elMaxConcurrentRequests.addEventListener('change', (e) => {
 });
 
 elRequestTimeout.addEventListener('change', (e) => {
+  if (elUseFlareSolverr.checked) {
+    e.target.value = FLARESOLVERR_REQUEST_TIMEOUT;
+
+    return;
+  }
+
   const parsedValue = parseInt(e.target.value);
   const requestTimeout = Number.isInteger(parsedValue) && parsedValue > 0 ? parsedValue : DEFAULT_REQUEST_TIMEOUT;
 
@@ -90,9 +115,43 @@ elRequestDelay.addEventListener('change', (e) => {
   browser.storage.local.set({ requestDelay : requestDelay });
 });
 
-elUseFlareSolverr.addEventListener('change', (e) => {
-  elFlareSolverrUrl.disabled = !e.target.checked;
-  browser.storage.local.set({ useFlareSolverr : e.target.checked });
+elUseFlareSolverr.addEventListener('change', async (e) => {
+  const enabled = e.target.checked;
+  const stored = await browser.storage.local.get({
+    requestTimeout : DEFAULT_REQUEST_TIMEOUT,
+    requestTimeoutBeforeFlareSolverr : null
+  });
+
+  if (enabled) {
+    let previousTimeout = DEFAULT_REQUEST_TIMEOUT;
+    if (Number.isInteger(stored.requestTimeout) && stored.requestTimeout > 0) {
+      previousTimeout = stored.requestTimeout;
+    }
+
+    await browser.storage.local.set({
+      useFlareSolverr : true,
+      requestTimeoutBeforeFlareSolverr : previousTimeout,
+      requestTimeout : FLARESOLVERR_REQUEST_TIMEOUT
+    });
+    elRequestTimeout.value = FLARESOLVERR_REQUEST_TIMEOUT;
+    elRequestTimeout.disabled = true;
+  }
+  else {
+    let previousTimeout = DEFAULT_REQUEST_TIMEOUT;
+    if (Number.isInteger(stored.requestTimeoutBeforeFlareSolverr) && stored.requestTimeoutBeforeFlareSolverr > 0) {
+      previousTimeout = stored.requestTimeoutBeforeFlareSolverr;
+    }
+
+    await browser.storage.local.set({
+      useFlareSolverr : false,
+      requestTimeoutBeforeFlareSolverr : null,
+      requestTimeout : previousTimeout
+    });
+    elRequestTimeout.value = previousTimeout;
+    elRequestTimeout.disabled = false;
+  }
+
+  elFlareSolverrUrl.disabled = !enabled;
 });
 
 elFlareSolverrUrl.addEventListener('change', (e) => {
