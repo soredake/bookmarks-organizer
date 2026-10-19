@@ -2,7 +2,8 @@
 
 const DEFAULT_MAX_CONCURRENT_REQUESTS = 2;
 const DEFAULT_DIRECT_REQUEST_TIMEOUT = 15;
-const FLARESOLVERR_REQUEST_TIMEOUT = 90;
+const FLARESOLVERR_REQUEST_TIMEOUT = 200;
+const PREVIOUS_DEFAULT_FLARESOLVERR_TIMEOUT = 90;
 const DEFAULT_REQUEST_DELAY = 1;
 const DEFAULT_FLARESOLVERR_URL = 'http://localhost:8191/v1';
 
@@ -36,6 +37,7 @@ const options = {
       maxConcurrentRequests : DEFAULT_MAX_CONCURRENT_REQUESTS,
       directRequestTimeout : null,
       flareSolverrRequestTimeout : FLARESOLVERR_REQUEST_TIMEOUT,
+      flareSolverrRequestTimeoutDefaultMigrated : false,
       requestTimeout : null,
       requestTimeoutBeforeFlareSolverr : null,
       requestDelay : DEFAULT_REQUEST_DELAY,
@@ -62,13 +64,17 @@ const options = {
     }
 
     let { flareSolverrRequestTimeout } = option;
+    if (option.flareSolverrRequestTimeoutDefaultMigrated !== true && flareSolverrRequestTimeout === PREVIOUS_DEFAULT_FLARESOLVERR_TIMEOUT) {
+      flareSolverrRequestTimeout = FLARESOLVERR_REQUEST_TIMEOUT;
+    }
     if (!Number.isInteger(flareSolverrRequestTimeout) || flareSolverrRequestTimeout <= 0) {
       flareSolverrRequestTimeout = FLARESOLVERR_REQUEST_TIMEOUT;
     }
 
     await browser.storage.local.set({
       directRequestTimeout : directRequestTimeout,
-      flareSolverrRequestTimeout : flareSolverrRequestTimeout
+      flareSolverrRequestTimeout : flareSolverrRequestTimeout,
+      flareSolverrRequestTimeoutDefaultMigrated : true
     });
 
     elDirectRequestTimeout.value = directRequestTimeout;

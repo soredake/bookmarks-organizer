@@ -5,7 +5,8 @@
 const MIN_PROGRESS = 0.01;
 const TIMEOUT_500_MS = 500;
 const DEFAULT_REQUEST_TIMEOUT_IN_SECONDS = 15;
-const FLARESOLVERR_REQUEST_TIMEOUT_IN_SECONDS = 90;
+const FLARESOLVERR_REQUEST_TIMEOUT_IN_SECONDS = 200;
+const PREVIOUS_DEFAULT_FLARESOLVERR_TIMEOUT_IN_SECONDS = 90;
 const HTTP_ERROR_STATUS = 400;
 const HTTP_SERVER_ERROR_STATUS = 500;
 const HTTP_STATUS_UPPER_BOUND = 600;
@@ -14,7 +15,6 @@ const HTTP_TOO_MANY_REQUESTS_STATUS = 429;
 const HTTP_SERVICE_UNAVAILABLE_STATUS = 503;
 const DEFAULT_REQUEST_DELAY_IN_SECONDS = 1;
 const MILLISECONDS_PER_SECOND = 1000;
-const FLARESOLVERR_TIMEOUT_GRACE_IN_MS = 5000;
 const FLARESOLVERR_MAX_CONCURRENT_REQUESTS = 2;
 const STOP_TASK_DRAIN_TIMEOUT_IN_MS = 500;
 const RETRY_DELAY_MIN_IN_MS = 30000;
@@ -64,7 +64,7 @@ const bookmarksorganizer = {
   DIRECT_REQUEST_TIMEOUT_IN_MS : 15000,
 
   /** @type {int} */
-  FLARESOLVERR_REQUEST_TIMEOUT_IN_MS : 90000,
+  FLARESOLVERR_REQUEST_TIMEOUT_IN_MS : 200000,
 
   /**
    * Minimum time between the start of network requests in milliseconds.
@@ -107,19 +107,11 @@ const bookmarksorganizer = {
    */
   flareSolverrUrl : 'http://localhost:8191/v1',
 
-  /**
-   * Promise queue used to space out the start of individual network requests.
-   *
-   * @type {Promise}
-   */
-  requestStartQueue : Promise.resolve(),
+  /** @type {{direct: Promise<void>, flareSolverr: Promise<void>}} */
+  requestStartQueues : { direct : Promise.resolve(), flareSolverr : Promise.resolve() },
 
-  /**
-   * Timestamp when the previous network request was started.
-   *
-   * @type {int}
-   */
-  lastRequestStartedAt : 0,
+  /** @type {{direct: number, flareSolverr: number}} */
+  lastRequestStartedAt : { direct : 0, flareSolverr : 0 },
 
   /**
    * Whether the internal skip list should be used or not. It's always true, there is no user setting (yet).
@@ -644,6 +636,7 @@ const bookmarksorganizer = {
       maxConcurrentRequests : bookmarksorganizer.QUEUE_SIZE,
       directRequestTimeout : null,
       flareSolverrRequestTimeout : FLARESOLVERR_REQUEST_TIMEOUT_IN_SECONDS,
+      flareSolverrRequestTimeoutDefaultMigrated : false,
       requestTimeout : null,
       requestTimeoutBeforeFlareSolverr : null,
       requestDelay : DEFAULT_REQUEST_DELAY_IN_SECONDS,
@@ -699,7 +692,10 @@ const bookmarksorganizer = {
         directRequestTimeout = DEFAULT_REQUEST_TIMEOUT_IN_SECONDS;
       }
     }
-    const parsedFlareSolverrRequestTimeout = parseInt(options.flareSolverrRequestTimeout);
+    let parsedFlareSolverrRequestTimeout = parseInt(options.flareSolverrRequestTimeout);
+    if (options.flareSolverrRequestTimeoutDefaultMigrated !== true && parsedFlareSolverrRequestTimeout === PREVIOUS_DEFAULT_FLARESOLVERR_TIMEOUT_IN_SECONDS) {
+      parsedFlareSolverrRequestTimeout = FLARESOLVERR_REQUEST_TIMEOUT_IN_SECONDS;
+    }
     let flareSolverrRequestTimeout = FLARESOLVERR_REQUEST_TIMEOUT_IN_SECONDS;
     if (Number.isInteger(parsedFlareSolverrRequestTimeout) && parsedFlareSolverrRequestTimeout > 0) {
       flareSolverrRequestTimeout = parsedFlareSolverrRequestTimeout;
@@ -707,7 +703,8 @@ const bookmarksorganizer = {
 
     await browser.storage.local.set({
       directRequestTimeout : directRequestTimeout,
-      flareSolverrRequestTimeout : flareSolverrRequestTimeout
+      flareSolverrRequestTimeout : flareSolverrRequestTimeout,
+      flareSolverrRequestTimeoutDefaultMigrated : true
     });
 
     // eslint-disable-next-line require-atomic-updates
@@ -719,9 +716,9 @@ const bookmarksorganizer = {
     // eslint-disable-next-line require-atomic-updates
     bookmarksorganizer.REQUEST_DELAY_IN_MS = (Number.isInteger(parsedRequestDelay) && parsedRequestDelay >= 0 ? parsedRequestDelay : DEFAULT_REQUEST_DELAY_IN_SECONDS) * MILLISECONDS_PER_SECOND;
     // eslint-disable-next-line require-atomic-updates
-    bookmarksorganizer.requestStartQueue = Promise.resolve();
+    bookmarksorganizer.requestStartQueues = { direct : Promise.resolve(), flareSolverr : Promise.resolve() };
     // eslint-disable-next-line require-atomic-updates
-    bookmarksorganizer.lastRequestStartedAt = 0;
+    bookmarksorganizer.lastRequestStartedAt = { direct : 0, flareSolverr : 0 };
 
     switch (mode) {
       case 'broken-bookmarks':
@@ -923,7 +920,7 @@ const bookmarksorganizer = {
         return bookmark;
       }
 
-      await bookmarksorganizer.waitForRequestDelay();
+      await bookmarksorganizer.waitForRequestDelay('direct');
 
       if (bookmarksorganizer.stopRequested) {
         // eslint-disable-next-line require-atomic-updates
@@ -1259,7 +1256,7 @@ const bookmarksorganizer = {
     let flareSolverrHttpStatus = null;
 
     try {
-      await bookmarksorganizer.waitForRequestDelay();
+      await bookmarksorganizer.waitForRequestDelay('flareSolverr');
 
       if (bookmarksorganizer.stopRequested) {
         // eslint-disable-next-line require-atomic-updates
@@ -1302,7 +1299,7 @@ const bookmarksorganizer = {
         });
 
         return { response : flareSolverrResponse, result : await flareSolverrResponse.json() };
-      })(), controller, bookmarksorganizer.FLARESOLVERR_REQUEST_TIMEOUT_IN_MS + FLARESOLVERR_TIMEOUT_GRACE_IN_MS);
+      })(), controller, bookmarksorganizer.FLARESOLVERR_REQUEST_TIMEOUT_IN_MS);
       flareSolverrHttpStatus = response.status;
       if (response.ok && result.status === 'ok' && result.solution) {
         // continue with the successful solution below
@@ -1498,15 +1495,17 @@ const bookmarksorganizer = {
    * @returns {void}
    */
   releaseDirectRequestSlot () {
-    bookmarksorganizer.activeDirectRequests--;
     let waiter = bookmarksorganizer.directRequestWaiters.shift();
     while (waiter && waiter.cancelled) {
       waiter = bookmarksorganizer.directRequestWaiters.shift();
     }
     if (waiter) {
-      bookmarksorganizer.activeDirectRequests++;
       waiter.resolve(true);
+
+      return;
     }
+
+    bookmarksorganizer.activeDirectRequests = Math.max(0, bookmarksorganizer.activeDirectRequests - 1);
   },
 
   /**
@@ -1515,27 +1514,30 @@ const bookmarksorganizer = {
    * @returns {void}
    */
   releaseFlareSolverrSlot () {
-    bookmarksorganizer.activeFlareSolverrRequests--;
     let waiter = bookmarksorganizer.flareSolverrWaiters.shift();
     while (waiter && waiter.cancelled) {
       waiter = bookmarksorganizer.flareSolverrWaiters.shift();
     }
     if (waiter) {
-      bookmarksorganizer.activeFlareSolverrRequests++;
       waiter.resolve(true);
+
+      return;
     }
+
+    bookmarksorganizer.activeFlareSolverrRequests = Math.max(0, bookmarksorganizer.activeFlareSolverrRequests - 1);
   },
 
   /**
-   * Waits until the configured delay has elapsed since the previous network request started.
+   * Waits until the configured delay has elapsed since the previous request of this type started.
    *
+   * @param {'direct'|'flareSolverr'} requestType - the independent request lane
    * @returns {Promise<void>} A promise that resolves when the next request may start.
    */
-  async waitForRequestDelay () {
-    const previousRequest = bookmarksorganizer.requestStartQueue;
+  async waitForRequestDelay (requestType) {
+    const previousRequest = bookmarksorganizer.requestStartQueues[requestType];
     let releaseRequest = null;
 
-    bookmarksorganizer.requestStartQueue = new Promise((resolve) => {
+    bookmarksorganizer.requestStartQueues[requestType] = new Promise((resolve) => {
       releaseRequest = resolve;
     });
 
@@ -1547,7 +1549,7 @@ const bookmarksorganizer = {
       return;
     }
 
-    const waitTime = bookmarksorganizer.lastRequestStartedAt + bookmarksorganizer.REQUEST_DELAY_IN_MS - Date.now();
+    const waitTime = bookmarksorganizer.lastRequestStartedAt[requestType] + bookmarksorganizer.REQUEST_DELAY_IN_MS - Date.now();
     if (waitTime > 0) {
       await Promise.race([
         new Promise((resolve) => {
@@ -1564,7 +1566,7 @@ const bookmarksorganizer = {
     }
 
     // eslint-disable-next-line require-atomic-updates
-    bookmarksorganizer.lastRequestStartedAt = Date.now();
+    bookmarksorganizer.lastRequestStartedAt[requestType] = Date.now();
     releaseRequest();
   },
 
