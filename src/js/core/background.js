@@ -1377,8 +1377,11 @@ const bookmarksorganizer = {
 
       // eslint-disable-next-line require-atomic-updates
       bookmark.status = STATUS.UNKNOWN;
-      retry = attempt < 2 && (
-        error.name === 'AbortError' || (flareSolverrHttpStatus >= HTTP_SERVER_ERROR_STATUS && flareSolverrHttpStatus !== HTTP_SERVICE_UNAVAILABLE_STATUS) ||
+      // A hard FlareSolverr timeout ends this bookmark check. Retrying a request
+      // that already consumed its full deadline can leave the final bookmark
+      // pending for another full timeout plus retry delay.
+      retry = attempt < 2 && error.name !== 'AbortError' && (
+        (flareSolverrHttpStatus >= HTTP_SERVER_ERROR_STATUS && flareSolverrHttpStatus !== HTTP_SERVICE_UNAVAILABLE_STATUS) ||
         flareSolverrHttpStatus === HTTP_FORBIDDEN_STATUS ||
         (/challenge/i).test(error.message)
       );
