@@ -119,6 +119,9 @@
   "option_disable_confirmations": {
     "message": "Wyłącz komunikaty potwierdzeń (nie zalecane)"
   },
+  "option_max_concurrent_requests": {
+    "message": "Maksymalna liczba jednoczesnych żądań sieciowych"
+  },
   "permission_description": {
     "message": "Aby sprawdzanie uszkodzonych zakładek mogło działać, konieczne jest przyznanie uprawnień na dostęp do danych z wszystkich stron internetowych."
   },

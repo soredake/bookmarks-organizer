@@ -119,6 +119,9 @@
   "option_disable_confirmations": {
     "message": "Wobkšuśeńske pokazki znjemóžniś (njepśirázijo se)"
   },
+  "option_max_concurrent_requests": {
+    "message": "Maksimalna licba rownocasnych seśowych napšašowanjow"
+  },
   "permission_description": {
     "message": "Aby mógło pśeglědanje za defektnymi cytańskimi znamjenjami funkcioněrowaś, jo techniski trjeba, pšawo za pśistup k datam za wšykne websedła daś."
   },

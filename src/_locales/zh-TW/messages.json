@@ -119,6 +119,9 @@
   "option_disable_confirmations": {
     "message": "停用確認訊息（不推薦）"
   },
+  "option_max_concurrent_requests": {
+    "message": "最大並行網路請求數"
+  },
   "permission_description": {
     "message": "要檢查失效的書籤，技術上得先授與存取所有網站資料的權限。"
   },

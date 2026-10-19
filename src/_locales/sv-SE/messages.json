@@ -119,6 +119,9 @@
   "option_disable_confirmations": {
     "message": "Inaktivera bekräftelsemeddelanden (rekommenderas inte)"
   },
+  "option_max_concurrent_requests": {
+    "message": "Maximalt antal samtidiga nätverksförfrågningar"
+  },
   "permission_description": {
     "message": "För att kontrollera trasiga bokmärken är det nödvändigt att ge behörighet att komma åt data för alla webbplatser."
   },

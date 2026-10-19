@@ -33,12 +33,18 @@ const bookmarksorganizer = {
   TIMEOUT_IN_MS : 15000,
 
   /**
-   * Never process more than QUEUE_SIZE bookmarks at the same time. It's always a size of 10, there is no user
-   * setting (yet).
+   * Never process more than QUEUE_SIZE bookmarks at the same time. Default is 10.
    *
    * @type {int}
    */
   QUEUE_SIZE : 10,
+
+  /**
+   * Maximum number of concurrent network requests. It defaults to QUEUE_SIZE and can be changed in the add-on's settings.
+   *
+   * @type {int}
+   */
+  maxConcurrentRequests : 10,
 
   /**
    * Whether the internal skip list should be used or not. It's always true, there is no user setting (yet).
@@ -480,14 +486,24 @@ const bookmarksorganizer = {
 
     browser.runtime.sendMessage({ message : 'started' });
 
-    browser.storage.local.get((options) => {
-      bookmarksorganizer.debugEnabled = options.debugEnabled || false;
-      bookmarksorganizer.disableConfirmations = options.disableConfirmations || false;
+    const options = await browser.storage.local.get({
+      debugEnabled : false,
+      disableConfirmations : false,
+      maxConcurrentRequests : bookmarksorganizer.QUEUE_SIZE
     });
+
+    // eslint-disable-next-line require-atomic-updates
+    bookmarksorganizer.debugEnabled = options.debugEnabled;
+    // eslint-disable-next-line require-atomic-updates
+    bookmarksorganizer.disableConfirmations = options.disableConfirmations;
+
+    const parsedMaxConcurrentRequests = parseInt(options.maxConcurrentRequests);
+    // eslint-disable-next-line require-atomic-updates
+    bookmarksorganizer.maxConcurrentRequests = Number.isInteger(parsedMaxConcurrentRequests) && parsedMaxConcurrentRequests > 0 ? parsedMaxConcurrentRequests : bookmarksorganizer.QUEUE_SIZE;
 
     switch (mode) {
       case 'broken-bookmarks':
-        await bookmarksorganizer.processBookmarks(mode, type, bookmarksorganizer.QUEUE_SIZE);
+        await bookmarksorganizer.processBookmarks(mode, type, bookmarksorganizer.maxConcurrentRequests);
         break;
       case 'duplicates':
         const bookmarks = await browser.bookmarks.getTree();

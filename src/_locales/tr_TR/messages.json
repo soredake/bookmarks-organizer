@@ -119,6 +119,9 @@
   "option_disable_confirmations": {
     "message": "Onay mesajlarını devre dışı bırak (önerilmez)"
   },
+  "option_max_concurrent_requests": {
+    "message": "Eşzamanlı ağ isteklerinin maksimum sayısı"
+  },
   "permission_description": {
     "message": "Bütün bozuk yer imlerini kontrol etmek için, bütün web sayfalarına erişim izni vermeniz gerekmektedir"
   },

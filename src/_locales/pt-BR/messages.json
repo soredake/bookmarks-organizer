@@ -119,6 +119,9 @@
   "option_disable_confirmations": {
     "message": "Desabilitar mensagens de confirmação (não recomendado)"
   },
+  "option_max_concurrent_requests": {
+    "message": "Número máximo de solicitações de rede simultâneas"
+  },
   "permission_description": {
     "message": "Para verificar favoritos quebrados, é tecnicamente necessário conceder permissão para acessar os dados de todos os websites."
   },

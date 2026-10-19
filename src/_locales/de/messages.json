@@ -119,6 +119,9 @@
   "option_disable_confirmations": {
     "message": "Bestätigungs-Hinweise deaktivieren (nicht empfohlen)"
   },
+  "option_max_concurrent_requests": {
+    "message": "Maximale Anzahl gleichzeitiger Netzwerkanfragen"
+  },
   "permission_description": {
     "message": "Damit die Prüfung auf defekte Lesezeichen funktionieren kann, ist es technisch erforderlich, die Berechtigung zum Zugriff auf die Daten für alle Websites zu erteilen."
   },

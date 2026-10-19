@@ -119,6 +119,9 @@
   "option_disable_confirmations": {
     "message": "Wobkrućenske pokazki znjemóžnić (njeporuča so)"
   },
+  "option_max_concurrent_requests": {
+    "message": "Maksimalna ličba runočasnych syćowych naprašowanjow"
+  },
   "permission_description": {
     "message": "Zo by móhło pruwowanje za defektnymi zapołožkami fungować, je technisce trjeba, prawo za přistup k datam za wšě websydła dać."
   },

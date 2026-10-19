@@ -119,6 +119,9 @@
   "option_disable_confirmations": {
     "message": "Desactivar mensajes de confirmación (no recomendado)"
   },
+  "option_max_concurrent_requests": {
+    "message": "Número máximo de solicitudes de red simultáneas"
+  },
   "permission_description": {
     "message": "In order for the check for broken bookmarks to work, it is technically necessary to grant permission to access the data for all websites."
   },

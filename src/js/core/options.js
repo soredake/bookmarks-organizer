@@ -1,7 +1,10 @@
 'use strict';
 
+const DEFAULT_MAX_CONCURRENT_REQUESTS = 10;
+
 const elDebugMode = document.getElementById('debug-mode');
 const elDisableConfirmations = document.getElementById('disable-confirmations');
+const elMaxConcurrentRequests = document.getElementById('max-concurrent-requests');
 const elResetWhitelistBtn = document.getElementById('reset-whitelist');
 
 /**
@@ -17,11 +20,13 @@ const options = {
   async load () {
     const option = await browser.storage.local.get({
       debugEnabled : false,
-      disableConfirmations : false
+      disableConfirmations : false,
+      maxConcurrentRequests : DEFAULT_MAX_CONCURRENT_REQUESTS
     });
 
     elDebugMode.checked = option.debugEnabled;
     elDisableConfirmations.checked = option.disableConfirmations;
+    elMaxConcurrentRequests.value = option.maxConcurrentRequests;
   }
 };
 
@@ -38,6 +43,14 @@ elDisableConfirmations.addEventListener('change', (e) => {
     message : 'change-disable-confirmations-state',
     disableConfirmations : e.target.checked
   });
+});
+
+elMaxConcurrentRequests.addEventListener('change', (e) => {
+  const parsedValue = parseInt(e.target.value);
+  const maxConcurrentRequests = Number.isInteger(parsedValue) && parsedValue > 0 ? parsedValue : DEFAULT_MAX_CONCURRENT_REQUESTS;
+
+  e.target.value = maxConcurrentRequests;
+  browser.storage.local.set({ maxConcurrentRequests : maxConcurrentRequests });
 });
 
 elResetWhitelistBtn.addEventListener('click', (e) => {

@@ -119,6 +119,9 @@
   "option_disable_confirmations": {
     "message": "Désactiver les messages de confirmation (déconseillé)"
   },
+  "option_max_concurrent_requests": {
+    "message": "Nombre maximum de requêtes réseau simultanées"
+  },
   "permission_description": {
     "message": "Pour pouvoir effectuer le contrôle des marque-pages cassés, il est techniquement nécessaire d'accorder la permission d'accéder aux données de tous les sites web."
   },
