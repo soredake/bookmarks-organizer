@@ -16,6 +16,7 @@ const DEFAULT_REQUEST_DELAY_IN_SECONDS = 1;
 const MILLISECONDS_PER_SECOND = 1000;
 const FLARESOLVERR_TIMEOUT_GRACE_IN_MS = 5000;
 const FLARESOLVERR_MAX_CONCURRENT_REQUESTS = 2;
+const STOP_TASK_DRAIN_TIMEOUT_IN_MS = 500;
 const RETRY_DELAY_MIN_IN_MS = 30000;
 const RETRY_DELAY_MAX_IN_MS = 60000;
 const FLARESOLVERR_JSON_PARSE_RETRY_DELAY_IN_MS = 5000;
@@ -150,6 +151,9 @@ const bookmarksorganizer = {
 
   /** @type {boolean} */
   stopRequested : false,
+
+  /** @type {boolean} */
+  checkFinalized : false,
 
   /** @type {Set<AbortController>} */
   activeControllers : new Set(),
@@ -599,6 +603,7 @@ const bookmarksorganizer = {
   async execute (mode, type) {
     bookmarksorganizer.inProgress = true;
     bookmarksorganizer.stopRequested = false;
+    bookmarksorganizer.checkFinalized = false;
     bookmarksorganizer.activeControllers.clear();
     bookmarksorganizer.stopPromise = new Promise((resolve) => {
       bookmarksorganizer.resolveStop = resolve;
@@ -826,6 +831,9 @@ const bookmarksorganizer = {
         bookmark.attempts = 0;
 
         const checkedBookmark = await bookmarksorganizer.checkHttpResponse(bookmark, 'HEAD');
+        if (bookmarksorganizer.checkFinalized) {
+          return;
+        }
         bookmarksorganizer.checkedBookmarks++;
 
         switch (checkedBookmark.status) {
@@ -1610,12 +1618,12 @@ const bookmarksorganizer = {
 
     const tasks = bookmarksToProcess.map(async (aBookmark) => {
       try {
-        if (!bookmarksorganizer.stopRequested) {
+        if (!bookmarksorganizer.stopRequested && !bookmarksorganizer.checkFinalized) {
           await bookmarksorganizer.checkForBrokenBookmark(aBookmark, mode, type);
         }
       }
       catch (error) {
-        if (aBookmark.url) {
+        if (aBookmark.url && !bookmarksorganizer.checkFinalized) {
           // A cancelled in-flight task still belongs in the partial results. Treat
           // it as unknown, since stopping the scan does not prove the link is dead.
           // eslint-disable-next-line require-atomic-updates
@@ -1636,7 +1644,17 @@ const bookmarksorganizer = {
       }
     });
 
-    await Promise.allSettled(tasks);
+    const allTasksSettled = Promise.allSettled(tasks);
+    await Promise.race([allTasksSettled, bookmarksorganizer.stopPromise]);
+
+    if (bookmarksorganizer.stopRequested) {
+      await Promise.race([
+        allTasksSettled,
+        new Promise((resolve) => {
+          setTimeout(resolve, STOP_TASK_DRAIN_TIMEOUT_IN_MS);
+        })
+      ]);
+    }
   },
 
   /**
@@ -1892,6 +1910,8 @@ const bookmarksorganizer = {
     if (!bookmarksorganizer.inProgress) {
       return;
     }
+
+    bookmarksorganizer.checkFinalized = true;
 
     const resultsById = new Set(bookmarksorganizer.bookmarksResult.map(({ id }) => id));
     const collectedById = new Map(bookmarksorganizer.collectedBookmarks.map((bookmark) => [bookmark.id, bookmark]));
