@@ -59,6 +59,9 @@
   "button_save_options": {
     "message": "Składować"
   },
+  "check_stopped": {
+    "message": "Kontrola je zastajena. Dotalne wuslědki so pokazuja."
+  },
   "close_overlay": {
     "message": "Začinić"
   },

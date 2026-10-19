@@ -59,6 +59,9 @@
   "button_save_options": {
     "message": "保存"
   },
+  "check_stopped": {
+    "message": "检查已停止。正在显示目前收集到的结果。"
+  },
   "close_overlay": {
     "message": "关闭"
   },

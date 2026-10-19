@@ -59,6 +59,9 @@
   "button_save_options": {
     "message": "Speichern"
   },
+  "check_stopped": {
+    "message": "Prüfung angehalten. Bisherige Ergebnisse werden angezeigt."
+  },
   "close_overlay": {
     "message": "Schließen"
   },

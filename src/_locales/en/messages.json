@@ -59,11 +59,11 @@
   "button_save_options": {
     "message": "Save"
   },
-  "close_overlay": {
-    "message": "Close"
-  },
   "check_stopped": {
     "message": "Check stopped. Showing results collected so far."
+  },
+  "close_overlay": {
+    "message": "Close"
   },
   "confirm_btn_cancel": {
     "message": "Cancel"

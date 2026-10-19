@@ -59,6 +59,9 @@
   "button_save_options": {
     "message": "Enregistrer"
   },
+  "check_stopped": {
+    "message": "Vérification arrêtée. Affichage des résultats obtenus jusqu’ici."
+  },
   "close_overlay": {
     "message": "Fermer"
   },

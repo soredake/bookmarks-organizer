@@ -686,6 +686,24 @@ button#reset-whitelist {
   line-height: 29px;
 }
 
+#filterbar .checkbox input[type='checkbox'] {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  box-sizing: border-box;
+  width: 29px;
+  height: 29px;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+#filterbar .checkbox input[type='checkbox']:focus-visible + label::before {
+  outline: 2px solid var(--color-accent-green);
+  outline-offset: 2px;
+}
+
 #filterbar .checkbox label::before {
   content: '';
   position: absolute;
