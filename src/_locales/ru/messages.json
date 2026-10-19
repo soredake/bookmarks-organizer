@@ -119,6 +119,9 @@
   "option_disable_confirmations": {
     "message": "Отключить запросы о подтверждении (не рекомендуется)"
   },
+  "settings_button_title": {
+    "message": "Настройки"
+  },
   "option_max_concurrent_requests": {
     "message": "Максимальное количество одновременных сетевых запросов"
   },
@@ -159,6 +162,6 @@
     "message": "Предупреждение"
   },
   "whitelist_reset_confirmation_msg": {
-    "message" : "Вы действительно хотите сбросить белый список?"
+    "message": "Вы действительно хотите сбросить белый список?"
   }
 }

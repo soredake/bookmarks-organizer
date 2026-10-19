@@ -108,7 +108,7 @@
     "message": "Abrir Bookmarks Organizer"
   },
   "omnibox_command_check_redirects": {
-      "message": "Encontrar marcadores que redireccionan"
+    "message": "Encontrar marcadores que redireccionan"
   },
   "omnibox_default_description": {
     "message": "Comprobar todos tus marcadores sobre errores, redirecciones, duplicados, …"
@@ -118,6 +118,9 @@
   },
   "option_disable_confirmations": {
     "message": "Desactivar mensajes de confirmación (no recomendado)"
+  },
+  "settings_button_title": {
+    "message": "Configuración"
   },
   "option_max_concurrent_requests": {
     "message": "Número máximo de solicitudes de red simultáneas"
@@ -135,7 +138,7 @@
     "message": "Guardar"
   },
   "search_label": {
-    "message" : "Escribe nombre o URL para filtrar resultados…"
+    "message": "Escribe nombre o URL para filtrar resultados…"
   },
   "some_marked_bookmarks": {
     "message": "Parece que podemos limpiar un poco aquí!"
@@ -144,21 +147,21 @@
     "message": "Hey!"
   },
   "start_message": {
-    "message" : "Empezar aquí…"
+    "message": "Empezar aquí…"
   },
   "status_checked": {
-    "message" : "Comprobado"
+    "message": "Comprobado"
   },
   "status_errors": {
-    "message" : "Errores"
+    "message": "Errores"
   },
   "status_total": {
-    "message" : "Número de marcadores"
+    "message": "Número de marcadores"
   },
   "status_warnings": {
-    "message" : "Avisos"
+    "message": "Avisos"
   },
   "whitelist_reset_confirmation_msg": {
-    "message" : "Do you really want to reset the whitelist?"
+    "message": "Do you really want to reset the whitelist?"
   }
 }

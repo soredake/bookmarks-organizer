@@ -119,6 +119,9 @@
   "option_disable_confirmations": {
     "message": "Wobkrućenske pokazki znjemóžnić (njeporuča so)"
   },
+  "settings_button_title": {
+    "message": "Nastajenja"
+  },
   "option_max_concurrent_requests": {
     "message": "Maksimalna ličba runočasnych syćowych naprašowanjow"
   },
@@ -135,7 +138,7 @@
     "message": "Składować"
   },
   "search_label": {
-    "message" : "Mjeno abo URL za filtrowanje zapodać…"
+    "message": "Mjeno abo URL za filtrowanje zapodać…"
   },
   "some_marked_bookmarks": {
     "message": "Zda so, kaž móhli my tu trochu zrumować!"
@@ -144,21 +147,21 @@
     "message": "Hlej raz!"
   },
   "start_message": {
-    "message" : "Tu startować…"
+    "message": "Tu startować…"
   },
   "status_checked": {
-    "message" : "Přepruwowane"
+    "message": "Přepruwowane"
   },
   "status_errors": {
-    "message" : "Zmylki"
+    "message": "Zmylki"
   },
   "status_total": {
-    "message" : "Ličba zapołožkow"
+    "message": "Ličba zapołožkow"
   },
   "status_warnings": {
-    "message" : "Warnowanja"
+    "message": "Warnowanja"
   },
   "whitelist_reset_confirmation_msg": {
-    "message" : "Ma so běła lisćina woprawdźe wróćo stajić?"
+    "message": "Ma so běła lisćina woprawdźe wróćo stajić?"
   }
 }

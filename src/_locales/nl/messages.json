@@ -119,6 +119,9 @@
   "option_disable_confirmations": {
     "message": "Bevestigingsberichten uitschakelen (niet aanbevolen)"
   },
+  "settings_button_title": {
+    "message": "Instellingen"
+  },
   "option_max_concurrent_requests": {
     "message": "Maximaal aantal gelijktijdige netwerkverzoeken"
   },
@@ -135,7 +138,7 @@
     "message": "Opslaan"
   },
   "search_label": {
-    "message" : "Typ een naam of URL om resultaten te filteren…"
+    "message": "Typ een naam of URL om resultaten te filteren…"
   },
   "some_marked_bookmarks": {
     "message": "Zo te zien kan hier wel wat worden opgeruimd!"
@@ -144,21 +147,21 @@
     "message": "Kijk eens aan!"
   },
   "start_message": {
-    "message" : "Begin hier…"
+    "message": "Begin hier…"
   },
   "status_checked": {
-    "message" : "Gecontroleerd"
+    "message": "Gecontroleerd"
   },
   "status_errors": {
-    "message" : "Fouten"
+    "message": "Fouten"
   },
   "status_total": {
-    "message" : "Aantal bladwijzers"
+    "message": "Aantal bladwijzers"
   },
   "status_warnings": {
-    "message" : "Waarschuwingen"
+    "message": "Waarschuwingen"
   },
   "whitelist_reset_confirmation_msg": {
-    "message" : "Wilt u de witte lijst echt herinitialiseren?"
+    "message": "Wilt u de witte lijst echt herinitialiseren?"
   }
 }

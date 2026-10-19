@@ -108,7 +108,7 @@
     "message": "Відкрити Bookmarks Organizer"
   },
   "omnibox_command_check_redirects": {
-      "message": "Знайти закладки, що перенаправляють"
+    "message": "Знайти закладки, що перенаправляють"
   },
   "omnibox_default_description": {
     "message": "Перевірити всі закладки на наявність помилок, перенаправлень, дублікатів, …"
@@ -118,6 +118,9 @@
   },
   "option_disable_confirmations": {
     "message": "Відключити запити про підтвердження (не рекомендується)"
+  },
+  "settings_button_title": {
+    "message": "Налаштування"
   },
   "option_max_concurrent_requests": {
     "message": "Максимальна кількість одночасних мережевих запитів"
@@ -135,7 +138,7 @@
     "message": "Зберегти"
   },
   "search_label": {
-    "message" : "Введіть ім'я або URL-Адресу для фільтрації результатів..."
+    "message": "Введіть ім'я або URL-Адресу для фільтрації результатів..."
   },
   "some_marked_bookmarks": {
     "message": "Схоже, що ми можемо тут трохи прибрати!"
@@ -144,21 +147,21 @@
     "message": "Hey!"
   },
   "start_message": {
-    "message" : "Почати тут..."
+    "message": "Почати тут..."
   },
   "status_checked": {
-    "message" : "Перевірено"
+    "message": "Перевірено"
   },
   "status_errors": {
-    "message" : "Помилки"
+    "message": "Помилки"
   },
   "status_total": {
-    "message" : "Кількість закладок"
+    "message": "Кількість закладок"
   },
   "status_warnings": {
-    "message" : "Попередження"
+    "message": "Попередження"
   },
   "whitelist_reset_confirmation_msg": {
-    "message" : "Ви дійсно хочете скинути білий список?"
+    "message": "Ви дійсно хочете скинути білий список?"
   }
 }

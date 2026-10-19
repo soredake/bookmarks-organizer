@@ -108,7 +108,7 @@
     "message": "Abrir o Bookmarks Organizer"
   },
   "omnibox_command_check_redirects": {
-      "message": "Procurar favoritos que redirecionam"
+    "message": "Procurar favoritos que redirecionam"
   },
   "omnibox_default_description": {
     "message": "Verificar todos os seus favoritos para erros, redirecionamentos, duplicados..."
@@ -118,6 +118,9 @@
   },
   "option_disable_confirmations": {
     "message": "Desabilitar mensagens de confirmação (não recomendado)"
+  },
+  "settings_button_title": {
+    "message": "Configurações"
   },
   "option_max_concurrent_requests": {
     "message": "Número máximo de solicitações de rede simultâneas"
@@ -135,7 +138,7 @@
     "message": "Salvar"
   },
   "search_label": {
-    "message" : "Digite o nome ou URL para filtrar os resultados..."
+    "message": "Digite o nome ou URL para filtrar os resultados..."
   },
   "some_marked_bookmarks": {
     "message": "parece que podemos limpar um pouco aqui!"
@@ -144,21 +147,21 @@
     "message": "Ei!"
   },
   "start_message": {
-    "message" : "Comece aqui..."
+    "message": "Comece aqui..."
   },
   "status_checked": {
-    "message" : "Verificado"
+    "message": "Verificado"
   },
   "status_errors": {
-    "message" : "Erros"
+    "message": "Erros"
   },
   "status_total": {
-    "message" : "Número de favoritos"
+    "message": "Número de favoritos"
   },
   "status_warnings": {
-    "message" : "Avisos"
+    "message": "Avisos"
   },
   "whitelist_reset_confirmation_msg": {
-    "message" : "Você tem certeza que deseja limpar a lista branca?"
+    "message": "Você tem certeza que deseja limpar a lista branca?"
   }
 }

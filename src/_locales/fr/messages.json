@@ -108,7 +108,7 @@
     "message": "Ouvrir Bookmarks Organizer"
   },
   "omnibox_command_check_redirects": {
-      "message": "Rechercher les marque-pages qui ont une redirection"
+    "message": "Rechercher les marque-pages qui ont une redirection"
   },
   "omnibox_default_description": {
     "message": "Vérifier tous les marque-pages ayant des erreurs, redirections, doublons, …"
@@ -118,6 +118,9 @@
   },
   "option_disable_confirmations": {
     "message": "Désactiver les messages de confirmation (déconseillé)"
+  },
+  "settings_button_title": {
+    "message": "Paramètres"
   },
   "option_max_concurrent_requests": {
     "message": "Nombre maximum de requêtes réseau simultanées"
@@ -135,7 +138,7 @@
     "message": "Enregistrer"
   },
   "search_label": {
-    "message" : "Taper un nom ou une URL pour filter les résulats…"
+    "message": "Taper un nom ou une URL pour filter les résulats…"
   },
   "some_marked_bookmarks": {
     "message": "Il semble que vous pouvez faire un peu de ménage ici !"
@@ -144,21 +147,21 @@
     "message": "Salut !"
   },
   "start_message": {
-    "message" : "Commencez ici…"
+    "message": "Commencez ici…"
   },
   "status_checked": {
-    "message" : "Vérifié"
+    "message": "Vérifié"
   },
   "status_errors": {
-    "message" : "Erreurs"
+    "message": "Erreurs"
   },
   "status_total": {
-    "message" : "Nombre de marque-pages"
+    "message": "Nombre de marque-pages"
   },
   "status_warnings": {
-    "message" : "Avertissements"
+    "message": "Avertissements"
   },
   "whitelist_reset_confirmation_msg": {
-    "message" : "Souhaitez-vous vraiment réinitialiser la liste blanche ?"
+    "message": "Souhaitez-vous vraiment réinitialiser la liste blanche ?"
   }
 }

@@ -108,7 +108,7 @@
     "message": "打开 Bookmarks Organizer"
   },
   "omnibox_command_check_redirects": {
-      "message": "查找被重定向的书签"
+    "message": "查找被重定向的书签"
   },
   "omnibox_default_description": {
     "message": "检查您的所有书签，找出有错误、重定向或重复的书签"
@@ -118,6 +118,9 @@
   },
   "option_disable_confirmations": {
     "message": "禁用确认消息（不推荐）"
+  },
+  "settings_button_title": {
+    "message": "设置"
   },
   "option_max_concurrent_requests": {
     "message": "最大并发网络请求数"
@@ -135,7 +138,7 @@
     "message": "保存"
   },
   "search_label": {
-    "message" : "输入名称或网址过滤结果…"
+    "message": "输入名称或网址过滤结果…"
   },
   "some_marked_bookmarks": {
     "message": "看上去我们能清理一下！"
@@ -144,21 +147,21 @@
     "message": "检查完成。"
   },
   "start_message": {
-    "message" : "点这里开始…"
+    "message": "点这里开始…"
   },
   "status_checked": {
-    "message" : "已检查"
+    "message": "已检查"
   },
   "status_errors": {
-    "message" : "有错误"
+    "message": "有错误"
   },
   "status_total": {
-    "message" : "书签总数"
+    "message": "书签总数"
   },
   "status_warnings": {
-    "message" : "警告"
+    "message": "警告"
   },
   "whitelist_reset_confirmation_msg": {
-    "message" : "Do you really want to reset the whitelist?"
+    "message": "Do you really want to reset the whitelist?"
   }
 }

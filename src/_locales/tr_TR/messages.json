@@ -108,7 +108,7 @@
     "message": "Bookmarks Organizer'ı aç"
   },
   "omnibox_command_check_redirects": {
-      "message": "Yönlendirme yapan yer imlerini bulun"
+    "message": "Yönlendirme yapan yer imlerini bulun"
   },
   "omnibox_default_description": {
     "message": "Tüm yer imlerinizi hatalar, yönlendirmeler, kopyalar vs. için kontrol edin"
@@ -118,6 +118,9 @@
   },
   "option_disable_confirmations": {
     "message": "Onay mesajlarını devre dışı bırak (önerilmez)"
+  },
+  "settings_button_title": {
+    "message": "Ayarlar"
   },
   "option_max_concurrent_requests": {
     "message": "Eşzamanlı ağ isteklerinin maksimum sayısı"
@@ -135,7 +138,7 @@
     "message": "Kaydet"
   },
   "search_label": {
-    "message" : "Sonuçları filtrelemek için isim veya URL yazınız "
+    "message": "Sonuçları filtrelemek için isim veya URL yazınız "
   },
   "some_marked_bookmarks": {
     "message": "Görünüşe göre burayı biraz temizleyebiliriz!"
@@ -144,21 +147,21 @@
     "message": "Hey!"
   },
   "start_message": {
-    "message" : "Buradan başla "
+    "message": "Buradan başla "
   },
   "status_checked": {
-    "message" : "Kontrol edildi"
+    "message": "Kontrol edildi"
   },
   "status_errors": {
-    "message" : "Hatalar"
+    "message": "Hatalar"
   },
   "status_total": {
-    "message" : "Yer imi sayısı"
+    "message": "Yer imi sayısı"
   },
   "status_warnings": {
-    "message" : "Uyarılar"
+    "message": "Uyarılar"
   },
   "whitelist_reset_confirmation_msg": {
-    "message" : "Beyaz listeyi gerçekten sıfırlamak istiyor musunuz?"
+    "message": "Beyaz listeyi gerçekten sıfırlamak istiyor musunuz?"
   }
 }

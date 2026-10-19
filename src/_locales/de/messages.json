@@ -119,6 +119,9 @@
   "option_disable_confirmations": {
     "message": "Bestätigungs-Hinweise deaktivieren (nicht empfohlen)"
   },
+  "settings_button_title": {
+    "message": "Einstellungen"
+  },
   "option_max_concurrent_requests": {
     "message": "Maximale Anzahl gleichzeitiger Netzwerkanfragen"
   },
@@ -135,7 +138,7 @@
     "message": "Speichern"
   },
   "search_label": {
-    "message" : "Name oder URL zum Filtern eingeben…"
+    "message": "Name oder URL zum Filtern eingeben…"
   },
   "some_marked_bookmarks": {
     "message": "Sieht aus, als könnten wir hier ein wenig aufräumen!"
@@ -144,21 +147,21 @@
     "message": "Schau mal!"
   },
   "start_message": {
-    "message" : "Starte hier…"
+    "message": "Starte hier…"
   },
   "status_checked": {
-    "message" : "Überprüft"
+    "message": "Überprüft"
   },
   "status_errors": {
-    "message" : "Fehler"
+    "message": "Fehler"
   },
   "status_total": {
-    "message" : "Anzahl Lesezeichen"
+    "message": "Anzahl Lesezeichen"
   },
   "status_warnings": {
-    "message" : "Warnungen"
+    "message": "Warnungen"
   },
   "whitelist_reset_confirmation_msg": {
-    "message" : "Soll die Whitelist wirklich zurückgesetzt werden?"
+    "message": "Soll die Whitelist wirklich zurückgesetzt werden?"
   }
 }

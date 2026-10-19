@@ -720,6 +720,26 @@ button#reset-whitelist {
   font-size: 14px;
 }
 
+#settings-button {
+  margin: 12px 5px;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  font-size: 22px;
+  line-height: 1;
+  border: 2px solid var(--color-body-text);
+  border-radius: 4px;
+  background-color: transparent;
+  color: var(--color-body-text);
+  vertical-align: top;
+  cursor: pointer;
+  transition: background-color ease 250ms, color ease 250ms;
+}
+
+#settings-button:hover {
+  background-color: var(--color-body-background);
+}
+
 #options-form {
   padding: 10px 30px;
 }

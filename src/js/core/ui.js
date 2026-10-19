@@ -29,6 +29,7 @@ const elRepairAllRedirects = document.getElementById('repair-all-redirects');
 const elResults = document.getElementById('results');
 const elResultWrapper = document.getElementById('result-wrapper');
 const elSearch = document.getElementById('search');
+const elSettingsButton = document.getElementById('settings-button');
 const elSpinner = document.getElementById('spinner');
 const elStart = document.getElementById('start');
 const elTotalBookmarks = document.getElementById('total-bookmarks');
@@ -1132,5 +1133,6 @@ elFox.addEventListener('click', ui.handleFoxMessageClick);
 elRepairAllRedirects.addEventListener('click', ui.repairAllRedirects);
 elDeleteAllBookmarksWithErrors.addEventListener('click', ui.deleteAllBookmarksWithErrors);
 elSearch.addEventListener('input', ui.applySearchFieldFilter);
+elSettingsButton.addEventListener('click', () => browser.runtime.openOptionsPage());
 
 browser.runtime.onMessage.addListener(ui.handleResponse);

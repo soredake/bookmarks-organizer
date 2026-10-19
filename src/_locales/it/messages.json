@@ -108,7 +108,7 @@
     "message": "Apri Bookmarks Organizer"
   },
   "omnibox_command_check_redirects": {
-      "message": "Trova i segnalibri con reindirizzamento"
+    "message": "Trova i segnalibri con reindirizzamento"
   },
   "omnibox_default_description": {
     "message": "Controlla tutti i tuoi segnalibri per errori, reindirizzamenti, duplicati, …"
@@ -118,6 +118,9 @@
   },
   "option_disable_confirmations": {
     "message": "Disabilita i messaggi di conferma (non consigliato)"
+  },
+  "settings_button_title": {
+    "message": "Impostazioni"
   },
   "option_max_concurrent_requests": {
     "message": "Numero massimo di richieste di rete simultanee"
@@ -135,7 +138,7 @@
     "message": "Salva"
   },
   "search_label": {
-    "message" : "Digita il nome o l'URL per filtrare i risultati…"
+    "message": "Digita il nome o l'URL per filtrare i risultati…"
   },
   "some_marked_bookmarks": {
     "message": "Sembra ci sia da far un po' di pulizia! "
@@ -144,21 +147,21 @@
     "message": "Hey!"
   },
   "start_message": {
-    "message" : "Avvia qui…"
+    "message": "Avvia qui…"
   },
   "status_checked": {
-    "message" : "Controllati"
+    "message": "Controllati"
   },
   "status_errors": {
-    "message" : "Errori"
+    "message": "Errori"
   },
   "status_total": {
-    "message" : "Numero di segnalibri"
+    "message": "Numero di segnalibri"
   },
   "status_warnings": {
-    "message" : "Avvisi"
+    "message": "Avvisi"
   },
   "whitelist_reset_confirmation_msg": {
-    "message" : "Vuoi davvero svuotare la whitelist?"
+    "message": "Vuoi davvero svuotare la whitelist?"
   }
 }

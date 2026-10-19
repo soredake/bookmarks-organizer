@@ -119,6 +119,9 @@
   "option_disable_confirmations": {
     "message": "Wobkšuśeńske pokazki znjemóžniś (njepśirázijo se)"
   },
+  "settings_button_title": {
+    "message": "Nastajenja"
+  },
   "option_max_concurrent_requests": {
     "message": "Maksimalna licba rownocasnych seśowych napšašowanjow"
   },
@@ -135,7 +138,7 @@
     "message": "Składowaś"
   },
   "search_label": {
-    "message" : "Mě abo URL za filtrowanje zapódaś…"
+    "message": "Mě abo URL za filtrowanje zapódaś…"
   },
   "some_marked_bookmarks": {
     "message": "Zda se, ako mógli my how pitśku zrumowaś!"
@@ -144,21 +147,21 @@
     "message": "Glej raz!"
   },
   "start_message": {
-    "message" : "How startowaś…"
+    "message": "How startowaś…"
   },
   "status_checked": {
-    "message" : "Pśespytane"
+    "message": "Pśespytane"
   },
   "status_errors": {
-    "message" : "Zmólki"
+    "message": "Zmólki"
   },
   "status_total": {
-    "message" : "Licba cytańskich znamjenjow"
+    "message": "Licba cytańskich znamjenjow"
   },
   "status_warnings": {
-    "message" : "Warnowanja"
+    "message": "Warnowanja"
   },
   "whitelist_reset_confirmation_msg": {
-    "message" : "Ma se běła lisćina napšawdu slědk stajiś?"
+    "message": "Ma se běła lisćina napšawdu slědk stajiś?"
   }
 }

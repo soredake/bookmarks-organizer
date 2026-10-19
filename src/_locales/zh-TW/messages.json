@@ -108,16 +108,19 @@
     "message": "開啟 Bookmarks Organizer"
   },
   "omnibox_command_check_redirects": {
-      "message": "尋找被重新導向的書籤"
+    "message": "尋找被重新導向的書籤"
   },
   "omnibox_default_description": {
-    "message":"檢查您所有的書籤，看看有沒有錯誤、被重新導向或重複等"
+    "message": "檢查您所有的書籤，看看有沒有錯誤、被重新導向或重複等"
   },
   "option_debug_mode": {
     "message": "啟用偵錯輸出"
   },
   "option_disable_confirmations": {
     "message": "停用確認訊息（不推薦）"
+  },
+  "settings_button_title": {
+    "message": "設定"
   },
   "option_max_concurrent_requests": {
     "message": "最大並行網路請求數"
@@ -135,7 +138,7 @@
     "message": "儲存"
   },
   "search_label": {
-    "message" : "輸入名稱或網址來篩選結果……"
+    "message": "輸入名稱或網址來篩選結果……"
   },
   "some_marked_bookmarks": {
     "message": "看來得稍微清理一下！"
@@ -144,21 +147,21 @@
     "message": "嘿！"
   },
   "start_message": {
-    "message" : "點這裡開始……"
+    "message": "點這裡開始……"
   },
   "status_checked": {
-    "message" : "已檢查"
+    "message": "已檢查"
   },
   "status_errors": {
-    "message" : "有錯誤"
+    "message": "有錯誤"
   },
   "status_total": {
-    "message" : "總書籤"
+    "message": "總書籤"
   },
   "status_warnings": {
-    "message" : "有警告"
+    "message": "有警告"
   },
   "whitelist_reset_confirmation_msg": {
-    "message" : "確定要重設白名單？"
+    "message": "確定要重設白名單？"
   }
 }
