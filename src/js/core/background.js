@@ -179,6 +179,12 @@ const bookmarksorganizer = {
   /** @type {Set<Function>} */
   activeRequestCancellations : new Set(),
 
+  /** @type {Map<string, {deadline: number, expire: Function}>} */
+  flareSolverrTimeoutWatchdogs : new Map(),
+
+  /** @type {number} */
+  flareSolverrRequestSequence : 0,
+
   /** @type {number} */
   lastPartialResultsCount : -1,
 
@@ -1189,13 +1195,30 @@ const bookmarksorganizer = {
    * @param {Promise<*>} requestPromise - fetch and any required body parsing
    * @param {AbortController} controller - controller for the request
    * @param {number} timeout - timeout in milliseconds
+   * @param {boolean} useAlarmWatchdog - whether to add an independent browser alarm watchdog
    * @returns {Promise<*>} - request result
    */
-  async withRequestTimeout (requestPromise, controller, timeout) {
+  async withRequestTimeout (requestPromise, controller, timeout, useAlarmWatchdog = false) {
     let timeoutId = null;
+    let alarmName = null;
     const abortError = new Error('Request aborted or timed out');
     abortError.name = 'AbortError';
     let cancelRequest = null;
+    let rejectTimeout = null;
+    let timeoutTriggered = false;
+    const deadline = Date.now() + timeout;
+    const timeoutPromise = new Promise((resolve, reject) => {
+      rejectTimeout = reject;
+    });
+    const expireRequest = () => {
+      if (timeoutTriggered) {
+        return;
+      }
+
+      timeoutTriggered = true;
+      controller.abort();
+      rejectTimeout(abortError);
+    };
     const stopRequestPromise = new Promise((resolve, reject) => {
       cancelRequest = () => {
         controller.abort();
@@ -1204,22 +1227,69 @@ const bookmarksorganizer = {
       bookmarksorganizer.activeRequestCancellations.add(cancelRequest);
     });
 
+    timeoutId = setTimeout(expireRequest, timeout);
+    if (useAlarmWatchdog && browser.alarms && browser.alarms.create) {
+      alarmName = `bookmarks-organizer-flaresolverr-timeout-${++bookmarksorganizer.flareSolverrRequestSequence}`;
+      bookmarksorganizer.flareSolverrTimeoutWatchdogs.set(alarmName, {
+        deadline : deadline,
+        expire : expireRequest
+      });
+
+      try {
+        Promise.resolve(browser.alarms.create(alarmName, { when : deadline })).catch(() => false);
+      }
+      catch (error) {
+        // The local per-request timeout remains active if browser alarms are unavailable.
+      }
+    }
+
     try {
       return await Promise.race([
         requestPromise,
-        new Promise((resolve, reject) => {
-          timeoutId = setTimeout(() => {
-            controller.abort();
-            reject(abortError);
-          }, timeout);
-        }),
+        timeoutPromise,
         stopRequestPromise
       ]);
     }
     finally {
       clearTimeout(timeoutId);
       bookmarksorganizer.activeRequestCancellations.delete(cancelRequest);
+      if (alarmName) {
+        bookmarksorganizer.flareSolverrTimeoutWatchdogs.delete(alarmName);
+        try {
+          Promise.resolve(browser.alarms.clear(alarmName)).catch(() => false);
+        }
+        catch (error) {
+          // The request and its timeout have already completed; alarm cleanup is best effort.
+        }
+      }
     }
+  },
+
+  /**
+   * Handles a FlareSolverr request deadline independently from the request promise.
+   *
+   * @param {alarms.Alarm} alarm - the fired browser alarm
+   * @returns {Promise<void>} - resolves after handling the alarm
+   */
+  async handleFlareSolverrTimeoutAlarm (alarm) {
+    const watchdog = bookmarksorganizer.flareSolverrTimeoutWatchdogs.get(alarm.name);
+    if (!watchdog) {
+      return;
+    }
+
+    const remaining = watchdog.deadline - Date.now();
+    if (remaining > 0) {
+      try {
+        await browser.alarms.create(alarm.name, { when : watchdog.deadline });
+      }
+      catch (error) {
+        watchdog.expire();
+      }
+
+      return;
+    }
+
+    watchdog.expire();
   },
 
   /**
@@ -1266,6 +1336,7 @@ const bookmarksorganizer = {
 
       controller = new AbortController();
       bookmarksorganizer.activeControllers.add(controller);
+      const flareSolverrTimeout = bookmarksorganizer.FLARESOLVERR_REQUEST_TIMEOUT_IN_MS;
       const { response, result } = await bookmarksorganizer.withRequestTimeout((async () => {
         const flareSolverrResponse = await fetch(bookmarksorganizer.flareSolverrUrl, {
           cache : 'no-store',
@@ -1275,13 +1346,13 @@ const bookmarksorganizer = {
           body : JSON.stringify({
             cmd : 'request.get',
             url : bookmark.url,
-            maxTimeout : bookmarksorganizer.FLARESOLVERR_REQUEST_TIMEOUT_IN_MS
+            maxTimeout : flareSolverrTimeout
           }),
           signal : controller.signal
         });
 
         return { response : flareSolverrResponse, result : await flareSolverrResponse.json() };
-      })(), controller, bookmarksorganizer.FLARESOLVERR_REQUEST_TIMEOUT_IN_MS);
+      })(), controller, flareSolverrTimeout, true);
       flareSolverrHttpStatus = response.status;
       if (response.ok && result.status === 'ok' && result.solution) {
         // continue with the successful solution below
@@ -2033,6 +2104,7 @@ browser.action.onClicked.addListener(bookmarksorganizer.openUserInterface);
 browser.omnibox.onInputChanged.addListener(bookmarksorganizer.showOmniboxSuggestions);
 browser.omnibox.onInputEntered.addListener(bookmarksorganizer.callOmniboxAction);
 browser.omnibox.setDefaultSuggestion({ description : browser.i18n.getMessage('omnibox_default_description') });
+browser.alarms.onAlarm.addListener((alarm) => bookmarksorganizer.handleFlareSolverrTimeoutAlarm(alarm));
 browser.runtime.onMessage.addListener(bookmarksorganizer.handleResponse);
 
 (async () => {
