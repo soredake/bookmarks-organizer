@@ -655,6 +655,48 @@ button#reset-whitelist {
   display: inline-block;
 }
 
+#filterbar > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+
+#filterbar .checkbox.inline {
+  width: auto;
+  max-width: 100%;
+}
+
+#filterbar .checkbox label {
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+  width: auto;
+  height: auto;
+  min-height: 29px;
+  padding-left: 35px;
+  border: 0;
+  background: transparent;
+  text-indent: 0;
+  white-space: normal;
+  line-height: 29px;
+}
+
+#filterbar .checkbox label::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  box-sizing: border-box;
+  width: 29px;
+  height: 29px;
+  border: 2px solid var(--color-border);
+  background-color: var(--color-box-background);
+}
+
+#filterbar .checkbox label:hover::before {
+  border-color: var(--color-border-hover);
+}
+
 #mass-actions {
   float: right;
   margin-top: 5px;
