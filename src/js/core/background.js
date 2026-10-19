@@ -59,7 +59,10 @@ const bookmarksorganizer = {
    *
    * @type {int}
    */
-  TIMEOUT_IN_MS : 15000,
+  DIRECT_REQUEST_TIMEOUT_IN_MS : 15000,
+
+  /** @type {int} */
+  FLARESOLVERR_REQUEST_TIMEOUT_IN_MS : 90000,
 
   /**
    * Minimum time between the start of network requests in milliseconds.
@@ -570,6 +573,7 @@ const bookmarksorganizer = {
    *
    * @returns {void}
    */
+  // eslint-disable-next-line complexity
   async execute (mode, type) {
     bookmarksorganizer.inProgress = true;
     bookmarksorganizer.stopRequested = false;
@@ -595,7 +599,10 @@ const bookmarksorganizer = {
       debugEnabled : false,
       disableConfirmations : false,
       maxConcurrentRequests : bookmarksorganizer.QUEUE_SIZE,
-      requestTimeout : DEFAULT_REQUEST_TIMEOUT_IN_SECONDS,
+      directRequestTimeout : null,
+      flareSolverrRequestTimeout : FLARESOLVERR_REQUEST_TIMEOUT_IN_SECONDS,
+      requestTimeout : null,
+      requestTimeoutBeforeFlareSolverr : null,
       requestDelay : DEFAULT_REQUEST_DELAY_IN_SECONDS,
       useFlareSolverr : false,
       flareSolverrUrl : 'http://localhost:8191/v1',
@@ -633,16 +640,35 @@ const bookmarksorganizer = {
       // Keep the default endpoint when the stored value is invalid.
     }
 
-    const parsedRequestTimeout = parseInt(options.requestTimeout);
-    let requestTimeout = DEFAULT_REQUEST_TIMEOUT_IN_SECONDS;
-    if (bookmarksorganizer.useFlareSolverr) {
-      requestTimeout = FLARESOLVERR_REQUEST_TIMEOUT_IN_SECONDS;
+    let directRequestTimeout = parseInt(options.directRequestTimeout);
+    if (!Number.isInteger(directRequestTimeout) || directRequestTimeout <= 0) {
+      const legacyTimeout = parseInt(options.requestTimeout);
+      const legacyDirectTimeout = parseInt(options.requestTimeoutBeforeFlareSolverr);
+      if (Number.isInteger(legacyDirectTimeout) && legacyDirectTimeout > 0) {
+        directRequestTimeout = legacyDirectTimeout;
+      }
+      else if (!bookmarksorganizer.useFlareSolverr && Number.isInteger(legacyTimeout) && legacyTimeout > 0) {
+        directRequestTimeout = legacyTimeout;
+      }
+      else {
+        directRequestTimeout = DEFAULT_REQUEST_TIMEOUT_IN_SECONDS;
+      }
     }
-    else if (Number.isInteger(parsedRequestTimeout) && parsedRequestTimeout > 0) {
-      requestTimeout = parsedRequestTimeout;
+    const parsedFlareSolverrRequestTimeout = parseInt(options.flareSolverrRequestTimeout);
+    let flareSolverrRequestTimeout = FLARESOLVERR_REQUEST_TIMEOUT_IN_SECONDS;
+    if (Number.isInteger(parsedFlareSolverrRequestTimeout) && parsedFlareSolverrRequestTimeout > 0) {
+      flareSolverrRequestTimeout = parsedFlareSolverrRequestTimeout;
     }
+
+    await browser.storage.local.set({
+      directRequestTimeout : directRequestTimeout,
+      flareSolverrRequestTimeout : flareSolverrRequestTimeout
+    });
+
     // eslint-disable-next-line require-atomic-updates
-    bookmarksorganizer.TIMEOUT_IN_MS = requestTimeout * MILLISECONDS_PER_SECOND;
+    bookmarksorganizer.DIRECT_REQUEST_TIMEOUT_IN_MS = directRequestTimeout * MILLISECONDS_PER_SECOND;
+    // eslint-disable-next-line require-atomic-updates
+    bookmarksorganizer.FLARESOLVERR_REQUEST_TIMEOUT_IN_MS = flareSolverrRequestTimeout * MILLISECONDS_PER_SECOND;
 
     const parsedRequestDelay = parseInt(options.requestDelay);
     // eslint-disable-next-line require-atomic-updates
@@ -849,7 +875,7 @@ const bookmarksorganizer = {
       bookmarksorganizer.activeControllers.add(controller);
       const { signal } = controller;
 
-      timeoutId = setTimeout(() => controller.abort(), bookmarksorganizer.TIMEOUT_IN_MS);
+      timeoutId = setTimeout(() => controller.abort(), bookmarksorganizer.DIRECT_REQUEST_TIMEOUT_IN_MS);
 
       const response = await fetch(bookmark.url, {
         cache : 'no-store',
@@ -1100,7 +1126,7 @@ const bookmarksorganizer = {
 
       controller = new AbortController();
       bookmarksorganizer.activeControllers.add(controller);
-      timeoutId = setTimeout(() => controller.abort(), bookmarksorganizer.TIMEOUT_IN_MS + FLARESOLVERR_TIMEOUT_GRACE_IN_MS);
+      timeoutId = setTimeout(() => controller.abort(), bookmarksorganizer.FLARESOLVERR_REQUEST_TIMEOUT_IN_MS + FLARESOLVERR_TIMEOUT_GRACE_IN_MS);
 
       const response = await fetch(bookmarksorganizer.flareSolverrUrl, {
         cache : 'no-store',
@@ -1109,7 +1135,7 @@ const bookmarksorganizer = {
         body : JSON.stringify({
           cmd : 'request.get',
           url : bookmark.url,
-          maxTimeout : bookmarksorganizer.TIMEOUT_IN_MS
+          maxTimeout : bookmarksorganizer.FLARESOLVERR_REQUEST_TIMEOUT_IN_MS
         }),
         signal : controller.signal
       });

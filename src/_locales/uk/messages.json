@@ -146,6 +146,18 @@
   "option_request_delay_description": {
     "message": "Час очікування перед перевіркою наступного елемента."
   },
+  "option_request_timeout_direct": {
+    "message": "Час очікування запиту"
+  },
+  "option_request_timeout_direct_description": {
+    "message": "Якщо сторінка не завантажиться за цей час, запит вважатиметься невдалим."
+  },
+  "option_request_timeout_flaresolverr": {
+    "message": "Час очікування запиту (FlareSolverr)"
+  },
+  "option_request_timeout_flaresolverr_description": {
+    "message": "Якщо сторінка не завантажиться за цей час, запит вважатиметься невдалим."
+  },
   "option_request_timeout": {
     "message": "Час очікування запиту"
   },

@@ -146,6 +146,18 @@
   "option_request_delay_description": {
     "message": "Время ожидания перед проверкой следующего элемента."
   },
+  "option_request_timeout_direct": {
+    "message": "Тайм-аут запроса"
+  },
+  "option_request_timeout_direct_description": {
+    "message": "Если страница не загрузится за это время, запрос будет считаться неудачным."
+  },
+  "option_request_timeout_flaresolverr": {
+    "message": "Тайм-аут запроса (FlareSolverr)"
+  },
+  "option_request_timeout_flaresolverr_description": {
+    "message": "Если страница не загрузится за это время, запрос будет считаться неудачным."
+  },
   "option_request_timeout": {
     "message": "Тайм-аут запроса"
   },

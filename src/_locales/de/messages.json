@@ -131,6 +131,18 @@
   "option_disable_confirmations": {
     "message": "Bestätigungs-Hinweise deaktivieren (nicht empfohlen)"
   },
+  "option_request_timeout_direct": {
+    "message": "Request timeout"
+  },
+  "option_request_timeout_direct_description": {
+    "message": "If a page does not load within this time, the request is considered failed."
+  },
+  "option_request_timeout_flaresolverr": {
+    "message": "Request timeout (FlareSolverr)"
+  },
+  "option_request_timeout_flaresolverr_description": {
+    "message": "If a page does not load within this time, the request is considered failed."
+  },
   "settings_button_title": {
     "message": "Einstellungen"
   },

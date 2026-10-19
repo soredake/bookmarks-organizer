@@ -51,10 +51,16 @@
           <div class="description" data-i18n="option_shuffle_urls_description">Try to avoid checking links from the same domain consecutively.</div>
         </div>
         <div class="form-group">
-          <label for="request-timeout"><span data-i18n="option_request_timeout">Request timeout</span></label>
-          <input id="request-timeout" type="number" name="request_timeout" min="1" step="1" />
+          <label for="request-timeout-direct"><span data-i18n="option_request_timeout_direct">Request timeout (direct)</span></label>
+          <input id="request-timeout-direct" type="number" name="request_timeout_direct" min="1" step="1" />
           <span data-i18n="seconds">seconds</span>
-          <div class="description" data-i18n="option_request_timeout_description">If a page does not load within this time, the request is considered failed.</div>
+          <div class="description" data-i18n="option_request_timeout_direct_description">Timeout for direct HTTP requests.</div>
+        </div>
+        <div class="form-group">
+          <label for="request-timeout-flaresolverr"><span data-i18n="option_request_timeout_flaresolverr">Request timeout (FlareSolverr)</span></label>
+          <input id="request-timeout-flaresolverr" type="number" name="request_timeout_flaresolverr" min="1" step="1" />
+          <span data-i18n="seconds">seconds</span>
+          <div class="description" data-i18n="option_request_timeout_flaresolverr_description">Timeout for requests sent through FlareSolverr.</div>
         </div>
         <div class="form-group">
           <label for="request-delay"><span data-i18n="option_request_delay">Delay between requests</span></label>
