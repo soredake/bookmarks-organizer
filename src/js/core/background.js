@@ -816,7 +816,7 @@ const bookmarksorganizer = {
       if ((/^https?:\/\//).test(bookmark.url)) {
         bookmark.attempts = 0;
 
-        const checkedBookmark = await bookmarksorganizer.checkHttpResponse(bookmark, 'GET');
+        const checkedBookmark = await bookmarksorganizer.checkHttpResponse(bookmark, 'HEAD');
         bookmarksorganizer.checkedBookmarks++;
 
         switch (checkedBookmark.status) {
@@ -906,7 +906,7 @@ const bookmarksorganizer = {
 
       const response = await fetch(bookmark.url, {
         cache : 'no-store',
-        method : 'GET',
+        method : method,
         signal : signal
       });
       clearTimeout(timeoutId);
@@ -951,6 +951,12 @@ const bookmarksorganizer = {
       if (response.status !== STATUS.NOT_FOUND && (challenge || response.status >= HTTP_ERROR_STATUS)) {
         // eslint-disable-next-line require-atomic-updates
         bookmark.status = STATUS.UNKNOWN;
+      }
+
+      // Some servers reject HEAD even though the page is available through GET.
+      // Confirm non-404 HEAD errors with GET before classifying or escalating them.
+      if (method === 'HEAD' && response.status !== STATUS.NOT_FOUND && (response.status >= HTTP_ERROR_STATUS || challenge) && !bookmarksorganizer.stopRequested) {
+        return bookmarksorganizer.checkHttpResponse(bookmark, 'GET');
       }
 
       if (bookmarksorganizer.debugEnabled) {
