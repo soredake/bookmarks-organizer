@@ -533,6 +533,13 @@ const bookmarksorganizer = {
       bookmarksorganizer.directRequestWaiters = [];
       bookmarksorganizer.activeRequestCancellations.forEach((cancelRequest) => cancelRequest());
       bookmarksorganizer.activeControllers.forEach((controller) => controller.abort());
+
+      // Finalize the visible results directly from the stop message handler.
+      // Do not rely on every in-flight request promise unwinding: a stalled
+      // FlareSolverr fetch or response body must not keep the UI in checking state.
+      if (bookmarksorganizer.mode === 'broken-bookmarks') {
+        bookmarksorganizer.finishCheck(bookmarksorganizer.mode);
+      }
     }
     else if (response.message === 'edit') {
       await browser.bookmarks.update(response.bookmarkId, {
