@@ -7,10 +7,31 @@ const TIMEOUT_500_MS = 500;
 const DEFAULT_REQUEST_TIMEOUT_IN_SECONDS = 15;
 const FLARESOLVERR_REQUEST_TIMEOUT_IN_SECONDS = 90;
 const HTTP_ERROR_STATUS = 400;
+const HTTP_SERVER_ERROR_STATUS = 500;
 const HTTP_STATUS_UPPER_BOUND = 600;
+const HTTP_FORBIDDEN_STATUS = 403;
+const HTTP_TOO_MANY_REQUESTS_STATUS = 429;
+const HTTP_SERVICE_UNAVAILABLE_STATUS = 503;
 const DEFAULT_REQUEST_DELAY_IN_SECONDS = 1;
 const MILLISECONDS_PER_SECOND = 1000;
 const FLARESOLVERR_TIMEOUT_GRACE_IN_MS = 5000;
+const FLARESOLVERR_MAX_CONCURRENT_REQUESTS = 2;
+const RETRY_DELAY_MIN_IN_MS = 30000;
+const RETRY_DELAY_MAX_IN_MS = 60000;
+const CHALLENGE_BODY_MAX_LENGTH = 65536;
+const CLOUDFLARE_CHALLENGE_MARKERS = /cf-mitigated|__cf_chl_|cf-chl/i;
+const KNOWN_PROTECTED_DOMAINS = [
+  'archiveofourown.org',
+  'discord.com',
+  'facebook.com',
+  'fandom.com',
+  'instagram.com',
+  'medium.com',
+  'quora.com',
+  'reddit.com',
+  'twitter.com',
+  'x.com'
+];
 const YIELD_INTERVAL = 100;
 const UI_PAGE = 'html/ui.html';
 
@@ -128,6 +149,12 @@ const bookmarksorganizer = {
 
   /** @type {Set<AbortController>} */
   activeControllers : new Set(),
+
+  /** @type {number} */
+  activeFlareSolverrRequests : 0,
+
+  /** @type {Array<{resolve: Function, cancelled: boolean}>} */
+  flareSolverrWaiters : [],
 
   /** @type {Promise<void>} */
   stopPromise : Promise.resolve(),
@@ -471,6 +498,11 @@ const bookmarksorganizer = {
     else if (response.message === 'stop' && bookmarksorganizer.inProgress) {
       bookmarksorganizer.stopRequested = true;
       bookmarksorganizer.resolveStop();
+      bookmarksorganizer.flareSolverrWaiters.forEach((waiter) => {
+        waiter.cancelled = true;
+        waiter.resolve(false);
+      });
+      bookmarksorganizer.flareSolverrWaiters = [];
       bookmarksorganizer.activeControllers.forEach((controller) => controller.abort());
     }
     else if (response.message === 'edit') {
@@ -545,6 +577,8 @@ const bookmarksorganizer = {
     bookmarksorganizer.stopPromise = new Promise((resolve) => {
       bookmarksorganizer.resolveStop = resolve;
     });
+    bookmarksorganizer.activeFlareSolverrRequests = 0;
+    bookmarksorganizer.flareSolverrWaiters = [];
     bookmarksorganizer.internalCounter = 0;
     bookmarksorganizer.checkedBookmarks = 0;
     bookmarksorganizer.bookmarkErrors = 0;
@@ -738,7 +772,7 @@ const bookmarksorganizer = {
       if ((/^https?:\/\//).test(bookmark.url)) {
         bookmark.attempts = 0;
 
-        const checkedBookmark = await bookmarksorganizer.checkHttpResponse(bookmark, 'HEAD');
+        const checkedBookmark = await bookmarksorganizer.checkHttpResponse(bookmark, 'GET');
         bookmarksorganizer.checkedBookmarks++;
 
         switch (checkedBookmark.status) {
@@ -749,16 +783,20 @@ const bookmarksorganizer = {
             }
             break;
           case STATUS.NOT_FOUND:
-          case STATUS.FETCH_ERROR:
-          case STATUS.TIMEOUT:
             if (type === 'all' || type === 'errors') {
               bookmarksorganizer.bookmarkErrors++;
               bookmarksorganizer.bookmarksResult.push(checkedBookmark);
             }
             break;
+          case STATUS.UNKNOWN:
+          case STATUS.FETCH_ERROR:
+          case STATUS.TIMEOUT:
+            if (type === 'all' || type === 'errors') {
+              bookmarksorganizer.bookmarksResult.push(checkedBookmark);
+            }
+            break;
           default:
             if (checkedBookmark.status >= HTTP_ERROR_STATUS && checkedBookmark.status < HTTP_STATUS_UPPER_BOUND && (type === 'all' || type === 'errors')) {
-              bookmarksorganizer.bookmarkErrors++;
               bookmarksorganizer.bookmarksResult.push(checkedBookmark);
             }
         }
@@ -783,6 +821,7 @@ const bookmarksorganizer = {
    *
    * @returns {bookmarks.BookmarkTreeNode} - the bookmark object
    */
+  // eslint-disable-next-line complexity, max-depth
   async checkHttpResponse (bookmark, method) {
     if (bookmarksorganizer.stopRequested) {
       // eslint-disable-next-line require-atomic-updates
@@ -792,10 +831,6 @@ const bookmarksorganizer = {
     }
 
     bookmark.attempts++;
-
-    if (bookmarksorganizer.useFlareSolverr) {
-      return bookmarksorganizer.checkFlareSolverrResponse(bookmark);
-    }
 
     let timeoutId = null;
     let controller = null;
@@ -818,13 +853,18 @@ const bookmarksorganizer = {
 
       const response = await fetch(bookmark.url, {
         cache : 'no-store',
-        method : method,
-        mode : 'no-cors',
+        method : 'GET',
         signal : signal
       });
       clearTimeout(timeoutId);
+      const challenge = await bookmarksorganizer.isCloudflareChallengeResponse(response);
+      controller.abort();
 
-      if (response.redirected) {
+      if (response.status === STATUS.NOT_FOUND) {
+        // eslint-disable-next-line require-atomic-updates
+        bookmark.status = STATUS.NOT_FOUND;
+      }
+      else if (response.redirected) {
         // redirect to identical url. That's weird but there are cases in the real world…
         if (bookmark.url === response.url) {
           bookmark.status = STATUS.OK;
@@ -849,8 +889,13 @@ const bookmarksorganizer = {
         }
         else {
           // eslint-disable-next-line require-atomic-updates
-          bookmark.status = response.status;
+          bookmark.status = response.status === STATUS.NOT_FOUND ? STATUS.NOT_FOUND : response.status;
         }
+      }
+
+      if (response.status !== STATUS.NOT_FOUND && (challenge || response.status >= HTTP_ERROR_STATUS)) {
+        // eslint-disable-next-line require-atomic-updates
+        bookmark.status = STATUS.UNKNOWN;
       }
 
       if (bookmarksorganizer.debugEnabled) {
@@ -872,10 +917,20 @@ const bookmarksorganizer = {
         });
       }
 
-      if (bookmark.status > STATUS.REDIRECT) {
-        if (!bookmarksorganizer.stopRequested && bookmark.attempts < bookmarksorganizer.MAX_ATTEMPTS) {
-          await bookmarksorganizer.checkHttpResponse(bookmark, 'GET');
+      const retryable = response.status >= HTTP_SERVER_ERROR_STATUS || response.status === HTTP_FORBIDDEN_STATUS || response.status === HTTP_TOO_MANY_REQUESTS_STATUS || response.status === HTTP_SERVICE_UNAVAILABLE_STATUS || challenge;
+      if (response.status !== STATUS.NOT_FOUND && retryable && !bookmarksorganizer.stopRequested && bookmark.attempts < bookmarksorganizer.MAX_ATTEMPTS) {
+        await bookmarksorganizer.waitBeforeRetry();
+        if (!bookmarksorganizer.stopRequested) {
+          return bookmarksorganizer.checkHttpResponse(bookmark, 'GET');
         }
+      }
+
+      const knownProtectedDomain = bookmarksorganizer.isKnownProtectedDomain(bookmark.url);
+      const shouldUseFlareSolverr = bookmarksorganizer.useFlareSolverr && response.status !== STATUS.NOT_FOUND && (
+        response.status === HTTP_FORBIDDEN_STATUS || response.status === HTTP_TOO_MANY_REQUESTS_STATUS || response.status === HTTP_SERVICE_UNAVAILABLE_STATUS || challenge || knownProtectedDomain
+      );
+      if (shouldUseFlareSolverr && !bookmarksorganizer.stopRequested) {
+        return bookmarksorganizer.checkFlareSolverrResponse(bookmark);
       }
     }
     catch (error) {
@@ -890,7 +945,7 @@ const bookmarksorganizer = {
 
       if (error.name === 'AbortError') {
         // eslint-disable-next-line require-atomic-updates
-        bookmark.status = STATUS.TIMEOUT;
+        bookmark.status = STATUS.UNKNOWN;
         cause = 'timeout';
       }
       else {
@@ -913,8 +968,15 @@ const bookmarksorganizer = {
         });
       }
 
-      if (!bookmarksorganizer.stopRequested && bookmark.attempts < bookmarksorganizer.MAX_ATTEMPTS) {
+      if (!bookmarksorganizer.stopRequested && error.name === 'AbortError' && bookmark.attempts < bookmarksorganizer.MAX_ATTEMPTS) {
+        await bookmarksorganizer.waitBeforeRetry();
+        if (bookmarksorganizer.stopRequested) {
+          return bookmark;
+        }
         await bookmarksorganizer.checkHttpResponse(bookmark, 'GET');
+      }
+      else if (!bookmarksorganizer.stopRequested && bookmarksorganizer.useFlareSolverr && bookmarksorganizer.isKnownProtectedDomain(bookmark.url)) {
+        return bookmarksorganizer.checkFlareSolverrResponse(bookmark);
       }
     }
     finally {
@@ -928,21 +990,109 @@ const bookmarksorganizer = {
   },
 
   /**
+   * Detects Cloudflare markers in response metadata and challenge response bodies.
+   *
+   * @param {Response} response - the HTTP response
+   * @returns {Promise<boolean>} - whether the response is a Cloudflare challenge
+   */
+  async isCloudflareChallengeResponse (response) {
+    let metadata = response.url;
+    response.headers.forEach((value, name) => {
+      metadata += ` ${name} ${value}`;
+    });
+    if (CLOUDFLARE_CHALLENGE_MARKERS.test(metadata)) {
+      return true;
+    }
+
+    if ([HTTP_FORBIDDEN_STATUS, HTTP_TOO_MANY_REQUESTS_STATUS, HTTP_SERVICE_UNAVAILABLE_STATUS].includes(response.status) && response.body) {
+      const reader = response.clone().body.getReader();
+      const decoder = new TextDecoder();
+      let content = '';
+      try {
+        while (content.length < CHALLENGE_BODY_MAX_LENGTH) {
+          // eslint-disable-next-line no-await-in-loop
+          const { done, value } = await reader.read();
+          if (done) {
+            break;
+          }
+          content += decoder.decode(value, { stream : true });
+          if (CLOUDFLARE_CHALLENGE_MARKERS.test(content)) {
+            // eslint-disable-next-line no-await-in-loop
+            await reader.cancel();
+
+            return true;
+          }
+        }
+      }
+      finally {
+        reader.releaseLock();
+      }
+    }
+
+    return false;
+  },
+
+  /**
+   * Checks whether a hostname is known to commonly require browser challenge solving.
+   *
+   * @param {string} url - the bookmark URL
+   * @returns {boolean} - whether the hostname is protected
+   */
+  isKnownProtectedDomain (url) {
+    const protectedDomains = KNOWN_PROTECTED_DOMAINS;
+    try {
+      const hostname = new URL(url).hostname.toLowerCase();
+
+      return protectedDomains.some((domain) => hostname === domain || hostname.endsWith(`.${domain}`));
+    }
+    catch (error) {
+      return false;
+    }
+  },
+
+  /**
+   * Waits a random 30–60 seconds before retrying, unless the user stops the check.
+   *
+   * @returns {Promise<void>} - resolves when the retry delay has elapsed or checking stops
+   */
+  async waitBeforeRetry () {
+    const delay = RETRY_DELAY_MIN_IN_MS + (Math.random() * (RETRY_DELAY_MAX_IN_MS - RETRY_DELAY_MIN_IN_MS));
+    await Promise.race([
+      new Promise((resolve) => {
+        setTimeout(resolve, delay);
+      }),
+      bookmarksorganizer.stopPromise
+    ]);
+  },
+
+  /**
    * Checks a bookmark through the FlareSolverr request API.
    *
    * @param {bookmarks.BookmarkTreeNode} bookmark - a single bookmark
+   * @param {number} attempt - the FlareSolverr attempt number
    *
    * @returns {bookmarks.BookmarkTreeNode} - the bookmark object
    */
-  async checkFlareSolverrResponse (bookmark) {
+  // eslint-disable-next-line complexity
+  async checkFlareSolverrResponse (bookmark, attempt = 1) {
     let timeoutId = null;
     let controller = null;
+    let slotAcquired = false;
+    let retry = false;
+    let flareSolverrHttpStatus = null;
 
     try {
       await bookmarksorganizer.waitForRequestDelay();
 
       if (bookmarksorganizer.stopRequested) {
         // eslint-disable-next-line require-atomic-updates
+        bookmark.status = STATUS.UNKNOWN;
+
+        return bookmark;
+      }
+
+      slotAcquired = await bookmarksorganizer.acquireFlareSolverrSlot();
+      if (!slotAcquired) {
         bookmark.status = STATUS.UNKNOWN;
 
         return bookmark;
@@ -963,6 +1113,7 @@ const bookmarksorganizer = {
         }),
         signal : controller.signal
       });
+      flareSolverrHttpStatus = response.status;
       clearTimeout(timeoutId);
 
       const result = await response.json();
@@ -986,9 +1137,28 @@ const bookmarksorganizer = {
       }
 
       // eslint-disable-next-line require-atomic-updates
-      bookmark.status = Number.isInteger(solution.status) ? solution.status : STATUS.FETCH_ERROR;
+      if (!Number.isInteger(solution.status)) {
+        // eslint-disable-next-line require-atomic-updates
+        bookmark.status = STATUS.UNKNOWN;
+      }
+      else if (solution.status === STATUS.NOT_FOUND) {
+        // eslint-disable-next-line require-atomic-updates
+        bookmark.status = STATUS.NOT_FOUND;
+      }
+      else if (solution.status >= HTTP_ERROR_STATUS) {
+        // eslint-disable-next-line require-atomic-updates
+        bookmark.status = STATUS.UNKNOWN;
+      }
+      else {
+        // eslint-disable-next-line require-atomic-updates
+        bookmark.status = solution.status;
+      }
+      retry = attempt < 2 && (
+        solution.status >= HTTP_SERVER_ERROR_STATUS ||
+        [HTTP_FORBIDDEN_STATUS, HTTP_TOO_MANY_REQUESTS_STATUS, HTTP_SERVICE_UNAVAILABLE_STATUS].includes(solution.status)
+      );
 
-      if (solution.url && solution.url !== bookmark.url) {
+      if (solution.status !== STATUS.NOT_FOUND && solution.status < HTTP_ERROR_STATUS && solution.url && solution.url !== bookmark.url) {
         // eslint-disable-next-line require-atomic-updates
         bookmark.status = STATUS.REDIRECT;
         bookmark.newUrl = solution.url;
@@ -1036,7 +1206,12 @@ const bookmarksorganizer = {
       }
 
       // eslint-disable-next-line require-atomic-updates
-      bookmark.status = error.name === 'AbortError' ? STATUS.TIMEOUT : STATUS.FETCH_ERROR;
+      bookmark.status = STATUS.UNKNOWN;
+      retry = attempt < 2 && (
+        error.name === 'AbortError' || flareSolverrHttpStatus >= HTTP_SERVER_ERROR_STATUS ||
+        [HTTP_FORBIDDEN_STATUS, HTTP_TOO_MANY_REQUESTS_STATUS].includes(flareSolverrHttpStatus) ||
+        (/FlareSolverr HTTP 5\d\d|FlareSolverr HTTP (403|429)|challenge/i).test(error.message)
+      );
 
       if (bookmarksorganizer.debugEnabled) {
         bookmarksorganizer.debug.push({
@@ -1058,9 +1233,56 @@ const bookmarksorganizer = {
       if (controller) {
         bookmarksorganizer.activeControllers.delete(controller);
       }
+      if (slotAcquired) {
+        bookmarksorganizer.releaseFlareSolverrSlot();
+      }
+    }
+
+    if (retry && !bookmarksorganizer.stopRequested) {
+      await bookmarksorganizer.waitBeforeRetry();
+      if (!bookmarksorganizer.stopRequested) {
+        return bookmarksorganizer.checkFlareSolverrResponse(bookmark, attempt + 1);
+      }
     }
 
     return bookmark;
+  },
+
+  /**
+   * Acquires one of the two concurrent FlareSolverr request slots.
+   *
+   * @returns {Promise<boolean>} - whether a slot was acquired
+   */
+  acquireFlareSolverrSlot () {
+    if (bookmarksorganizer.stopRequested) {
+      return Promise.resolve(false);
+    }
+    if (bookmarksorganizer.activeFlareSolverrRequests < FLARESOLVERR_MAX_CONCURRENT_REQUESTS) {
+      bookmarksorganizer.activeFlareSolverrRequests++;
+
+      return Promise.resolve(true);
+    }
+
+    return new Promise((resolve) => {
+      bookmarksorganizer.flareSolverrWaiters.push({ resolve : resolve, cancelled : false });
+    });
+  },
+
+  /**
+   * Releases a FlareSolverr slot and grants it to the next queued bookmark.
+   *
+   * @returns {void}
+   */
+  releaseFlareSolverrSlot () {
+    bookmarksorganizer.activeFlareSolverrRequests--;
+    let waiter = bookmarksorganizer.flareSolverrWaiters.shift();
+    while (waiter && waiter.cancelled) {
+      waiter = bookmarksorganizer.flareSolverrWaiters.shift();
+    }
+    if (waiter) {
+      bookmarksorganizer.activeFlareSolverrRequests++;
+      waiter.resolve(true);
+    }
   },
 
   /**
