@@ -1492,13 +1492,22 @@ const bookmarksorganizer = {
           }
         }
         catch (error) {
-          if (!bookmarksorganizer.stopRequested && aBookmark.url) {
+          if (aBookmark.url) {
+            // A cancelled in-flight task still belongs in the partial results. Treat
+            // it as unknown, since stopping the scan does not prove the link is dead.
             // eslint-disable-next-line require-atomic-updates
-            aBookmark.status = STATUS.FETCH_ERROR;
+            aBookmark.status = bookmarksorganizer.stopRequested ? STATUS.UNKNOWN : STATUS.FETCH_ERROR;
 
-            if (aType === 'all' || aType === 'errors') {
-              bookmarksorganizer.bookmarkErrors++;
+            if ((aType === 'all' || aType === 'errors') && !bookmarksorganizer.bookmarksResult.some(({ id }) => id === aBookmark.id)) {
+              if (!bookmarksorganizer.stopRequested) {
+                bookmarksorganizer.bookmarkErrors++;
+              }
               bookmarksorganizer.bookmarksResult.push(aBookmark);
+            }
+
+            if (bookmarksorganizer.stopRequested) {
+              bookmarksorganizer.checkedBookmarks++;
+              bookmarksorganizer.updateProgressUi();
             }
           }
         }
