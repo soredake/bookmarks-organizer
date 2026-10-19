@@ -169,6 +169,9 @@ const bookmarksorganizer = {
   /** @type {Set<string>} */
   flareSolverrDirectOnlyDomains : new Set(),
 
+  /** @type {Array<number>} */
+  whitelist : [],
+
   /** @type {Promise<void>} */
   stopPromise : Promise.resolve(),
 
@@ -616,6 +619,7 @@ const bookmarksorganizer = {
     const options = await browser.storage.local.get({
       debugEnabled : false,
       disableConfirmations : false,
+      whitelist : [],
       maxConcurrentRequests : bookmarksorganizer.QUEUE_SIZE,
       directRequestTimeout : null,
       flareSolverrRequestTimeout : FLARESOLVERR_REQUEST_TIMEOUT_IN_SECONDS,
@@ -632,6 +636,8 @@ const bookmarksorganizer = {
     bookmarksorganizer.debugEnabled = options.debugEnabled;
     // eslint-disable-next-line require-atomic-updates
     bookmarksorganizer.disableConfirmations = options.disableConfirmations;
+    // eslint-disable-next-line require-atomic-updates
+    bookmarksorganizer.whitelist = options.whitelist;
 
     const parsedMaxConcurrentRequests = parseInt(options.maxConcurrentRequests);
     // eslint-disable-next-line require-atomic-updates
@@ -805,9 +811,7 @@ const bookmarksorganizer = {
         return;
       }
 
-      const { whitelist } = await browser.storage.local.get({ whitelist : [] });
-
-      if (whitelist.includes(bookmark.id)) {
+      if (bookmarksorganizer.whitelist.includes(bookmark.id)) {
         bookmarksorganizer.checkedBookmarks++;
 
         return;
@@ -881,8 +885,6 @@ const bookmarksorganizer = {
     let directSlotAcquired = false;
 
     try {
-      await bookmarksorganizer.waitForRequestDelay();
-
       if (bookmarksorganizer.stopRequested) {
         // eslint-disable-next-line require-atomic-updates
         bookmark.status = STATUS.UNKNOWN;
@@ -892,6 +894,15 @@ const bookmarksorganizer = {
 
       directSlotAcquired = await bookmarksorganizer.acquireDirectRequestSlot();
       if (!directSlotAcquired) {
+        // eslint-disable-next-line require-atomic-updates
+        bookmark.status = STATUS.UNKNOWN;
+
+        return bookmark;
+      }
+
+      await bookmarksorganizer.waitForRequestDelay();
+
+      if (bookmarksorganizer.stopRequested) {
         // eslint-disable-next-line require-atomic-updates
         bookmark.status = STATUS.UNKNOWN;
 
@@ -996,6 +1007,10 @@ const bookmarksorganizer = {
     }
     catch (error) {
       clearTimeout(timeoutId);
+      if (directSlotAcquired) {
+        bookmarksorganizer.releaseDirectRequestSlot();
+        directSlotAcquired = false;
+      }
       if (bookmarksorganizer.stopRequested && error.name === 'AbortError') {
         // eslint-disable-next-line require-atomic-updates
         bookmark.status = STATUS.UNKNOWN;
