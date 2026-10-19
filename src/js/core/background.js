@@ -1174,6 +1174,17 @@ const bookmarksorganizer = {
             await bookmarksorganizer.checkForBrokenBookmark(aBookmark, aMode, aType);
           }
         }
+        catch (error) {
+          if (!bookmarksorganizer.stopRequested && aBookmark.url) {
+            // eslint-disable-next-line require-atomic-updates
+            aBookmark.status = STATUS.FETCH_ERROR;
+
+            if (aType === 'all' || aType === 'errors') {
+              bookmarksorganizer.bookmarkErrors++;
+              bookmarksorganizer.bookmarksResult.push(aBookmark);
+            }
+          }
+        }
         finally {
           limiter.give();
         }
@@ -1184,7 +1195,7 @@ const bookmarksorganizer = {
       tasks.push(limiter.take().then(executeTask(bookmark, mode, type)));
     }
 
-    await Promise.all(tasks);
+    await Promise.allSettled(tasks);
   },
 
   /**
