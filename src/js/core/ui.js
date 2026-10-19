@@ -10,6 +10,8 @@ const elBody = document.querySelector('body');
 const elBookmarksErrors = document.getElementById('bookmarks-errors');
 const elBookmarksWarnings = document.getElementById('bookmarks-warnings');
 const elButton = document.getElementById('submit-button');
+const elStopButton = document.getElementById('stop-button');
+const elCheckStatus = document.getElementById('check-status');
 const elCheckedBookmarks = document.getElementById('checked-bookmarks');
 const elDebugOutput = document.getElementById('debug-output');
 const elDebugWrapper = document.getElementById('debug-output-wrapper');
@@ -306,6 +308,16 @@ const ui = {
   },
 
   /**
+   * Requests that the current check stop after its active work is cancelled.
+   *
+   * @returns {void}
+   */
+  stopCheck () {
+    elStopButton.disabled = true;
+    browser.runtime.sendMessage({ message : 'stop' });
+  },
+
+  /**
    * Fired when a message is sent from the background script to the UI script.
    *
    * @param {Object} response - contains the response from the background script
@@ -340,6 +352,11 @@ const ui = {
       }
     }
     else if (response.message === 'started') {
+      elCheckStatus.classList.add('hidden');
+      elCheckStatus.textContent = '';
+      elButton.classList.add('hidden');
+      elStopButton.classList.remove('hidden');
+      elStopButton.disabled = false;
       elMask.classList.remove('is-hidden');
       elMask.classList.add('active-check');
       elSpinner.classList.add('active-check');
@@ -394,6 +411,7 @@ const ui = {
     }
     else if (response.message === 'finished') {
       ui.disableConfirmations = response.disableConfirmations;
+      ui.showStoppedStatus(response.stopped);
 
       ui.buildBookmarksTree(response.bookmarks);
       ui.hideEmptyCategories();
@@ -441,6 +459,7 @@ const ui = {
     }
     else if (response.message === 'show-duplicates-ui') {
       ui.disableConfirmations = response.disableConfirmations;
+      ui.showStoppedStatus(response.stopped);
       elBookmarksErrors.textContent = response.errors;
 
       if (response.errors === 0) {
@@ -480,6 +499,24 @@ const ui = {
   },
 
   /**
+   * Shows whether results represent a completed or interrupted check.
+   *
+   * @param {boolean} stopped - whether the current check was stopped early
+   *
+   * @returns {void}
+   */
+  showStoppedStatus (stopped) {
+    if (stopped) {
+      elCheckStatus.textContent = browser.i18n.getMessage('check_stopped') || 'Check stopped. Showing results collected so far.';
+      elCheckStatus.classList.remove('hidden');
+    }
+    else {
+      elCheckStatus.textContent = '';
+      elCheckStatus.classList.add('hidden');
+    }
+  },
+
+  /**
    * Shows and hides elements based on the check mode and the result.
    *
    * @returns {void}
@@ -491,6 +528,9 @@ const ui = {
     elSpinner.classList.remove('active-check');
 
     elButton.disabled = false;
+    elButton.classList.remove('hidden');
+    elStopButton.classList.add('hidden');
+    elStopButton.disabled = false;
     elResultWrapper.classList.remove('hidden');
     elStart.classList.add('hidden');
     elSearch.focus();
@@ -1128,6 +1168,7 @@ document.addEventListener('DOMContentLoaded', ui.init);
 
 elMode.addEventListener('change', ui.onModeChange);
 elButton.addEventListener('click', ui.execute);
+elStopButton.addEventListener('click', ui.stopCheck);
 elBody.addEventListener('click', ui.handleActionButtonClicks);
 elFox.addEventListener('click', ui.handleFoxMessageClick);
 elRepairAllRedirects.addEventListener('click', ui.repairAllRedirects);

@@ -164,6 +164,11 @@ button#reset-whitelist {
   display: none !important; /* stylelint-disable-line declaration-no-important */
 }
 
+#check-status {
+  margin: 10px 30px;
+  color: var(--color-status-warning);
+}
+
 .center {
   text-align: center;
 }

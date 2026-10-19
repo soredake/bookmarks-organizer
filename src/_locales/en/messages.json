@@ -47,6 +47,9 @@
   "button_check_bookmarks": {
     "message": "check bookmarks…"
   },
+  "button_stop_check": {
+    "message": "Stop check"
+  },
   "button_reset_whitelist": {
     "message": "reset whitelist…"
   },
@@ -58,6 +61,9 @@
   },
   "close_overlay": {
     "message": "Close"
+  },
+  "check_stopped": {
+    "message": "Check stopped. Showing results collected so far."
   },
   "confirm_btn_cancel": {
     "message": "Cancel"

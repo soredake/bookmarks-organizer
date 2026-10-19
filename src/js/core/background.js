@@ -8,6 +8,7 @@ const DEFAULT_REQUEST_TIMEOUT_IN_SECONDS = 15;
 const DEFAULT_REQUEST_DELAY_IN_SECONDS = 1;
 const MILLISECONDS_PER_SECOND = 1000;
 const FLARESOLVERR_TIMEOUT_GRACE_IN_MS = 5000;
+const YIELD_INTERVAL = 100;
 const UI_PAGE = 'html/ui.html';
 
 /**
@@ -112,6 +113,18 @@ const bookmarksorganizer = {
    * @type {boolean}
    */
   inProgress : false,
+
+  /** @type {boolean} */
+  stopRequested : false,
+
+  /** @type {Set<AbortController>} */
+  activeControllers : new Set(),
+
+  /** @type {Promise<void>} */
+  stopPromise : Promise.resolve(),
+
+  /** @type {Function|null} */
+  resolveStop : null,
 
   /**
    * Internal variable. The index of the bookmark being checked.
@@ -260,7 +273,7 @@ const bookmarksorganizer = {
     bookmarksorganizer.collectAllBookmarks(bookmark, true);
 
     // execute check if a bookmarks check is already in progress
-    if (bookmarksorganizer.inProgress) {
+    if (bookmarksorganizer.inProgress && !bookmarksorganizer.stopRequested) {
       bookmarksorganizer.checkForBrokenBookmark(bookmark, bookmarksorganizer.mode, bookmarksorganizer.type);
     }
   },
@@ -446,6 +459,11 @@ const bookmarksorganizer = {
         bookmarksorganizer.execute(response.mode, 'all');
       }
     }
+    else if (response.message === 'stop' && bookmarksorganizer.inProgress) {
+      bookmarksorganizer.stopRequested = true;
+      bookmarksorganizer.resolveStop();
+      bookmarksorganizer.activeControllers.forEach((controller) => controller.abort());
+    }
     else if (response.message === 'edit') {
       await browser.bookmarks.update(response.bookmarkId, {
         title : response.title,
@@ -513,6 +531,11 @@ const bookmarksorganizer = {
    */
   async execute (mode, type) {
     bookmarksorganizer.inProgress = true;
+    bookmarksorganizer.stopRequested = false;
+    bookmarksorganizer.activeControllers.clear();
+    bookmarksorganizer.stopPromise = new Promise((resolve) => {
+      bookmarksorganizer.resolveStop = resolve;
+    });
     bookmarksorganizer.internalCounter = 0;
     bookmarksorganizer.checkedBookmarks = 0;
     bookmarksorganizer.bookmarkErrors = 0;
@@ -582,19 +605,47 @@ const bookmarksorganizer = {
 
         bookmarksorganizer.getBookmarkPath(bookmarks[0], []);
 
-        for (const bookmark of bookmarksorganizer.collectedBookmarks) {
-          bookmarksorganizer.checkBookmarkAndAssignPath(bookmark, mode);
+        for (let i = 0; i < bookmarksorganizer.collectedBookmarks.length; i++) {
+          if (bookmarksorganizer.stopRequested) {
+            break;
+          }
+
+          const bookmark = bookmarksorganizer.collectedBookmarks[i];
+          bookmarksorganizer.checkBookmarkAndAssignPath(bookmark);
+
+          if ((i + 1) % YIELD_INTERVAL === 0) {
+            // eslint-disable-next-line no-await-in-loop
+            await new Promise((resolve) => {
+              setTimeout(resolve, 0);
+            });
+          }
         }
 
         bookmarksorganizer.checkForDuplicates();
         break;
       case 'empty-names':
-        for (const bookmark of bookmarksorganizer.collectedBookmarks) {
-          bookmarksorganizer.checkForEmptyName(bookmark, mode);
+        for (let i = 0; i < bookmarksorganizer.collectedBookmarks.length; i++) {
+          if (bookmarksorganizer.stopRequested) {
+            break;
+          }
+
+          const bookmark = bookmarksorganizer.collectedBookmarks[i];
+          bookmarksorganizer.checkForEmptyName(bookmark);
+
+          if ((i + 1) % YIELD_INTERVAL === 0) {
+            // eslint-disable-next-line no-await-in-loop
+            await new Promise((resolve) => {
+              setTimeout(resolve, 0);
+            });
+          }
         }
         break;
       default:
         // do nothing
+    }
+
+    if (mode !== 'duplicates') {
+      bookmarksorganizer.finishCheck(mode);
     }
   },
 
@@ -687,11 +738,11 @@ const bookmarksorganizer = {
             // do nothing
         }
 
-        bookmarksorganizer.updateProgressUi(mode, true);
+        bookmarksorganizer.updateProgressUi();
       }
       else {
         bookmarksorganizer.checkedBookmarks++;
-        bookmarksorganizer.updateProgressUi(mode, true);
+        bookmarksorganizer.updateProgressUi();
       }
     }
     else {
@@ -708,6 +759,13 @@ const bookmarksorganizer = {
    * @returns {bookmarks.BookmarkTreeNode} - the bookmark object
    */
   async checkHttpResponse (bookmark, method) {
+    if (bookmarksorganizer.stopRequested) {
+      // eslint-disable-next-line require-atomic-updates
+      bookmark.status = STATUS.UNKNOWN;
+
+      return bookmark;
+    }
+
     bookmark.attempts++;
 
     if (bookmarksorganizer.useFlareSolverr) {
@@ -715,11 +773,20 @@ const bookmarksorganizer = {
     }
 
     let timeoutId = null;
+    let controller = null;
 
     try {
       await bookmarksorganizer.waitForRequestDelay();
 
-      const controller = new AbortController();
+      if (bookmarksorganizer.stopRequested) {
+        // eslint-disable-next-line require-atomic-updates
+        bookmark.status = STATUS.UNKNOWN;
+
+        return bookmark;
+      }
+
+      controller = new AbortController();
+      bookmarksorganizer.activeControllers.add(controller);
       const { signal } = controller;
 
       timeoutId = setTimeout(() => controller.abort(), bookmarksorganizer.TIMEOUT_IN_MS);
@@ -781,13 +848,19 @@ const bookmarksorganizer = {
       }
 
       if (bookmark.status > STATUS.REDIRECT) {
-        if (bookmark.attempts < bookmarksorganizer.MAX_ATTEMPTS) {
+        if (!bookmarksorganizer.stopRequested && bookmark.attempts < bookmarksorganizer.MAX_ATTEMPTS) {
           await bookmarksorganizer.checkHttpResponse(bookmark, 'GET');
         }
       }
     }
     catch (error) {
       clearTimeout(timeoutId);
+      if (bookmarksorganizer.stopRequested && error.name === 'AbortError') {
+        // eslint-disable-next-line require-atomic-updates
+        bookmark.status = STATUS.UNKNOWN;
+
+        return bookmark;
+      }
       let cause = 'fetch-error';
 
       if (error.name === 'AbortError') {
@@ -815,8 +888,14 @@ const bookmarksorganizer = {
         });
       }
 
-      if (bookmark.attempts < bookmarksorganizer.MAX_ATTEMPTS) {
+      if (!bookmarksorganizer.stopRequested && bookmark.attempts < bookmarksorganizer.MAX_ATTEMPTS) {
         await bookmarksorganizer.checkHttpResponse(bookmark, 'GET');
+      }
+    }
+    finally {
+      clearTimeout(timeoutId);
+      if (controller) {
+        bookmarksorganizer.activeControllers.delete(controller);
       }
     }
 
@@ -832,11 +911,20 @@ const bookmarksorganizer = {
    */
   async checkFlareSolverrResponse (bookmark) {
     let timeoutId = null;
+    let controller = null;
 
     try {
       await bookmarksorganizer.waitForRequestDelay();
 
-      const controller = new AbortController();
+      if (bookmarksorganizer.stopRequested) {
+        // eslint-disable-next-line require-atomic-updates
+        bookmark.status = STATUS.UNKNOWN;
+
+        return bookmark;
+      }
+
+      controller = new AbortController();
+      bookmarksorganizer.activeControllers.add(controller);
       timeoutId = setTimeout(() => controller.abort(), bookmarksorganizer.TIMEOUT_IN_MS + FLARESOLVERR_TIMEOUT_GRACE_IN_MS);
 
       const response = await fetch(bookmarksorganizer.flareSolverrUrl, {
@@ -892,6 +980,12 @@ const bookmarksorganizer = {
     }
     catch (error) {
       clearTimeout(timeoutId);
+      if (bookmarksorganizer.stopRequested && error.name === 'AbortError') {
+        // eslint-disable-next-line require-atomic-updates
+        bookmark.status = STATUS.UNKNOWN;
+
+        return bookmark;
+      }
       // eslint-disable-next-line require-atomic-updates
       bookmark.status = error.name === 'AbortError' ? STATUS.TIMEOUT : STATUS.FETCH_ERROR;
 
@@ -908,6 +1002,12 @@ const bookmarksorganizer = {
           cause : error.name === 'AbortError' ? 'timeout' : 'fetch-error',
           response : error.message
         });
+      }
+    }
+    finally {
+      clearTimeout(timeoutId);
+      if (controller) {
+        bookmarksorganizer.activeControllers.delete(controller);
       }
     }
 
@@ -927,13 +1027,28 @@ const bookmarksorganizer = {
       releaseRequest = resolve;
     });
 
-    await previousRequest;
+    await Promise.race([previousRequest, bookmarksorganizer.stopPromise]);
+
+    if (bookmarksorganizer.stopRequested) {
+      releaseRequest();
+
+      return;
+    }
 
     const waitTime = bookmarksorganizer.lastRequestStartedAt + bookmarksorganizer.REQUEST_DELAY_IN_MS - Date.now();
     if (waitTime > 0) {
-      await new Promise((resolve) => {
-        setTimeout(resolve, waitTime);
-      });
+      await Promise.race([
+        new Promise((resolve) => {
+          setTimeout(resolve, waitTime);
+        }),
+        bookmarksorganizer.stopPromise
+      ]);
+    }
+
+    if (bookmarksorganizer.stopRequested) {
+      releaseRequest();
+
+      return;
     }
 
     // eslint-disable-next-line require-atomic-updates
@@ -994,15 +1109,20 @@ const bookmarksorganizer = {
    *
    * @returns {Promise.<Array.<*>>} - Promise
    */
-  processBookmarks (mode, type, queue_size) {
+  async processBookmarks (mode, type, queue_size) {
     const limiter = bookmarksorganizer.throttle(queue_size);
     const tasks = [];
 
     const executeTask = function (aBookmark, aMode, aType) {
       return async function () {
-        await bookmarksorganizer.checkForBrokenBookmark(aBookmark, aMode, aType);
-
-        return limiter.give();
+        try {
+          if (!bookmarksorganizer.stopRequested) {
+            await bookmarksorganizer.checkForBrokenBookmark(aBookmark, aMode, aType);
+          }
+        }
+        finally {
+          limiter.give();
+        }
       };
     };
 
@@ -1010,7 +1130,7 @@ const bookmarksorganizer = {
       tasks.push(limiter.take().then(executeTask(bookmark, mode, type)));
     }
 
-    return Promise.all(tasks);
+    await Promise.all(tasks);
   },
 
   /**
@@ -1072,12 +1192,9 @@ const bookmarksorganizer = {
    * This method assigns the full bookmark path to a bookmark object. It's only used for the duplicates mode.
    *
    * @param {bookmarks.BookmarkTreeNode} bookmark - a single bookmark
-   * @param {string} mode - The checking mode<br /><br />
-   *                 <strong>Supported values:</strong> broken-bookmarks, duplicates, empty-names
-   *
    * @returns {void}
    */
-  checkBookmarkAndAssignPath (bookmark, mode) {
+  checkBookmarkAndAssignPath (bookmark) {
     if (bookmark.url) {
       if (bookmarksorganizer.LIMIT > 0 && bookmarksorganizer.internalCounter === bookmarksorganizer.LIMIT) {
         return;
@@ -1087,7 +1204,7 @@ const bookmarksorganizer = {
 
       bookmarksorganizer.internalCounter++;
       bookmarksorganizer.checkedBookmarks++;
-      bookmarksorganizer.updateProgressUi(mode, false);
+      bookmarksorganizer.updateProgressUi();
     }
 
     bookmarksorganizer.bookmarksResult.push(bookmark);
@@ -1097,12 +1214,9 @@ const bookmarksorganizer = {
    * This method is used to check for bookmarks with empty name.
    *
    * @param {bookmarks.BookmarkTreeNode} bookmark - a single bookmark
-   * @param {string} mode - The checking mode<br /><br />
-   *                 <strong>Supported values:</strong> broken-bookmarks, duplicates, empty-names
-   *
    * @returns {void}
    */
-  checkForEmptyName (bookmark, mode) {
+  checkForEmptyName (bookmark) {
     if (bookmark.url) {
       if (bookmarksorganizer.LIMIT > 0 && bookmarksorganizer.internalCounter === bookmarksorganizer.LIMIT) {
         return;
@@ -1119,7 +1233,7 @@ const bookmarksorganizer = {
       }
 
       bookmarksorganizer.checkedBookmarks++;
-      bookmarksorganizer.updateProgressUi(mode, true);
+      bookmarksorganizer.updateProgressUi();
     }
     else {
       bookmarksorganizer.bookmarksResult.push(bookmark);
@@ -1158,7 +1272,8 @@ const bookmarksorganizer = {
       message : 'show-duplicates-ui',
       bookmarks : duplicates,
       errors : bookmarksorganizer.bookmarkErrors,
-      disableConfirmations : bookmarksorganizer.disableConfirmations
+      disableConfirmations : bookmarksorganizer.disableConfirmations,
+      stopped : bookmarksorganizer.stopRequested
     });
 
     bookmarksorganizer.inProgress = false;
@@ -1167,14 +1282,9 @@ const bookmarksorganizer = {
   /**
    * This method is used to send the progress to the UI script.
    *
-   * @param {string} mode - The checking mode<br /><br />
-   *                 <strong>Supported values:</strong> broken-bookmarks, duplicates, empty-names
-   * @param {boolean} checkForFinish - boolean, indicates whether the finished message should be sent to the UI script
-   *                  or not
-   *
    * @returns {void}
    */
-  updateProgressUi (mode, checkForFinish) {
+  updateProgressUi () {
     let progress = bookmarksorganizer.checkedBookmarks / bookmarksorganizer.totalBookmarks;
     if (progress < MIN_PROGRESS) {
       progress = MIN_PROGRESS;
@@ -1188,20 +1298,32 @@ const bookmarksorganizer = {
       bookmarks_warnings : bookmarksorganizer.bookmarkWarnings,
       progress : progress
     });
+  },
 
-    if (checkForFinish && bookmarksorganizer.checkedBookmarks === bookmarksorganizer.totalBookmarks) {
-      const bookmarks = bookmarksorganizer.buildResultArray(bookmarksorganizer.bookmarksResult)[0].children;
-
-      browser.runtime.sendMessage({
-        message : 'finished',
-        mode : mode,
-        bookmarks : bookmarks,
-        disableConfirmations : bookmarksorganizer.disableConfirmations,
-        debug : bookmarksorganizer.debug
-      });
-
-      bookmarksorganizer.inProgress = false;
+  /**
+   * Sends the accumulated results and releases the active check.
+   *
+   * @param {string} mode - the check mode
+   *
+   * @returns {void}
+   */
+  finishCheck (mode) {
+    if (!bookmarksorganizer.inProgress) {
+      return;
     }
+
+    const resultTree = bookmarksorganizer.buildResultArray(bookmarksorganizer.bookmarksResult);
+    bookmarksorganizer.updateProgressUi();
+    browser.runtime.sendMessage({
+      message : 'finished',
+      mode : mode,
+      bookmarks : resultTree.length ? resultTree[0].children : [],
+      disableConfirmations : bookmarksorganizer.disableConfirmations,
+      debug : bookmarksorganizer.debug,
+      stopped : bookmarksorganizer.stopRequested
+    });
+
+    bookmarksorganizer.inProgress = false;
   },
 
   /**
