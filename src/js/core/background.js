@@ -909,8 +909,8 @@ const bookmarksorganizer = {
         method : method,
         signal : signal
       });
-      clearTimeout(timeoutId);
       const challenge = await bookmarksorganizer.isCloudflareChallengeResponse(response);
+      clearTimeout(timeoutId);
       controller.abort();
       bookmarksorganizer.releaseDirectRequestSlot();
       directSlotAcquired = false;
@@ -1223,9 +1223,8 @@ const bookmarksorganizer = {
         signal : controller.signal
       });
       flareSolverrHttpStatus = response.status;
-      clearTimeout(timeoutId);
-
       const result = await response.json();
+      clearTimeout(timeoutId);
       if (response.ok && result.status === 'ok' && result.solution) {
         // continue with the successful solution below
       }
