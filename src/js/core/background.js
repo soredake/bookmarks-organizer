@@ -22,6 +22,7 @@ const RETRY_DELAY_MAX_IN_MS = 60000;
 const FLARESOLVERR_JSON_PARSE_RETRY_DELAY_IN_MS = 5000;
 const CHALLENGE_BODY_MAX_LENGTH = 65536;
 const CLOUDFLARE_CHALLENGE_MARKERS = /cf-mitigated|__cf_chl_|cf-chl/i;
+/* Disabled: protected-domain detection caused unconditional FlareSolverr requests.
 const KNOWN_PROTECTED_DOMAINS = [
   'archiveofourown.org',
   'discord.com',
@@ -34,6 +35,7 @@ const KNOWN_PROTECTED_DOMAINS = [
   'twitter.com',
   'x.com'
 ];
+*/
 const YIELD_INTERVAL = 100;
 const UI_PAGE = 'html/ui.html';
 
@@ -886,7 +888,7 @@ const bookmarksorganizer = {
    * This method sends a fetch request to check if a bookmark is broken or not, called by checkForBrokenBookmark().
    *
    * @param {bookmarks.BookmarkTreeNode} bookmark - a single bookmark
-   * @param {string} method - the HTTP method to use (HEAD for first attempt, GET for second attempt)
+   * @param {string} method - HTTP method (HEAD initially; GET for fallback/retry; POST after FlareSolverr JSON parse failure)
    *
    * @returns {bookmarks.BookmarkTreeNode} - the bookmark object
    */
@@ -988,8 +990,11 @@ const bookmarksorganizer = {
       }
 
       // Some servers reject HEAD even though the page is available through GET.
-      // Confirm non-404 HEAD errors with GET before classifying or escalating them.
+      // Treat this as a method fallback, not as a retry attempt.
       if (method === 'HEAD' && response.status !== STATUS.NOT_FOUND && (response.status >= HTTP_ERROR_STATUS || challenge) && !bookmarksorganizer.stopRequested) {
+        // eslint-disable-next-line require-atomic-updates
+        bookmark.attempts--;
+
         return bookmarksorganizer.checkHttpResponse(bookmark, 'GET');
       }
 
@@ -1020,9 +1025,8 @@ const bookmarksorganizer = {
         }
       }
 
-      const knownProtectedDomain = bookmarksorganizer.isKnownProtectedDomain(bookmark.url);
       const shouldUseFlareSolverr = bookmarksorganizer.useFlareSolverr && !bookmarksorganizer.isDirectOnlyDomain(bookmark.url) && response.status !== STATUS.NOT_FOUND && (
-        response.status === HTTP_FORBIDDEN_STATUS || response.status === HTTP_TOO_MANY_REQUESTS_STATUS || response.status === HTTP_SERVICE_UNAVAILABLE_STATUS || challenge || knownProtectedDomain
+        response.status === HTTP_FORBIDDEN_STATUS || (challenge && ![HTTP_TOO_MANY_REQUESTS_STATUS, HTTP_SERVICE_UNAVAILABLE_STATUS].includes(response.status))
       );
       if (shouldUseFlareSolverr && !bookmarksorganizer.stopRequested) {
         return bookmarksorganizer.checkFlareSolverrResponse(bookmark);
@@ -1072,9 +1076,6 @@ const bookmarksorganizer = {
           return bookmark;
         }
         await bookmarksorganizer.checkHttpResponse(bookmark, 'GET');
-      }
-      else if (!bookmarksorganizer.stopRequested && bookmarksorganizer.useFlareSolverr && !bookmarksorganizer.isDirectOnlyDomain(bookmark.url) && bookmarksorganizer.isKnownProtectedDomain(bookmark.url)) {
-        return bookmarksorganizer.checkFlareSolverrResponse(bookmark);
       }
     }
     finally {
@@ -1130,24 +1131,6 @@ const bookmarksorganizer = {
     }
 
     return false;
-  },
-
-  /**
-   * Checks whether a hostname is known to commonly require browser challenge solving.
-   *
-   * @param {string} url - the bookmark URL
-   * @returns {boolean} - whether the hostname is protected
-   */
-  isKnownProtectedDomain (url) {
-    const protectedDomains = KNOWN_PROTECTED_DOMAINS;
-    try {
-      const hostname = new URL(url).hostname.toLowerCase();
-
-      return protectedDomains.some((domain) => hostname === domain || hostname.endsWith(`.${domain}`));
-    }
-    catch (error) {
-      return false;
-    }
   },
 
   /**
@@ -1338,8 +1321,8 @@ const bookmarksorganizer = {
         bookmark.status = solution.status;
       }
       retry = attempt < 2 && (
-        solution.status >= HTTP_SERVER_ERROR_STATUS ||
-        [HTTP_FORBIDDEN_STATUS, HTTP_TOO_MANY_REQUESTS_STATUS, HTTP_SERVICE_UNAVAILABLE_STATUS].includes(solution.status)
+        (solution.status >= HTTP_SERVER_ERROR_STATUS && solution.status !== HTTP_SERVICE_UNAVAILABLE_STATUS) ||
+        solution.status === HTTP_FORBIDDEN_STATUS
       );
 
       if (solution.status !== STATUS.NOT_FOUND && solution.status < HTTP_ERROR_STATUS && solution.url && solution.url !== bookmark.url) {
@@ -1395,9 +1378,9 @@ const bookmarksorganizer = {
       // eslint-disable-next-line require-atomic-updates
       bookmark.status = STATUS.UNKNOWN;
       retry = attempt < 2 && (
-        error.name === 'AbortError' || flareSolverrHttpStatus >= HTTP_SERVER_ERROR_STATUS ||
-        [HTTP_FORBIDDEN_STATUS, HTTP_TOO_MANY_REQUESTS_STATUS].includes(flareSolverrHttpStatus) ||
-        (/FlareSolverr HTTP 5\d\d|FlareSolverr HTTP (403|429)|challenge/i).test(error.message)
+        error.name === 'AbortError' || (flareSolverrHttpStatus >= HTTP_SERVER_ERROR_STATUS && flareSolverrHttpStatus !== HTTP_SERVICE_UNAVAILABLE_STATUS) ||
+        flareSolverrHttpStatus === HTTP_FORBIDDEN_STATUS ||
+        (/challenge/i).test(error.message)
       );
 
       if (bookmarksorganizer.debugEnabled) {
@@ -1435,7 +1418,7 @@ const bookmarksorganizer = {
         // eslint-disable-next-line require-atomic-updates
         bookmark.attempts = 0;
 
-        return bookmarksorganizer.checkHttpResponse(bookmark, 'GET');
+        return bookmarksorganizer.checkHttpResponse(bookmark, 'POST');
       }
     }
 
