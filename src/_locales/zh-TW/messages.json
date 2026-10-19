@@ -47,6 +47,9 @@
   "button_check_bookmarks": {
     "message": "檢查所有書籤……"
   },
+  "button_stop_check": {
+    "message": "停止檢查"
+  },
   "button_reset_whitelist": {
     "message": "重設白名單……"
   },

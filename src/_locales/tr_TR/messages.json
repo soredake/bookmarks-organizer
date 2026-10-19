@@ -47,6 +47,9 @@
   "button_check_bookmarks": {
     "message": "Yer imlerini kontrol et"
   },
+  "button_stop_check": {
+    "message": "Denetimi durdur"
+  },
   "button_reset_whitelist": {
     "message": "Beyaz listeyi sıfırla"
   },

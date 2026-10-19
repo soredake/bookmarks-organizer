@@ -47,6 +47,9 @@
   "button_check_bookmarks": {
     "message": "Vérifier les marque-pages…"
   },
+  "button_stop_check": {
+    "message": "Arrêter la vérification"
+  },
   "button_reset_whitelist": {
     "message": "Réinitialiser la liste blanche…"
   },

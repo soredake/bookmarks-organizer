@@ -47,6 +47,9 @@
   "button_check_bookmarks": {
     "message": "Проверка закладок..."
   },
+  "button_stop_check": {
+    "message": "Остановить проверку"
+  },
   "button_reset_whitelist": {
     "message": "сбросить белый список…"
   },

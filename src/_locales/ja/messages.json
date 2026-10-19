@@ -47,6 +47,9 @@
   "button_check_bookmarks": {
     "message": "ブックマークを確認してください…"
   },
+  "button_stop_check": {
+    "message": "チェックを停止"
+  },
   "button_reset_whitelist": {
     "message": "ホワイトリストをリセット…"
   },

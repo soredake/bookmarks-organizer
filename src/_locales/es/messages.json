@@ -47,6 +47,9 @@
   "button_check_bookmarks": {
     "message": "Comprobar marcadores…"
   },
+  "button_stop_check": {
+    "message": "Detener comprobación"
+  },
   "button_reset_whitelist": {
     "message": "reset whitelist…"
   },

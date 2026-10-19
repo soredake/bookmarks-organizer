@@ -47,6 +47,9 @@
   "button_check_bookmarks": {
     "message": "Lesezeichen prüfen…"
   },
+  "button_stop_check": {
+    "message": "Prüfung stoppen"
+  },
   "button_reset_whitelist": {
     "message": "Whitelist zurücksetzen…"
   },

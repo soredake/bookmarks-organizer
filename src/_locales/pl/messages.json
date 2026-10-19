@@ -47,6 +47,9 @@
   "button_check_bookmarks": {
     "message": "Sprawdź zakładki…"
   },
+  "button_stop_check": {
+    "message": "Zatrzymaj sprawdzanie"
+  },
   "button_reset_whitelist": {
     "message": "wyczyść białą listę…"
   },

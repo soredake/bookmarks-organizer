@@ -47,6 +47,9 @@
   "button_check_bookmarks": {
     "message": "Bladwijzers controleren…"
   },
+  "button_stop_check": {
+    "message": "Controle stoppen"
+  },
   "button_reset_whitelist": {
     "message": "witte lijst herinitialiseren…"
   },

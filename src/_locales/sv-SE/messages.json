@@ -47,6 +47,9 @@
   "button_check_bookmarks": {
     "message": "Kontrollera bokmärken…"
   },
+  "button_stop_check": {
+    "message": "Stoppa kontrollen"
+  },
   "button_reset_whitelist": {
     "message": "Återställ vitlistan…"
   },

@@ -47,6 +47,9 @@
   "button_check_bookmarks": {
     "message": "Cytańske znamjenja pśespytaś…"
   },
+  "button_stop_check": {
+    "message": "Kontrolu zastajić"
+  },
   "button_reset_whitelist": {
     "message": "Běłu lisćinu slědk stajiś…"
   },

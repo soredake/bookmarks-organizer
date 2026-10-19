@@ -47,6 +47,9 @@
   "button_check_bookmarks": {
     "message": "controlla i segnalibri… "
   },
+  "button_stop_check": {
+    "message": "Interrompi controllo"
+  },
   "button_reset_whitelist": {
     "message": "svuota la whitelist…"
   },

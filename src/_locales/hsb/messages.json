@@ -47,6 +47,9 @@
   "button_check_bookmarks": {
     "message": "Zapołožki přepruwować…"
   },
+  "button_stop_check": {
+    "message": "Kontrolu zastajić"
+  },
   "button_reset_whitelist": {
     "message": "Běłu lisćinu wróćo stajić…"
   },

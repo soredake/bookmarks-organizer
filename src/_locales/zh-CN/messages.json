@@ -47,6 +47,9 @@
   "button_check_bookmarks": {
     "message": "检查所有书签…"
   },
+  "button_stop_check": {
+    "message": "停止检查"
+  },
   "button_reset_whitelist": {
     "message": "reset whitelist…"
   },
