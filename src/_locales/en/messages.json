@@ -140,6 +140,9 @@
   "option_flaresolverr_description": {
     "message": "When enabled, link checks are sent through this FlareSolverr server. Keep the server private."
   },
+  "option_flaresolverr_try_404": {
+    "message": "Try to check 404 URLs with FlareSolverr (can help with some anti-bot systems)"
+  },
   "option_request_delay": {
     "message": "Delay between requests"
   },
