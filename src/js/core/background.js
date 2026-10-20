@@ -20,8 +20,11 @@ const STOP_TASK_DRAIN_TIMEOUT_IN_MS = 500;
 const RETRY_DELAY_MIN_IN_MS = 30000;
 const RETRY_DELAY_MAX_IN_MS = 60000;
 const FLARESOLVERR_JSON_PARSE_RETRY_DELAY_IN_MS = 5000;
+const FLARESOLVERR_ONLY_PATTERN_DELAY_IN_MS = 5000;
+const FLARESOLVERR_STATUS_ESCALATION_DELAY_IN_MS = 10000;
 const CHALLENGE_BODY_MAX_LENGTH = 65536;
 const CLOUDFLARE_CHALLENGE_MARKERS = /cf-mitigated|__cf_chl_|cf-chl/i;
+const FLARESOLVERR_ONLY_URL_PATTERNS = [/\/altcha\//i, /__cake_test/i];
 /* Disabled: protected-domain detection caused unconditional FlareSolverr requests.
 const KNOWN_PROTECTED_DOMAINS = [
   'archiveofourown.org',
@@ -1000,6 +1003,21 @@ const bookmarksorganizer = {
         bookmark.status = STATUS.UNKNOWN;
       }
 
+      const matchesFlareSolverrOnlyPattern = bookmarksorganizer.useFlareSolverr && !bookmarksorganizer.isDirectOnlyDomain(bookmark.url) && [bookmark.url, response.url].some((url) => bookmarksorganizer.isFlareSolverrOnlyUrl(url));
+      let flareSolverrEscalationDelay = null;
+      if (matchesFlareSolverrOnlyPattern) {
+        flareSolverrEscalationDelay = FLARESOLVERR_ONLY_PATTERN_DELAY_IN_MS;
+      }
+      else if (bookmarksorganizer.useFlareSolverr && !bookmarksorganizer.isDirectOnlyDomain(bookmark.url) && [STATUS.NOT_FOUND, HTTP_SERVICE_UNAVAILABLE_STATUS].includes(response.status)) {
+        flareSolverrEscalationDelay = FLARESOLVERR_STATUS_ESCALATION_DELAY_IN_MS;
+      }
+      if (flareSolverrEscalationDelay !== null) {
+        await bookmarksorganizer.waitForFlareSolverrEscalation(flareSolverrEscalationDelay);
+        if (!bookmarksorganizer.stopRequested) {
+          return bookmarksorganizer.checkFlareSolverrResponse(bookmark);
+        }
+      }
+
       // Some servers reject HEAD even though the page is available through GET.
       // Treat this as a method fallback, not as a retry attempt.
       if (method === 'HEAD' && response.status !== STATUS.NOT_FOUND && (response.status >= HTTP_ERROR_STATUS || challenge) && !bookmarksorganizer.stopRequested) {
@@ -1181,6 +1199,31 @@ const bookmarksorganizer = {
     catch (error) {
       return false;
     }
+  },
+
+  /**
+   * Checks whether a URL matches a pattern that requires FlareSolverr.
+   *
+   * @param {string} url - the URL to check
+   * @returns {boolean} - whether the URL is FlareSolverr-only
+   */
+  isFlareSolverrOnlyUrl (url) {
+    return FLARESOLVERR_ONLY_URL_PATTERNS.some((pattern) => pattern.test(url));
+  },
+
+  /**
+   * Waits before escalating a direct request to FlareSolverr, unless checking stops.
+   *
+   * @param {number} delay - the delay in milliseconds
+   * @returns {Promise<void>} - resolves when the delay elapses or checking stops
+   */
+  async waitForFlareSolverrEscalation (delay) {
+    await Promise.race([
+      new Promise((resolve) => {
+        setTimeout(resolve, delay);
+      }),
+      bookmarksorganizer.stopPromise
+    ]);
   },
 
   /**
@@ -1367,7 +1410,8 @@ const bookmarksorganizer = {
           body : JSON.stringify({
             cmd : 'request.get',
             url : bookmark.url,
-            maxTimeout : flareSolverrTimeout
+            maxTimeout : flareSolverrTimeout,
+            waitInSeconds : 30
           }),
           signal : controller.signal
         });
