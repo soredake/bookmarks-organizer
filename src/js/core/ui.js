@@ -47,6 +47,9 @@ const ui = {
    */
   mode : 'broken-bookmarks',
 
+  /** @type {?string} */
+  checkId : null,
+
   /**
    * Disables confirmation messages. It defaults to false and can be changed in the add-on's settings.
    *
@@ -136,7 +139,6 @@ const ui = {
   async init () {
     await ui.setupPermission();
 
-    browser.runtime.sendMessage({ message : 'count' });
     ui.uiscript();
   },
 
@@ -325,10 +327,15 @@ const ui = {
   /**
    * Finishes the visible check from its latest partial results snapshot.
    *
+   * @param {?string} checkId - check identity for watchdog-triggered completion
+   *
    * @returns {void}
    */
-  finishPartialCheck () {
+  finishPartialCheck (checkId = null) {
     if (ui.mode !== 'broken-bookmarks' || elStopButton.classList.contains('hidden')) {
+      return;
+    }
+    if (checkId && checkId !== ui.checkId) {
       return;
     }
 
@@ -342,7 +349,8 @@ const ui = {
       bookmarksWarnings : ui.warnings,
       disableConfirmations : ui.disableConfirmations,
       debug : [],
-      stopped : true
+      stopped : true,
+      checkId : ui.checkId
     });
   },
 
@@ -382,6 +390,7 @@ const ui = {
       }
     }
     else if (response.message === 'started') {
+      ui.checkId = response.checkId || null;
       ui.partialBookmarks = [];
       elCheckStatus.classList.add('hidden');
       elCheckStatus.textContent = '';
@@ -446,9 +455,15 @@ const ui = {
     else if (response.message === 'flare-scan-watchdog-timeout') {
       // The background context may have restarted while FlareSolverr was stalled.
       // It can no longer settle the old promises, so finish this UI from saved progress.
-      ui.finishPartialCheck();
+      if (response.checkId && response.checkId === ui.checkId) {
+        ui.finishPartialCheck(response.checkId);
+      }
     }
     else if (response.message === 'finished') {
+      if (response.checkId && response.checkId !== ui.checkId) {
+        return;
+      }
+      ui.checkId = null;
       ui.disableConfirmations = response.disableConfirmations;
       ui.showStoppedStatus(response.stopped);
 
@@ -507,6 +522,7 @@ const ui = {
       ui.doUiCleanup();
     }
     else if (response.message === 'show-duplicates-ui') {
+      ui.checkId = null;
       ui.disableConfirmations = response.disableConfirmations;
       ui.showStoppedStatus(response.stopped);
       elBookmarksErrors.textContent = response.errors;

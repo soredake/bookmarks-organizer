@@ -21,6 +21,7 @@ const DEFAULT_REQUEST_DELAY_IN_SECONDS = 1;
 const MILLISECONDS_PER_SECOND = 1000;
 const FLARESOLVERR_MAX_CONCURRENT_REQUESTS = 2;
 const FLARESOLVERR_WATCHDOG_PREFIX = 'bookmarks-organizer-flaresolverr-timeout-';
+const ACTIVE_CHECK_SESSION_KEY = 'bookmarksOrganizerActiveCheckId';
 const STOP_TASK_DRAIN_TIMEOUT_IN_MS = 500;
 const RETRY_DELAY_MIN_IN_MS = 30000;
 const RETRY_DELAY_MAX_IN_MS = 60000;
@@ -153,6 +154,15 @@ const bookmarksorganizer = {
    * @type {boolean}
    */
   inProgress : false,
+
+  /** @type {?string} */
+  checkId : null,
+
+  /** @type {int} */
+  checkSequence : 0,
+
+  /** @type {int} */
+  bookmarkCountUpdateSequence : 0,
 
   /** @type {boolean} */
   stopRequested : false,
@@ -380,21 +390,15 @@ const bookmarksorganizer = {
   /**
    * Fired when a bookmark or a bookmark folder is removed.
    *
-   * @param {int} id - id of the bookmark that was removed
-   *
-   * @returns {void}
+   * @returns {Promise<void>} - resolves after the bookmark count is updated
    */
-  async onBookmarkRemoved (id) {
-    await bookmarksorganizer.initBookmarkCount();
+  async onBookmarkRemoved () {
+    await bookmarksorganizer.initBookmarkCount(false);
 
     browser.runtime.sendMessage({
       message : 'total-bookmarks-changed',
       total_bookmarks : bookmarksorganizer.totalBookmarks
     });
-
-    // remove bookmark from array with all bookmarks
-    const idx = bookmarksorganizer.collectedBookmarks.findIndex((obj) => obj.id === id);
-    bookmarksorganizer.collectedBookmarks.splice(idx, 1);
   },
 
   /**
@@ -552,7 +556,7 @@ const bookmarksorganizer = {
       // Do not rely on every in-flight request promise unwinding: a stalled
       // FlareSolverr fetch or response body must not keep the UI in checking state.
       if (bookmarksorganizer.mode === 'broken-bookmarks') {
-        bookmarksorganizer.finishCheck(bookmarksorganizer.mode);
+        await bookmarksorganizer.finishCheck(bookmarksorganizer.mode);
       }
     }
     else if (response.message === 'edit') {
@@ -595,19 +599,48 @@ const bookmarksorganizer = {
    * This method is used to start counting the number of bookmarks and to send the number of total bookmarks to the
    * UI script when finished.
    *
-   * @returns {void}
+   * @param {boolean} notify - whether to send the initial total-bookmarks message
+   *
+   * @returns {Promise<void>} - resolves after the bookmark count is updated
    */
-  async initBookmarkCount () {
+  async initBookmarkCount (notify = true) {
+    const updateSequence = ++bookmarksorganizer.bookmarkCountUpdateSequence;
     const bookmarks = await browser.bookmarks.getTree();
 
-    bookmarksorganizer.totalBookmarks = 0;
-    bookmarksorganizer.collectedBookmarks = [];
-    bookmarksorganizer.collectAllBookmarks(bookmarks[0], false);
+    const collectedBookmarks = [];
+    let totalBookmarks = 0;
+    const collectBookmarkTree = (bookmark) => {
+      if (bookmark.type === 'separator') {
+        return;
+      }
 
-    browser.runtime.sendMessage({
-      message : 'total-bookmarks',
-      total_bookmarks : bookmarksorganizer.totalBookmarks
-    });
+      collectedBookmarks.push(bookmark);
+      if (bookmark.url) {
+        totalBookmarks++;
+      }
+
+      if (bookmark.children) {
+        bookmark.children.forEach(collectBookmarkTree);
+      }
+    };
+    collectBookmarkTree(bookmarks[0]);
+
+    if (updateSequence !== bookmarksorganizer.bookmarkCountUpdateSequence) {
+      return;
+    }
+
+    bookmarksorganizer.totalBookmarks = totalBookmarks;
+    if (!bookmarksorganizer.inProgress) {
+      bookmarksorganizer.collectedBookmarks = collectedBookmarks;
+    }
+    await browser.storage.session.set({ totalBookmarks : totalBookmarks });
+
+    if (notify) {
+      browser.runtime.sendMessage({
+        message : 'total-bookmarks',
+        total_bookmarks : totalBookmarks
+      });
+    }
   },
 
   /**
@@ -618,7 +651,7 @@ const bookmarksorganizer = {
    * @param {string} type - The requested type of results<br /><br />
    *                 <strong>Supported values:</strong> errors, warnings, all
    *
-   * @returns {void}
+   * @returns {Promise<void>} - resolves when the bookmark check has finished
    */
   // eslint-disable-next-line complexity
   async execute (mode, type) {
@@ -645,8 +678,21 @@ const bookmarksorganizer = {
     bookmarksorganizer.debug = [];
     bookmarksorganizer.mode = mode;
     bookmarksorganizer.type = type;
+    bookmarksorganizer.checkId = `${Date.now()}-${++bookmarksorganizer.checkSequence}`;
 
-    browser.runtime.sendMessage({ message : 'started' });
+    try {
+      if (mode === 'broken-bookmarks') {
+        await browser.storage.session.set({ [ACTIVE_CHECK_SESSION_KEY] : bookmarksorganizer.checkId });
+      }
+      else {
+        await browser.storage.session.remove(ACTIVE_CHECK_SESSION_KEY);
+      }
+    }
+    catch (error) {
+      // The check can proceed without restart recovery if session storage is unavailable.
+    }
+
+    browser.runtime.sendMessage({ message : 'started', checkId : bookmarksorganizer.checkId });
 
     const options = await browser.storage.local.get({
       debugEnabled : false,
@@ -801,7 +847,7 @@ const bookmarksorganizer = {
     }
 
     if (mode !== 'duplicates') {
-      bookmarksorganizer.finishCheck(mode);
+      await bookmarksorganizer.finishCheck(mode);
     }
   },
 
@@ -1329,7 +1375,12 @@ const bookmarksorganizer = {
       if (alarmName) {
         try {
           await Promise.race([
-            browser.storage.session.set({ [alarmName] : deadline }),
+            browser.storage.session.set({
+              [alarmName] : {
+                deadline : deadline,
+                checkId : bookmarksorganizer.checkId
+              }
+            }),
             timeoutPromise,
             stopRequestPromise
           ]);
@@ -1378,6 +1429,23 @@ const bookmarksorganizer = {
   },
 
   /**
+   * Gets the deadline from current or legacy watchdog storage.
+   *
+   * @param {number|Object} watchdogRecord - stored watchdog record
+   * @returns {?number} - the deadline, if present
+   */
+  getFlareSolverrWatchdogDeadline (watchdogRecord) {
+    if (Number.isInteger(watchdogRecord)) {
+      return watchdogRecord;
+    }
+    if (watchdogRecord && Number.isInteger(watchdogRecord.deadline)) {
+      return watchdogRecord.deadline;
+    }
+
+    return null;
+  },
+
+  /**
    * Handles a FlareSolverr request deadline independently from the request promise.
    *
    * @param {alarms.Alarm} alarm - the fired browser alarm
@@ -1390,15 +1458,16 @@ const bookmarksorganizer = {
         return;
       }
 
-      let storedDeadline = null;
+      let storedWatchdog = null;
       try {
-        const storedWatchdog = await browser.storage.session.get(alarm.name);
-        storedDeadline = storedWatchdog[alarm.name];
+        const storedValues = await browser.storage.session.get(alarm.name);
+        storedWatchdog = storedValues[alarm.name];
       }
       catch (error) {
         return;
       }
 
+      const storedDeadline = bookmarksorganizer.getFlareSolverrWatchdogDeadline(storedWatchdog);
       if (!Number.isInteger(storedDeadline)) {
         return;
       }
@@ -1421,7 +1490,18 @@ const bookmarksorganizer = {
       catch (error) {
         // The expired record is ignored after this alarm event.
       }
-      browser.runtime.sendMessage({ message : 'flare-scan-watchdog-timeout' }).catch(() => null);
+      const { [ACTIVE_CHECK_SESSION_KEY] : activeCheckId } = await browser.storage.session.get(ACTIVE_CHECK_SESSION_KEY);
+      if (bookmarksorganizer.inProgress || !storedWatchdog || typeof storedWatchdog.checkId !== 'string' || activeCheckId !== storedWatchdog.checkId) {
+        return;
+      }
+
+      try {
+        await browser.storage.session.remove(ACTIVE_CHECK_SESSION_KEY);
+      }
+      catch (error) {
+        // The UI still receives the timeout if the active-check marker cannot be cleared.
+      }
+      browser.runtime.sendMessage({ message : 'flare-scan-watchdog-timeout', checkId : storedWatchdog.checkId }).catch(() => null);
 
       return;
     }
@@ -1449,7 +1529,8 @@ const bookmarksorganizer = {
   async recoverFlareSolverrTimeoutWatchdogs () {
     try {
       const storedValues = await browser.storage.session.get(null);
-      for (const [alarmName, deadline] of Object.entries(storedValues)) {
+      for (const [alarmName, watchdogRecord] of Object.entries(storedValues)) {
+        const deadline = bookmarksorganizer.getFlareSolverrWatchdogDeadline(watchdogRecord);
         if (alarmName.startsWith(FLARESOLVERR_WATCHDOG_PREFIX) && Number.isInteger(deadline)) {
           const deadlineExpired = deadline <= Date.now();
           if (deadlineExpired) {
@@ -1886,7 +1967,7 @@ const bookmarksorganizer = {
    * @param {bookmarks.BookmarkTreeNode} bookmark - a single bookmark
    * @param {boolean} updateCounter - whether the number of total bookmarks should be updated or not
    *
-   * @returns {void}
+   * @returns {Promise<void>} - resolves after the bookmark tree has been collected
    */
   async collectAllBookmarks (bookmark, updateCounter) {
     if (bookmarksorganizer.LIMIT > 0 && bookmarksorganizer.totalBookmarks === bookmarksorganizer.LIMIT) {
@@ -1901,22 +1982,22 @@ const bookmarksorganizer = {
 
     if (bookmark.url) {
       bookmarksorganizer.totalBookmarks++;
-      await browser.storage.session.set({ totalBookmarks : bookmarksorganizer.totalBookmarks });
-    }
-
-    if (updateCounter) {
-      const { totalBookmarks } = await browser.storage.session.get('totalBookmarks');
-
-      browser.runtime.sendMessage({
-        message : 'total-bookmarks-changed',
-        total_bookmarks : totalBookmarks
-      });
     }
 
     if (bookmark.children) {
       for (const child of bookmark.children) {
-        bookmarksorganizer.collectAllBookmarks(child, false);
+        // eslint-disable-next-line no-await-in-loop
+        await bookmarksorganizer.collectAllBookmarks(child, false);
       }
+    }
+
+    if (updateCounter) {
+      await browser.storage.session.set({ totalBookmarks : bookmarksorganizer.totalBookmarks });
+
+      browser.runtime.sendMessage({
+        message : 'total-bookmarks-changed',
+        total_bookmarks : bookmarksorganizer.totalBookmarks
+      });
     }
   },
 
@@ -2251,14 +2332,21 @@ const bookmarksorganizer = {
    *
    * @param {string} mode - the check mode
    *
-   * @returns {void}
+   * @returns {Promise<void>} - resolves after the check results have been sent
    */
-  finishCheck (mode) {
-    if (!bookmarksorganizer.inProgress) {
+  async finishCheck (mode) {
+    if (!bookmarksorganizer.inProgress || bookmarksorganizer.checkFinalized) {
       return;
     }
 
     bookmarksorganizer.checkFinalized = true;
+    const { checkId } = bookmarksorganizer;
+    try {
+      await browser.storage.session.remove(ACTIVE_CHECK_SESSION_KEY);
+    }
+    catch (error) {
+      // Normal completion still proceeds if the session marker cannot be cleared.
+    }
 
     const resultsById = new Set(bookmarksorganizer.bookmarksResult.map(({ id }) => id));
     const collectedById = new Map(bookmarksorganizer.collectedBookmarks.map((bookmark) => [bookmark.id, bookmark]));
@@ -2292,10 +2380,12 @@ const bookmarksorganizer = {
       bookmarksWarnings : bookmarksorganizer.bookmarkWarnings,
       disableConfirmations : bookmarksorganizer.disableConfirmations,
       debug : bookmarksorganizer.debug,
-      stopped : bookmarksorganizer.stopRequested
+      stopped : bookmarksorganizer.stopRequested,
+      checkId : checkId
     });
 
     bookmarksorganizer.inProgress = false;
+    bookmarksorganizer.checkId = null;
   },
 
   /**
