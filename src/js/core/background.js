@@ -9,6 +9,8 @@ const PREVIOUS_DEFAULT_REQUEST_TIMEOUT_IN_SECONDS = 15;
 const FLARESOLVERR_REQUEST_TIMEOUT_IN_SECONDS = 120;
 const PREVIOUS_DEFAULT_FLARESOLVERR_TIMEOUT_IN_SECONDS = 90;
 const PREVIOUS_DEFAULT_FLARESOLVERR_TIMEOUT_BEFORE_120_IN_SECONDS = 200;
+const HTTP_OK_STATUS = 200;
+const HTTP_MULTIPLE_CHOICES_STATUS = 300;
 const HTTP_ERROR_STATUS = 400;
 const HTTP_SERVER_ERROR_STATUS = 500;
 const HTTP_STATUS_UPPER_BOUND = 600;
@@ -18,6 +20,7 @@ const HTTP_SERVICE_UNAVAILABLE_STATUS = 503;
 const DEFAULT_REQUEST_DELAY_IN_SECONDS = 1;
 const MILLISECONDS_PER_SECOND = 1000;
 const FLARESOLVERR_MAX_CONCURRENT_REQUESTS = 2;
+const FLARESOLVERR_WATCHDOG_PREFIX = 'bookmarks-organizer-flaresolverr-timeout-';
 const STOP_TASK_DRAIN_TIMEOUT_IN_MS = 500;
 const RETRY_DELAY_MIN_IN_MS = 30000;
 const RETRY_DELAY_MAX_IN_MS = 60000;
@@ -675,7 +678,7 @@ const bookmarksorganizer = {
     // eslint-disable-next-line require-atomic-updates
     bookmarksorganizer.useFlareSolverr = options.useFlareSolverr === true;
     // eslint-disable-next-line require-atomic-updates
-    bookmarksorganizer.showRequestResults = bookmarksorganizer.useFlareSolverr && options.showFlareSolverrResult === true;
+    bookmarksorganizer.showRequestResults = options.showFlareSolverrResult === true;
     // eslint-disable-next-line require-atomic-updates
     bookmarksorganizer.shuffleUrls = options.shuffleUrls === true;
     try {
@@ -1282,9 +1285,19 @@ const bookmarksorganizer = {
 
       timeoutTriggered = true;
       rejectTimeout(abortError);
-      controller.abort();
       if (onTimeout) {
-        onTimeout();
+        try {
+          onTimeout();
+        }
+        catch (error) {
+          // The timeout must still abort and reject the request if slot release fails.
+        }
+      }
+      try {
+        controller.abort(abortError);
+      }
+      catch (error) {
+        // Rejecting the timeout race is sufficient to release the waiting task.
       }
     };
     const stopRequestPromise = new Promise((resolve, reject) => {
@@ -1297,7 +1310,7 @@ const bookmarksorganizer = {
 
     timeoutId = setTimeout(expireRequest, timeout);
     if (useAlarmWatchdog && browser.alarms && browser.alarms.create) {
-      alarmName = `bookmarks-organizer-flaresolverr-timeout-${++bookmarksorganizer.flareSolverrRequestSequence}`;
+      alarmName = `${FLARESOLVERR_WATCHDOG_PREFIX}${Date.now()}-${++bookmarksorganizer.flareSolverrRequestSequence}`;
       bookmarksorganizer.flareSolverrTimeoutWatchdogs.set(alarmName, {
         deadline : deadline,
         expire : expireRequest
@@ -1307,6 +1320,11 @@ const bookmarksorganizer = {
     try {
       if (alarmName) {
         try {
+          await Promise.race([
+            browser.storage.session.set({ [alarmName] : deadline }),
+            timeoutPromise,
+            stopRequestPromise
+          ]);
           await Promise.race([
             Promise.resolve(browser.alarms.create(alarmName, { when : deadline })),
             timeoutPromise,
@@ -1336,6 +1354,12 @@ const bookmarksorganizer = {
       if (alarmName) {
         bookmarksorganizer.flareSolverrTimeoutWatchdogs.delete(alarmName);
         try {
+          Promise.resolve(browser.storage.session.remove(alarmName)).catch(() => false);
+        }
+        catch (error) {
+          // The alarm is cleared below; stale session metadata is harmless.
+        }
+        try {
           Promise.resolve(browser.alarms.clear(alarmName)).catch(() => false);
         }
         catch (error) {
@@ -1354,6 +1378,43 @@ const bookmarksorganizer = {
   async handleFlareSolverrTimeoutAlarm (alarm) {
     const watchdog = bookmarksorganizer.flareSolverrTimeoutWatchdogs.get(alarm.name);
     if (!watchdog) {
+      if (!alarm.name.startsWith(FLARESOLVERR_WATCHDOG_PREFIX)) {
+        return;
+      }
+
+      let storedDeadline = null;
+      try {
+        const storedWatchdog = await browser.storage.session.get(alarm.name);
+        storedDeadline = storedWatchdog[alarm.name];
+      }
+      catch (error) {
+        return;
+      }
+
+      if (!Number.isInteger(storedDeadline)) {
+        return;
+      }
+
+      const remainingStoredTime = storedDeadline - Date.now();
+      if (remainingStoredTime > 0) {
+        try {
+          await browser.alarms.create(alarm.name, { when : storedDeadline });
+        }
+        catch (error) {
+          // A subsequent browser alarm or startup recovery will retry this deadline.
+        }
+
+        return;
+      }
+
+      try {
+        await browser.storage.session.remove(alarm.name);
+      }
+      catch (error) {
+        // The expired record is ignored after this alarm event.
+      }
+      browser.runtime.sendMessage({ message : 'flare-scan-watchdog-timeout' }).catch(() => null);
+
       return;
     }
 
@@ -1370,6 +1431,119 @@ const bookmarksorganizer = {
     }
 
     watchdog.expire();
+  },
+
+  /**
+   * Re-arms persisted FlareSolverr watchdog alarms if the MV3 background context restarted.
+   *
+   * @returns {Promise<void>} - resolves after stored deadlines are restored
+   */
+  async recoverFlareSolverrTimeoutWatchdogs () {
+    try {
+      const storedValues = await browser.storage.session.get(null);
+      for (const [alarmName, deadline] of Object.entries(storedValues)) {
+        if (alarmName.startsWith(FLARESOLVERR_WATCHDOG_PREFIX) && Number.isInteger(deadline)) {
+          const deadlineExpired = deadline <= Date.now();
+          if (deadlineExpired) {
+            // eslint-disable-next-line no-await-in-loop
+            await bookmarksorganizer.handleFlareSolverrTimeoutAlarm({ name : alarmName });
+          }
+
+          // eslint-disable-next-line no-await-in-loop
+          const alarm = deadlineExpired ? null : await browser.alarms.get(alarmName);
+          if (!deadlineExpired && !alarm) {
+            // eslint-disable-next-line no-await-in-loop
+            await browser.alarms.create(alarmName, { when : deadline });
+          }
+        }
+      }
+    }
+    catch (error) {
+      // The active request still has its local deadline timer if alarm recovery fails.
+    }
+  },
+
+  /**
+   * Sends a FlareSolverr request using XMLHttpRequest's native network timeout.
+   *
+   * @param {string} url - URL to check
+   * @param {number} timeout - request timeout in milliseconds
+   * @param {AbortSignal} signal - signal used by the independent watchdog
+   * @returns {Promise<Object>} - the FlareSolverr HTTP response and parsed JSON
+   */
+  requestFlareSolverr (url, timeout, signal) {
+    return new Promise((resolve, reject) => {
+      const request = new XMLHttpRequest();
+      let settled = false;
+      let abortRequest = null;
+      const abortError = new Error('FlareSolverr request aborted or timed out');
+      abortError.name = 'AbortError';
+
+      const cleanup = () => {
+        if (abortRequest) {
+          signal.removeEventListener('abort', abortRequest);
+        }
+      };
+      const rejectOnce = (error) => {
+        if (settled) {
+          return;
+        }
+
+        settled = true;
+        cleanup();
+        reject(error);
+      };
+      abortRequest = () => {
+        try {
+          request.abort();
+        }
+        catch (error) {
+          // The outer watchdog still settles the task if the browser rejects abort().
+        }
+        rejectOnce(abortError);
+      };
+
+      request.onload = () => {
+        try {
+          const result = JSON.parse(request.responseText);
+          settled = true;
+          cleanup();
+          resolve({
+            response : {
+              ok : request.status >= HTTP_OK_STATUS && request.status < HTTP_MULTIPLE_CHOICES_STATUS,
+              status : request.status
+            },
+            result : result
+          });
+        }
+        catch (error) {
+          rejectOnce(error);
+        }
+      };
+      request.onerror = () => rejectOnce(new TypeError('FlareSolverr network request failed'));
+      request.ontimeout = () => rejectOnce(abortError);
+      request.onabort = () => rejectOnce(abortError);
+      signal.addEventListener('abort', abortRequest, { once : true });
+
+      try {
+        request.open('POST', bookmarksorganizer.flareSolverrUrl, true);
+        request.timeout = timeout;
+        request.setRequestHeader('Content-Type', 'application/json');
+        request.send(JSON.stringify({
+          cmd : 'request.get',
+          url : url,
+          maxTimeout : timeout,
+          waitInSeconds : 30
+        }));
+
+        if (signal.aborted) {
+          abortRequest();
+        }
+      }
+      catch (error) {
+        rejectOnce(error);
+      }
+    });
   },
 
   /**
@@ -1425,23 +1599,7 @@ const bookmarksorganizer = {
       controller = new AbortController();
       bookmarksorganizer.activeControllers.add(controller);
       const flareSolverrTimeout = bookmarksorganizer.FLARESOLVERR_REQUEST_TIMEOUT_IN_MS;
-      const { response, result } = await bookmarksorganizer.withRequestTimeout(() => (async () => {
-        const flareSolverrResponse = await fetch(bookmarksorganizer.flareSolverrUrl, {
-          cache : 'no-store',
-          headers : { 'Content-Type' : 'application/json' },
-          method : 'POST',
-          redirect : 'follow',
-          body : JSON.stringify({
-            cmd : 'request.get',
-            url : bookmark.url,
-            maxTimeout : flareSolverrTimeout,
-            waitInSeconds : 30
-          }),
-          signal : controller.signal
-        });
-
-        return { response : flareSolverrResponse, result : await flareSolverrResponse.json() };
-      })(), controller, flareSolverrTimeout, true, releaseSlot);
+      const { response, result } = await bookmarksorganizer.withRequestTimeout(() => bookmarksorganizer.requestFlareSolverr(bookmark.url, flareSolverrTimeout, controller.signal), controller, flareSolverrTimeout, true, releaseSlot);
       flareSolverrHttpStatus = response.status;
       if (response.ok && result.status === 'ok' && result.solution) {
         // continue with the successful solution below
@@ -2193,6 +2351,8 @@ browser.omnibox.onInputEntered.addListener(bookmarksorganizer.callOmniboxAction)
 browser.omnibox.setDefaultSuggestion({ description : browser.i18n.getMessage('omnibox_default_description') });
 browser.alarms.onAlarm.addListener((alarm) => bookmarksorganizer.handleFlareSolverrTimeoutAlarm(alarm));
 browser.runtime.onMessage.addListener(bookmarksorganizer.handleResponse);
+
+bookmarksorganizer.recoverFlareSolverrTimeoutWatchdogs().catch(() => false);
 
 (async () => {
   const { contextMenuInitialized } = await browser.storage.session.get('isContextMenuInitialized');

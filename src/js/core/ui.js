@@ -319,22 +319,31 @@ const ui = {
     elStopButton.disabled = true;
     browser.runtime.sendMessage({ message : 'stop' }).catch(() => null);
 
-    if (ui.mode === 'broken-bookmarks') {
-      // End the visible check locally from the most recent results snapshot.
-      // A stalled background request must not trap the UI behind its spinner.
-      ui.handleResponse({
-        message : 'finished',
-        mode : ui.mode,
-        bookmarks : ui.partialBookmarks,
-        totalBookmarks : parseInt(elTotalBookmarks.textContent) || 0,
-        checkedBookmarks : parseInt(elCheckedBookmarks.textContent) || 0,
-        bookmarksErrors : ui.errors,
-        bookmarksWarnings : ui.warnings,
-        disableConfirmations : ui.disableConfirmations,
-        debug : [],
-        stopped : true
-      });
+    ui.finishPartialCheck();
+  },
+
+  /**
+   * Finishes the visible check from its latest partial results snapshot.
+   *
+   * @returns {void}
+   */
+  finishPartialCheck () {
+    if (ui.mode !== 'broken-bookmarks' || elStopButton.classList.contains('hidden')) {
+      return;
     }
+
+    ui.handleResponse({
+      message : 'finished',
+      mode : ui.mode,
+      bookmarks : ui.partialBookmarks,
+      totalBookmarks : parseInt(elTotalBookmarks.textContent) || 0,
+      checkedBookmarks : parseInt(elCheckedBookmarks.textContent) || 0,
+      bookmarksErrors : ui.errors,
+      bookmarksWarnings : ui.warnings,
+      disableConfirmations : ui.disableConfirmations,
+      debug : [],
+      stopped : true
+    });
   },
 
   /**
@@ -344,6 +353,7 @@ const ui = {
    *
    * @returns {void}
    */
+  // eslint-disable-next-line complexity
   handleResponse (response) {
     if (response.message === 'permission-granted') {
       ui.hasPermission = true;
@@ -432,6 +442,11 @@ const ui = {
       if (Array.isArray(response.partial_bookmarks)) {
         ui.partialBookmarks = response.partial_bookmarks;
       }
+    }
+    else if (response.message === 'flare-scan-watchdog-timeout') {
+      // The background context may have restarted while FlareSolverr was stalled.
+      // It can no longer settle the old promises, so finish this UI from saved progress.
+      ui.finishPartialCheck();
     }
     else if (response.message === 'finished') {
       ui.disableConfirmations = response.disableConfirmations;

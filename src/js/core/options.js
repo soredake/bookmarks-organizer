@@ -27,6 +27,17 @@ const elReturnBtn = document.getElementById('return-button');
  */
 const options = {
   /**
+   * Enables or disables FlareSolverr-only settings together with the main option.
+   *
+   * @param {boolean} enabled - whether FlareSolverr is enabled
+   * @returns {void}
+   */
+  setFlareSolverrOptionsEnabled (enabled) {
+    elFlareSolverrRequestTimeout.disabled = !enabled;
+    elFlareSolverrUrl.disabled = !enabled;
+  },
+
+  /**
    * Fired when the initial HTML document has been completely loaded and parsed. This method is used to load the
    * current options.
    *
@@ -91,13 +102,11 @@ const options = {
 
     elDirectRequestTimeout.value = directRequestTimeout;
     elFlareSolverrRequestTimeout.value = flareSolverrRequestTimeout;
-    elFlareSolverrRequestTimeout.disabled = !option.useFlareSolverr;
     elRequestDelay.value = option.requestDelay;
     elUseFlareSolverr.checked = option.useFlareSolverr;
     elFlareSolverrUrl.value = option.flareSolverrUrl;
-    elFlareSolverrUrl.disabled = !option.useFlareSolverr;
     elShowFlareSolverrResult.checked = option.showFlareSolverrResult;
-    elShowFlareSolverrResult.disabled = !option.useFlareSolverr;
+    options.setFlareSolverrOptionsEnabled(option.useFlareSolverr);
     elShuffleUrls.checked = option.shuffleUrls;
   }
 };
@@ -157,9 +166,7 @@ elUseFlareSolverr.addEventListener('change', async (e) => {
   const enabled = e.target.checked;
   await browser.storage.local.set({ useFlareSolverr : enabled });
 
-  elFlareSolverrUrl.disabled = !enabled;
-  elFlareSolverrRequestTimeout.disabled = !enabled;
-  elShowFlareSolverrResult.disabled = !enabled;
+  options.setFlareSolverrOptionsEnabled(enabled);
 });
 
 elShowFlareSolverrResult.addEventListener('change', (e) => {
