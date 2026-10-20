@@ -20,7 +20,8 @@ const HTTP_SERVICE_UNAVAILABLE_STATUS = 503;
 const DEFAULT_REQUEST_DELAY_IN_SECONDS = 1;
 const MILLISECONDS_PER_SECOND = 1000;
 const FLARESOLVERR_MAX_CONCURRENT_REQUESTS = 2;
-const FLARESOLVERR_WATCHDOG_PREFIX = 'bookmarks-organizer-flaresolverr-timeout-';
+const REQUEST_TIMEOUT_WATCHDOG_PREFIX = 'bookmarks-organizer-request-timeout-';
+const LEGACY_FLARESOLVERR_WATCHDOG_PREFIX = 'bookmarks-organizer-flaresolverr-timeout-';
 const ACTIVE_CHECK_SESSION_KEY = 'bookmarksOrganizerActiveCheckId';
 const STOP_TASK_DRAIN_TIMEOUT_IN_MS = 500;
 const RETRY_DELAY_MIN_IN_MS = 30000;
@@ -1023,7 +1024,7 @@ const bookmarksorganizer = {
           response : directResponse,
           challenge : await bookmarksorganizer.isCloudflareChallengeResponse(directResponse)
         };
-      })(), controller, bookmarksorganizer.DIRECT_REQUEST_TIMEOUT_IN_MS);
+      })(), controller, bookmarksorganizer.DIRECT_REQUEST_TIMEOUT_IN_MS, true);
       if (bookmarksorganizer.showRequestResults) {
         // eslint-disable-next-line require-atomic-updates
         bookmark.directRequestResult = `HTTP ${response.status}`;
@@ -1364,7 +1365,7 @@ const bookmarksorganizer = {
 
     timeoutId = setTimeout(expireRequest, timeout);
     if (useAlarmWatchdog && browser.alarms && browser.alarms.create) {
-      alarmName = `${FLARESOLVERR_WATCHDOG_PREFIX}${Date.now()}-${++bookmarksorganizer.flareSolverrRequestSequence}`;
+      alarmName = `${REQUEST_TIMEOUT_WATCHDOG_PREFIX}${Date.now()}-${++bookmarksorganizer.flareSolverrRequestSequence}`;
       bookmarksorganizer.flareSolverrTimeoutWatchdogs.set(alarmName, {
         deadline : deadline,
         expire : expireRequest
@@ -1454,7 +1455,7 @@ const bookmarksorganizer = {
   async handleFlareSolverrTimeoutAlarm (alarm) {
     const watchdog = bookmarksorganizer.flareSolverrTimeoutWatchdogs.get(alarm.name);
     if (!watchdog) {
-      if (!alarm.name.startsWith(FLARESOLVERR_WATCHDOG_PREFIX)) {
+      if (!alarm.name.startsWith(REQUEST_TIMEOUT_WATCHDOG_PREFIX) && !alarm.name.startsWith(LEGACY_FLARESOLVERR_WATCHDOG_PREFIX)) {
         return;
       }
 
@@ -1531,7 +1532,7 @@ const bookmarksorganizer = {
       const storedValues = await browser.storage.session.get(null);
       for (const [alarmName, watchdogRecord] of Object.entries(storedValues)) {
         const deadline = bookmarksorganizer.getFlareSolverrWatchdogDeadline(watchdogRecord);
-        if (alarmName.startsWith(FLARESOLVERR_WATCHDOG_PREFIX) && Number.isInteger(deadline)) {
+        if ((alarmName.startsWith(REQUEST_TIMEOUT_WATCHDOG_PREFIX) || alarmName.startsWith(LEGACY_FLARESOLVERR_WATCHDOG_PREFIX)) && Number.isInteger(deadline)) {
           const deadlineExpired = deadline <= Date.now();
           if (deadlineExpired) {
             // eslint-disable-next-line no-await-in-loop
