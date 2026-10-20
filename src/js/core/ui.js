@@ -782,6 +782,11 @@ const ui = {
       elUrl.setAttribute('target', '_blank');
       elUrl.setAttribute('rel', 'noopener');
 
+      if (bookmark.directRequestResult) {
+        const elDirectRequestResult = template.querySelector('.direct-request-result');
+        elDirectRequestResult.textContent = `${browser.i18n.getMessage('direct_result_label')}: ${bookmark.directRequestResult}`;
+      }
+
       if (bookmark.flareSolverrResult) {
         const elFlareSolverrResult = template.querySelector('.flare-solverr-result');
         elFlareSolverrResult.textContent = `${browser.i18n.getMessage('flaresolverr_result_label')}: ${bookmark.flareSolverrResult}`;

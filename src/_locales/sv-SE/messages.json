@@ -189,10 +189,13 @@
     "message": "Vill du verkligen återställa vitlistan?"
   },
   "option_flaresolverr_show_result": {
-    "message": "Visa FlareSolverr-resultat under länkar"
+    "message": "Visa resultat från direktförfrågningar och FlareSolverr under länkar"
   },
   "flaresolverr_result_label": {
     "message": "FlareSolverr-resultat"
+  },
+  "direct_result_label": {
+    "message": "Resultat från direktförfrågan"
   },
   "flaresolverr_timeout": {
     "message": "Tidsgränsen för begäran överskreds"

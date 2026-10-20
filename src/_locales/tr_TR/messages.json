@@ -189,10 +189,13 @@
     "message": "Beyaz listeyi gerçekten sıfırlamak istiyor musunuz?"
   },
   "option_flaresolverr_show_result": {
-    "message": "FlareSolverr sonucunu bağlantıların altında göster"
+    "message": "Doğrudan ve FlareSolverr isteklerinin sonuçlarını bağlantıların altında göster"
   },
   "flaresolverr_result_label": {
     "message": "FlareSolverr sonucu"
+  },
+  "direct_result_label": {
+    "message": "Doğrudan istek sonucu"
   },
   "flaresolverr_timeout": {
     "message": "İstek zaman aşımına uğradı"

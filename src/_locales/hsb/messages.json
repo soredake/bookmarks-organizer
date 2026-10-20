@@ -189,10 +189,13 @@
     "message": "Ma so běła lisćina woprawdźe wróćo stajić?"
   },
   "option_flaresolverr_show_result": {
-    "message": "Wuslědk FlareSolverr pod wotkazami pokazać"
+    "message": "Wuslědki direktnych naprašowanjow a FlareSolverr pod wotkazami pokazać"
   },
   "flaresolverr_result_label": {
     "message": "Wuslědk FlareSolverr"
+  },
+  "direct_result_label": {
+    "message": "Wuslědk direktneho naprašowanja"
   },
   "flaresolverr_timeout": {
     "message": "Čas za naprašowanje je wotběženy"

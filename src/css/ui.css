@@ -535,6 +535,7 @@ button#reset-whitelist {
   position: relative;
 }
 
+#results .direct-request-result,
 #results .flare-solverr-result {
   padding-left: 24px;
   color: var(--color-body-text-reduced-opacity);

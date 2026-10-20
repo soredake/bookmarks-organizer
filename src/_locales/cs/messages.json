@@ -189,10 +189,13 @@
     "message": "Do you really want to reset the whitelist?"
   },
   "option_flaresolverr_show_result": {
-    "message": "Zobrazit výsledek FlareSolverr pod odkazy"
+    "message": "Zobrazit výsledky přímých požadavků a FlareSolverr pod odkazy"
   },
   "flaresolverr_result_label": {
     "message": "Výsledek FlareSolverr"
+  },
+  "direct_result_label": {
+    "message": "Výsledek přímého požadavku"
   },
   "flaresolverr_timeout": {
     "message": "Vypršel časový limit požadavku"

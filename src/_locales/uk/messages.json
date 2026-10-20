@@ -213,10 +213,13 @@
     "message": "Ви дійсно хочете скинути білий список?"
   },
   "option_flaresolverr_show_result": {
-    "message": "Показувати результат FlareSolverr під посиланнями"
+    "message": "Показувати результати прямих запитів і FlareSolverr під посиланнями"
   },
   "flaresolverr_result_label": {
     "message": "Результат FlareSolverr"
+  },
+  "direct_result_label": {
+    "message": "Результат прямого запиту"
   },
   "flaresolverr_timeout": {
     "message": "Час очікування запиту вичерпано"

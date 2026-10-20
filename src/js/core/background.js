@@ -97,7 +97,7 @@ const bookmarksorganizer = {
   useFlareSolverr : false,
 
   /** @type {boolean} */
-  showFlareSolverrResult : false,
+  showRequestResults : false,
 
   /** @type {boolean} */
   shuffleUrls : false,
@@ -668,7 +668,7 @@ const bookmarksorganizer = {
     // eslint-disable-next-line require-atomic-updates
     bookmarksorganizer.useFlareSolverr = options.useFlareSolverr === true;
     // eslint-disable-next-line require-atomic-updates
-    bookmarksorganizer.showFlareSolverrResult = bookmarksorganizer.useFlareSolverr && options.showFlareSolverrResult === true;
+    bookmarksorganizer.showRequestResults = bookmarksorganizer.useFlareSolverr && options.showFlareSolverrResult === true;
     // eslint-disable-next-line require-atomic-updates
     bookmarksorganizer.shuffleUrls = options.shuffleUrls === true;
     try {
@@ -945,6 +945,7 @@ const bookmarksorganizer = {
         const directResponse = await fetch(bookmark.url, {
           cache : 'no-store',
           method : method,
+          redirect : 'follow',
           signal : signal
         });
 
@@ -953,6 +954,10 @@ const bookmarksorganizer = {
           challenge : await bookmarksorganizer.isCloudflareChallengeResponse(directResponse)
         };
       })(), controller, bookmarksorganizer.DIRECT_REQUEST_TIMEOUT_IN_MS);
+      if (bookmarksorganizer.showRequestResults) {
+        // eslint-disable-next-line require-atomic-updates
+        bookmark.directRequestResult = `HTTP ${response.status}`;
+      }
       controller.abort();
       bookmarksorganizer.releaseDirectRequestSlot();
       directSlotAcquired = false;
@@ -1059,6 +1064,10 @@ const bookmarksorganizer = {
       else {
         // eslint-disable-next-line require-atomic-updates
         bookmark.status = STATUS.FETCH_ERROR;
+      }
+      if (bookmarksorganizer.showRequestResults) {
+        // eslint-disable-next-line require-atomic-updates
+        bookmark.directRequestResult = error.name === 'AbortError' ? browser.i18n.getMessage('flaresolverr_timeout') : error.message;
       }
 
       if (bookmarksorganizer.debugEnabled) {
@@ -1380,7 +1389,7 @@ const bookmarksorganizer = {
       }
 
       const { solution } = result;
-      if (bookmarksorganizer.showFlareSolverrResult) {
+      if (bookmarksorganizer.showRequestResults) {
         // eslint-disable-next-line require-atomic-updates
         bookmark.flareSolverrResult = `HTTP ${solution.status}`;
       }
@@ -1447,7 +1456,7 @@ const bookmarksorganizer = {
         bookmarksorganizer.addFlareSolverrDirectOnlyDomain(bookmark.url);
         retryDirectly = true;
       }
-      if (bookmarksorganizer.showFlareSolverrResult) {
+      if (bookmarksorganizer.showRequestResults) {
         let flareSolverrResult = error.message;
         if (error.name === 'AbortError') {
           flareSolverrResult = browser.i18n.getMessage('flaresolverr_timeout');

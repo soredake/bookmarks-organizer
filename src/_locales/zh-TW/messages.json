@@ -189,10 +189,13 @@
     "message": "確定要重設白名單？"
   },
   "option_flaresolverr_show_result": {
-    "message": "在連結下方顯示 FlareSolverr 結果"
+    "message": "在連結下方顯示直接請求和 FlareSolverr 的結果"
   },
   "flaresolverr_result_label": {
     "message": "FlareSolverr 結果"
+  },
+  "direct_result_label": {
+    "message": "直接請求結果"
   },
   "flaresolverr_timeout": {
     "message": "要求逾時"

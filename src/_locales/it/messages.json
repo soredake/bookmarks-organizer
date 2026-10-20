@@ -189,10 +189,13 @@
     "message": "Vuoi davvero svuotare la whitelist?"
   },
   "option_flaresolverr_show_result": {
-    "message": "Mostra il risultato di FlareSolverr sotto i link"
+    "message": "Mostra i risultati delle richieste dirette e di FlareSolverr sotto i link"
   },
   "flaresolverr_result_label": {
     "message": "Risultato FlareSolverr"
+  },
+  "direct_result_label": {
+    "message": "Risultato della richiesta diretta"
   },
   "flaresolverr_timeout": {
     "message": "Richiesta scaduta"

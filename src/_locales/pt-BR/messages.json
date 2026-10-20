@@ -189,10 +189,13 @@
     "message": "Você tem certeza que deseja limpar a lista branca?"
   },
   "option_flaresolverr_show_result": {
-    "message": "Mostrar o resultado do FlareSolverr abaixo dos links"
+    "message": "Mostrar os resultados das solicitações diretas e do FlareSolverr abaixo dos links"
   },
   "flaresolverr_result_label": {
     "message": "Resultado do FlareSolverr"
+  },
+  "direct_result_label": {
+    "message": "Resultado da solicitação direta"
   },
   "flaresolverr_timeout": {
     "message": "Tempo limite da solicitação excedido"

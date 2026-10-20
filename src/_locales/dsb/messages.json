@@ -189,10 +189,13 @@
     "message": "Ma se běła lisćina napšawdu slědk stajiś?"
   },
   "option_flaresolverr_show_result": {
-    "message": "Wuslědk FlareSolverr pód wotkazami pokazać"
+    "message": "Wuslědki direktnych napšašowanjow a FlareSolverr pód wotkazami pokazać"
   },
   "flaresolverr_result_label": {
     "message": "Wuslědk FlareSolverr"
+  },
+  "direct_result_label": {
+    "message": "Wuslědk direktneho napšašowanja"
   },
   "flaresolverr_timeout": {
     "message": "Čas za napšašowanje je wotběženy"

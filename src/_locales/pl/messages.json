@@ -189,10 +189,13 @@
     "message": "Czy na pewno chcesz wyczyścić białą listę?"
   },
   "option_flaresolverr_show_result": {
-    "message": "Pokaż wynik FlareSolverr pod linkami"
+    "message": "Pokaż wyniki bezpośrednich żądań i FlareSolverr pod linkami"
   },
   "flaresolverr_result_label": {
     "message": "Wynik FlareSolverr"
+  },
+  "direct_result_label": {
+    "message": "Wynik bezpośredniego żądania"
   },
   "flaresolverr_timeout": {
     "message": "Przekroczono limit czasu żądania"

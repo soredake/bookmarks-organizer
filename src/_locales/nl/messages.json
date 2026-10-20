@@ -189,10 +189,13 @@
     "message": "Wilt u de witte lijst echt herinitialiseren?"
   },
   "option_flaresolverr_show_result": {
-    "message": "FlareSolverr-resultaat onder links tonen"
+    "message": "Resultaten van directe verzoeken en FlareSolverr onder links tonen"
   },
   "flaresolverr_result_label": {
     "message": "FlareSolverr-resultaat"
+  },
+  "direct_result_label": {
+    "message": "Resultaat van direct verzoek"
   },
   "flaresolverr_timeout": {
     "message": "Time-out bij aanvraag"

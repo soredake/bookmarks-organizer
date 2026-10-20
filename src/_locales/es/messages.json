@@ -189,10 +189,13 @@
     "message": "Do you really want to reset the whitelist?"
   },
   "option_flaresolverr_show_result": {
-    "message": "Mostrar el resultado de FlareSolverr debajo de los enlaces"
+    "message": "Mostrar los resultados de las solicitudes directas y de FlareSolverr debajo de los enlaces"
   },
   "flaresolverr_result_label": {
     "message": "Resultado de FlareSolverr"
+  },
+  "direct_result_label": {
+    "message": "Resultado de la solicitud directa"
   },
   "flaresolverr_timeout": {
     "message": "La solicitud agotó el tiempo de espera"

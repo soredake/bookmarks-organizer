@@ -189,10 +189,13 @@
     "message": "Do you really want to reset the whitelist?"
   },
   "option_flaresolverr_show_result": {
-    "message": "在链接下方显示 FlareSolverr 结果"
+    "message": "在链接下方显示直接请求和 FlareSolverr 的结果"
   },
   "flaresolverr_result_label": {
     "message": "FlareSolverr 结果"
+  },
+  "direct_result_label": {
+    "message": "直接请求结果"
   },
   "flaresolverr_timeout": {
     "message": "请求超时"

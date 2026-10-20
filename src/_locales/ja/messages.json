@@ -189,10 +189,13 @@
     "message": "本当にホワイトリストをリセットしますか？"
   },
   "option_flaresolverr_show_result": {
-    "message": "リンクの下にFlareSolverrの結果を表示"
+    "message": "リンクの下に直接リクエストとFlareSolverrの結果を表示"
   },
   "flaresolverr_result_label": {
     "message": "FlareSolverrの結果"
+  },
+  "direct_result_label": {
+    "message": "直接リクエストの結果"
   },
   "flaresolverr_timeout": {
     "message": "リクエストがタイムアウトしました"
