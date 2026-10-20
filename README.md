@@ -26,6 +26,33 @@ higher is required for the latest version of Bookmarks Organizer).**
 - Internal skip list for domains that are known as not validatable for technical reasons
 - Light and dark user interface, depending on your Firefox preference
 
+#### Fork features
+
+- **Configurable request controls:** Set the maximum number of simultaneous direct requests (two by default), the delay
+  between requests (one second by default), and separate timeouts for direct requests (30 seconds by default) and
+  FlareSolverr requests (120 seconds by default). Direct requests use the configured concurrency limit; FlareSolverr
+  requests have their own limit of two and do not occupy direct-request slots.
+- **Optional FlareSolverr support:** Try direct requests first and escalate eligible challenge responses to a configured
+  FlareSolverr `/v1` endpoint. FlareSolverr calls use POST, follow redirects, and request a 30-second solver wait.
+  Challenge-specific URL patterns such as `/altcha/` and `__cake_test` are supported. A 503 can escalate after a
+  ten-second delay; checking 404 responses through FlareSolverr is a separate, off-by-default option with the same
+  delay. 429 responses do not escalate to FlareSolverr.
+- **Safer response handling:** Direct checks start with HEAD and fall back to GET when needed. A clean 404 is treated as
+  a dead link; blocked responses, timeouts, and network errors are reported as unknown when they cannot establish that
+  a link is dead. Retryable failures get one retry after a 30–60 second jittered delay, while clean 404 responses are
+  not retried by default. FlareSolverr JSON parse failures put that host on a direct-only list for the current check and
+  schedule a direct POST retry after five seconds.
+- **Redirect and response details:** Follow redirects to their final destination and show the resulting URL. An option,
+  enabled by default, displays the final HTTP result from both direct checks and FlareSolverr beneath each bookmark.
+- **Less predictable scan traffic:** Shuffle URLs before checking (enabled by default), spreading links from the same
+  domain apart where possible to reduce bursts against one site.
+- **Reliable long-running checks:** Enforce hard FlareSolverr timeouts with an independent watchdog, release FlareSolverr
+  capacity when a request times out, and keep its queue separate from direct requests. The Stop button cancels active
+  and queued work promptly and displays the results collected so far. Normal completion is kept distinct from a
+  watchdog-triggered stop, and bookmark totals are counted without showing partial counts.
+- **Interface and localization fixes:** Translate the new settings and stop status, keep translated text from colliding
+  with buttons, repair filter-checkbox presentation, and open settings in the current tab.
+
 ### Shortcuts
 
 The interface can also be accessed via the keyboard. For this purpose the combination **Shift + F11** is reserved. Or
