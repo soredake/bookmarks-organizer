@@ -33,9 +33,8 @@ higher is required for the latest version of Bookmarks Organizer).**
   FlareSolverr requests (120 seconds by default). Direct requests use the configured concurrency limit; FlareSolverr
   requests have their own limit of two and do not occupy direct-request slots.
 - **Optional FlareSolverr support:** Try direct requests first and escalate eligible challenge responses to a configured
-  FlareSolverr `/v1` endpoint. FlareSolverr calls use POST, follow redirects, and request a 30-second solver wait.
-  Challenge-specific URL patterns such as `/altcha/` and `__cake_test` are supported. A 503 can escalate after a
-  ten-second delay. 404 and 429 responses do not escalate to FlareSolverr.
+  FlareSolverr `/v1` endpoint when a direct request returns 403 with Cloudflare challenge markers. FlareSolverr calls
+  use POST and follow redirects. Other statuses and URL patterns do not escalate to FlareSolverr.
 - **Safer response handling:** Direct checks start with HEAD and fall back to GET when needed. A clean 404 is treated as
   a dead link; blocked responses, timeouts, and network errors are reported as unknown when they cannot establish that
   a link is dead. Retryable failures get one retry after a 30–60 second jittered delay, while clean 404 responses are

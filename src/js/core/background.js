@@ -28,12 +28,9 @@ const STOP_TASK_DRAIN_TIMEOUT_IN_MS = 500;
 const RETRY_DELAY_MIN_IN_MS = 30000;
 const RETRY_DELAY_MAX_IN_MS = 60000;
 const FLARESOLVERR_JSON_PARSE_RETRY_DELAY_IN_MS = 5000;
-const FLARESOLVERR_ONLY_PATTERN_DELAY_IN_MS = 5000;
-const FLARESOLVERR_STATUS_ESCALATION_DELAY_IN_MS = 10000;
 const INTERLEAVE_POSITION_OFFSET = 0.5;
 const CHALLENGE_BODY_MAX_LENGTH = 65536;
 const CLOUDFLARE_CHALLENGE_MARKERS = /cf-mitigated|__cf_chl_rt_tk|__cf_chl_|cf-chl/i;
-const FLARESOLVERR_ONLY_URL_PATTERNS = [/\/altcha\//i, /__cake_test/i];
 /* Disabled: protected-domain detection caused unconditional FlareSolverr requests.
 const KNOWN_PROTECTED_DOMAINS = [
   'archiveofourown.org',
@@ -944,18 +941,7 @@ const bookmarksorganizer = {
       if ((/^https?:\/\//).test(bookmark.url)) {
         bookmark.attempts = 0;
 
-        let checkedBookmark = bookmark;
-        if (
-          bookmarksorganizer.useFlareSolverr &&
-          !bookmarksorganizer.isDirectOnlyDomain(bookmark.url) &&
-          bookmarksorganizer.useCloudflareDomainRouting &&
-          bookmarksorganizer.isCloudflareDomain(bookmark.url)
-        ) {
-          checkedBookmark = await bookmarksorganizer.checkFlareSolverrResponse(bookmark);
-        }
-        else {
-          checkedBookmark = await bookmarksorganizer.checkHttpResponse(bookmark, 'HEAD');
-        }
+        const checkedBookmark = await bookmarksorganizer.checkHttpResponse(bookmark, 'HEAD');
         if (bookmarksorganizer.checkFinalized) {
           return;
         }
@@ -1130,34 +1116,11 @@ const bookmarksorganizer = {
         bookmark.status = STATUS.UNKNOWN;
       }
 
-      const matchesFlareSolverrOnlyPattern = bookmarksorganizer.useFlareSolverr &&
-        !bookmarksorganizer.isDirectOnlyDomain(bookmark.url) &&
-        response.status !== STATUS.NOT_FOUND &&
-        [bookmark.url, response.url].some((url) => bookmarksorganizer.isFlareSolverrOnlyUrl(url));
-      let flareSolverrEscalationDelay = null;
-      if (matchesFlareSolverrOnlyPattern) {
-        flareSolverrEscalationDelay = FLARESOLVERR_ONLY_PATTERN_DELAY_IN_MS;
-      }
-      else if (bookmarksorganizer.useFlareSolverr && !bookmarksorganizer.isDirectOnlyDomain(bookmark.url) && (
-        response.status === HTTP_SERVICE_UNAVAILABLE_STATUS
-      )) {
-        flareSolverrEscalationDelay = FLARESOLVERR_STATUS_ESCALATION_DELAY_IN_MS;
-      }
-      if (flareSolverrEscalationDelay !== null) {
-        await bookmarksorganizer.waitForFlareSolverrEscalation(flareSolverrEscalationDelay);
-        if (!bookmarksorganizer.stopRequested) {
-          return bookmarksorganizer.checkFlareSolverrResponse(bookmark);
-        }
-      }
-
       const shouldUseFlareSolverr = bookmarksorganizer.useFlareSolverr &&
         !bookmarksorganizer.isDirectOnlyDomain(bookmark.url) &&
-        response.status !== STATUS.NOT_FOUND &&
-        (
-          response.status === HTTP_FORBIDDEN_STATUS ||
-          (challenge && ![HTTP_TOO_MANY_REQUESTS_STATUS, HTTP_SERVICE_UNAVAILABLE_STATUS].includes(response.status))
-        );
-      if (shouldUseFlareSolverr && challenge && !bookmarksorganizer.stopRequested) {
+        response.status === HTTP_FORBIDDEN_STATUS &&
+        challenge;
+      if (shouldUseFlareSolverr && !bookmarksorganizer.stopRequested) {
         return bookmarksorganizer.checkFlareSolverrResponse(bookmark);
       }
 
@@ -1460,31 +1423,6 @@ const bookmarksorganizer = {
     });
 
     return result;
-  },
-
-  /**
-   * Checks whether a URL matches a pattern that requires FlareSolverr.
-   *
-   * @param {string} url - the URL to check
-   * @returns {boolean} - whether the URL is FlareSolverr-only
-   */
-  isFlareSolverrOnlyUrl (url) {
-    return FLARESOLVERR_ONLY_URL_PATTERNS.some((pattern) => pattern.test(url));
-  },
-
-  /**
-   * Waits before escalating a direct request to FlareSolverr, unless checking stops.
-   *
-   * @param {number} delay - the delay in milliseconds
-   * @returns {Promise<void>} - resolves when the delay elapses or checking stops
-   */
-  async waitForFlareSolverrEscalation (delay) {
-    await Promise.race([
-      new Promise((resolve) => {
-        setTimeout(resolve, delay);
-      }),
-      bookmarksorganizer.stopPromise
-    ]);
   },
 
   /**
