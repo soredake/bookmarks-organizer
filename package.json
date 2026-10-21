@@ -27,10 +27,6 @@
     "eslint-plugin-promise": "6.6.0",
     "eslint-plugin-sort-requires": "2.1.0",
     "eslint-plugin-xss": "0.1.12",
-    "gulp": "4.0.2",
-    "gulp-eslint-new": "1.9.1",
-    "gulp-htmllint": "0.0.19",
-    "gulp-jsdoc3": "3.0.0",
     "htmllint": "0.8.0",
     "jsdoc": "4.0.5",
     "jsdoc-strip-async-await": "0.1.0",
@@ -42,15 +38,18 @@
   },
   "scripts": {
     "build": "cd src && web-ext build -a ../dist",
-    "docs": "gulp docs",
+    "docs": "jsdoc -c jsdoc.json CHANGELOG.md README.md -r src/js",
     "lint": "npm-run-all lint:*",
-    "lint:html": "gulp lint-html",
-    "lint:js": "gulp lint-js",
-    "lint:css": "gulp lint-css",
+    "lint:html": "node scripts/lint-html.js",
+    "lint:js": "eslint src/js",
+    "lint:css": "stylelint \"src/css/*.css\" --config .stylelintrc.json --formatter string",
     "lint:webext": "cd src && web-ext lint",
     "run:nightly": "cd src && web-ext run --firefox=nightly",
     "run:beta": "cd src && web-ext run --firefox=beta",
     "run:stable": "cd src && web-ext run --firefox=firefox",
     "run:esr": "cd src && web-ext run --firefox=\"/Applications/Firefox ESR.app\""
+  },
+  "overrides": {
+    "postcss-selector-parser": "7.1.7"
   }
 }
