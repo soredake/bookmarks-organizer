@@ -23,6 +23,7 @@ const ACTIVE_CHECK_SESSION_KEY = 'bookmarksOrganizerActiveCheckId';
 const STOP_TASK_DRAIN_TIMEOUT_IN_MS = 500;
 const RETRY_DELAY_MIN_IN_MS = 30000;
 const RETRY_DELAY_MAX_IN_MS = 60000;
+const RATE_LIMIT_RETRY_DELAY_IN_MS = 5000;
 const FLARESOLVERR_JSON_PARSE_RETRY_DELAY_IN_MS = 5000;
 const INTERLEAVE_POSITION_OFFSET = 0.5;
 const CHALLENGE_BODY_MAX_LENGTH = 65536;
@@ -1102,7 +1103,13 @@ const bookmarksorganizer = {
 
       // Some servers reject HEAD even though the page is available through GET.
       // Treat this as a method fallback, not as a retry attempt.
-      if (method === 'HEAD' && response.status !== STATUS.NOT_FOUND && (response.status >= HTTP_ERROR_STATUS || challenge) && !bookmarksorganizer.stopRequested) {
+      if (
+        method === 'HEAD' &&
+        response.status !== STATUS.NOT_FOUND &&
+        ![HTTP_TOO_MANY_REQUESTS_STATUS, HTTP_SERVICE_UNAVAILABLE_STATUS].includes(response.status) &&
+        (response.status >= HTTP_ERROR_STATUS || challenge) &&
+        !bookmarksorganizer.stopRequested
+      ) {
         // eslint-disable-next-line require-atomic-updates
         bookmark.attempts--;
 
@@ -1130,7 +1137,12 @@ const bookmarksorganizer = {
 
       const retryable = response.status >= HTTP_SERVER_ERROR_STATUS || response.status === HTTP_FORBIDDEN_STATUS || response.status === HTTP_TOO_MANY_REQUESTS_STATUS || response.status === HTTP_SERVICE_UNAVAILABLE_STATUS || challenge;
       if (response.status !== STATUS.NOT_FOUND && retryable && !bookmarksorganizer.stopRequested && bookmark.attempts < bookmarksorganizer.MAX_ATTEMPTS) {
-        await bookmarksorganizer.waitBeforeRetry();
+        if ([HTTP_TOO_MANY_REQUESTS_STATUS, HTTP_SERVICE_UNAVAILABLE_STATUS].includes(response.status)) {
+          await bookmarksorganizer.waitBeforeRetry(RATE_LIMIT_RETRY_DELAY_IN_MS);
+        }
+        else {
+          await bookmarksorganizer.waitBeforeRetry();
+        }
         if (!bookmarksorganizer.stopRequested) {
           return bookmarksorganizer.checkHttpResponse(bookmark, 'GET');
         }
@@ -1402,12 +1414,13 @@ const bookmarksorganizer = {
   },
 
   /**
-   * Waits a random 30–60 seconds before retrying, unless the user stops the check.
+   * Waits before retrying, unless the user stops the check.
    *
+   * @param {number|null} fixedDelay - optional fixed delay in milliseconds
    * @returns {Promise<void>} - resolves when the retry delay has elapsed or checking stops
    */
-  async waitBeforeRetry () {
-    const delay = RETRY_DELAY_MIN_IN_MS + (Math.random() * (RETRY_DELAY_MAX_IN_MS - RETRY_DELAY_MIN_IN_MS));
+  async waitBeforeRetry (fixedDelay = null) {
+    const delay = fixedDelay === null ? RETRY_DELAY_MIN_IN_MS + (Math.random() * (RETRY_DELAY_MAX_IN_MS - RETRY_DELAY_MIN_IN_MS)) : fixedDelay;
     await Promise.race([
       new Promise((resolve) => {
         setTimeout(resolve, delay);
@@ -1745,18 +1758,15 @@ const bookmarksorganizer = {
    * Checks a bookmark through the FlareSolverr request API.
    *
    * @param {bookmarks.BookmarkTreeNode} bookmark - a single bookmark
-   * @param {number} attempt - the FlareSolverr attempt number
    *
    * @returns {bookmarks.BookmarkTreeNode} - the bookmark object
    */
   // eslint-disable-next-line complexity
-  async checkFlareSolverrResponse (bookmark, attempt = 1) {
+  async checkFlareSolverrResponse (bookmark) {
     let controller = null;
     let slotAcquired = false;
     let slotReleased = false;
-    let retry = false;
     let retryDirectly = false;
-    let flareSolverrHttpStatus = null;
     const releaseSlot = () => {
       if (slotAcquired && !slotReleased) {
         slotReleased = true;
@@ -1786,19 +1796,13 @@ const bookmarksorganizer = {
       controller = new AbortController();
       bookmarksorganizer.activeControllers.add(controller);
       const flareSolverrTimeout = bookmarksorganizer.FLARESOLVERR_REQUEST_TIMEOUT_IN_MS;
-      const { response, result } = await bookmarksorganizer.withRequestTimeout(() => bookmarksorganizer.requestFlareSolverr(bookmark.url, flareSolverrTimeout, controller.signal), controller, flareSolverrTimeout, true, releaseSlot);
-      flareSolverrHttpStatus = response.status;
-      if (response.ok && result.status === 'ok' && result.solution) {
+      const { result } = await bookmarksorganizer.withRequestTimeout(() => bookmarksorganizer.requestFlareSolverr(bookmark.url, flareSolverrTimeout, controller.signal), controller, flareSolverrTimeout, true, releaseSlot);
+      if (result.status === 'ok' && result.solution) {
         // continue with the successful solution below
       }
       else {
         const detail = result.message || 'FlareSolverr returned an error';
-        let errorMessage = detail;
-        if (!response.ok) {
-          errorMessage = `FlareSolverr HTTP ${response.status}: ${detail}`;
-        }
-
-        throw new Error(errorMessage);
+        throw new Error(detail);
       }
 
       const { solution } = result;
@@ -1824,11 +1828,6 @@ const bookmarksorganizer = {
         // eslint-disable-next-line require-atomic-updates
         bookmark.status = solution.status;
       }
-      retry = attempt < 2 && (
-        (solution.status >= HTTP_SERVER_ERROR_STATUS && solution.status !== HTTP_SERVICE_UNAVAILABLE_STATUS) ||
-        solution.status === HTTP_FORBIDDEN_STATUS
-      );
-
       if (solution.status !== STATUS.NOT_FOUND && solution.status < HTTP_ERROR_STATUS && solution.url && solution.url !== bookmark.url) {
         // eslint-disable-next-line require-atomic-updates
         bookmark.status = STATUS.REDIRECT;
@@ -1887,14 +1886,6 @@ const bookmarksorganizer = {
 
       // eslint-disable-next-line require-atomic-updates
       bookmark.status = STATUS.UNKNOWN;
-      // A hard FlareSolverr timeout ends this bookmark check. Retrying a request
-      // that already consumed its full deadline can leave the final bookmark
-      // pending for another full timeout plus retry delay.
-      retry = attempt < 2 && error.name !== 'AbortError' && (
-        (flareSolverrHttpStatus >= HTTP_SERVER_ERROR_STATUS && flareSolverrHttpStatus !== HTTP_SERVICE_UNAVAILABLE_STATUS) ||
-        flareSolverrHttpStatus === HTTP_FORBIDDEN_STATUS ||
-        (/challenge/i).test(error.message)
-      );
 
       if (bookmarksorganizer.debugEnabled) {
         bookmarksorganizer.debug.push({
@@ -1930,13 +1921,6 @@ const bookmarksorganizer = {
         bookmark.attempts = 0;
 
         return bookmarksorganizer.checkHttpResponse(bookmark, 'HEAD');
-      }
-    }
-
-    if (retry && !bookmarksorganizer.stopRequested) {
-      await bookmarksorganizer.waitBeforeRetry();
-      if (!bookmarksorganizer.stopRequested) {
-        return bookmarksorganizer.checkFlareSolverrResponse(bookmark, attempt + 1);
       }
     }
 
