@@ -37,7 +37,7 @@
     "web-ext": "10.8.0"
   },
   "scripts": {
-    "build": "cd src && web-ext build -a ../dist",
+    "build": "cd src && web-ext build --overwrite-dest -a ../dist",
     "docs": "jsdoc -c jsdoc.json CHANGELOG.md README.md -r src/js",
     "lint": "npm-run-all lint:*",
     "lint:html": "node scripts/lint-html.js",
