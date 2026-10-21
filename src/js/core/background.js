@@ -6,9 +6,10 @@ const MIN_PROGRESS = 0.01;
 const TIMEOUT_500_MS = 500;
 const DEFAULT_REQUEST_TIMEOUT_IN_SECONDS = 30;
 const PREVIOUS_DEFAULT_REQUEST_TIMEOUT_IN_SECONDS = 15;
-const FLARESOLVERR_REQUEST_TIMEOUT_IN_SECONDS = 120;
+const FLARESOLVERR_REQUEST_TIMEOUT_IN_SECONDS = 90;
 const PREVIOUS_DEFAULT_FLARESOLVERR_TIMEOUT_IN_SECONDS = 90;
 const PREVIOUS_DEFAULT_FLARESOLVERR_TIMEOUT_BEFORE_120_IN_SECONDS = 200;
+const PREVIOUS_DEFAULT_FLARESOLVERR_TIMEOUT_BEFORE_90_IN_SECONDS = 120;
 const HTTP_OK_STATUS = 200;
 const HTTP_MULTIPLE_CHOICES_STATUS = 300;
 const HTTP_ERROR_STATUS = 400;
@@ -76,7 +77,7 @@ const bookmarksorganizer = {
   DIRECT_REQUEST_TIMEOUT_IN_MS : 30000,
 
   /** @type {int} */
-  FLARESOLVERR_REQUEST_TIMEOUT_IN_MS : 120000,
+  FLARESOLVERR_REQUEST_TIMEOUT_IN_MS : FLARESOLVERR_REQUEST_TIMEOUT_IN_SECONDS * MILLISECONDS_PER_SECOND,
 
   /**
    * Minimum time between the start of network requests in milliseconds.
@@ -705,6 +706,7 @@ const bookmarksorganizer = {
       flareSolverrRequestTimeout : FLARESOLVERR_REQUEST_TIMEOUT_IN_SECONDS,
       flareSolverrRequestTimeoutDefaultMigrated : false,
       flareSolverrRequestTimeoutDefaultMigratedTo120 : false,
+      flareSolverrRequestTimeoutDefaultMigratedTo90 : false,
       requestTimeout : null,
       requestTimeoutBeforeFlareSolverr : null,
       requestDelay : DEFAULT_REQUEST_DELAY_IN_SECONDS,
@@ -773,6 +775,9 @@ const bookmarksorganizer = {
     if (options.flareSolverrRequestTimeoutDefaultMigratedTo120 !== true && parsedFlareSolverrRequestTimeout === PREVIOUS_DEFAULT_FLARESOLVERR_TIMEOUT_BEFORE_120_IN_SECONDS) {
       parsedFlareSolverrRequestTimeout = FLARESOLVERR_REQUEST_TIMEOUT_IN_SECONDS;
     }
+    if (options.flareSolverrRequestTimeoutDefaultMigratedTo90 !== true && parsedFlareSolverrRequestTimeout === PREVIOUS_DEFAULT_FLARESOLVERR_TIMEOUT_BEFORE_90_IN_SECONDS) {
+      parsedFlareSolverrRequestTimeout = FLARESOLVERR_REQUEST_TIMEOUT_IN_SECONDS;
+    }
     let flareSolverrRequestTimeout = FLARESOLVERR_REQUEST_TIMEOUT_IN_SECONDS;
     if (Number.isInteger(parsedFlareSolverrRequestTimeout) && parsedFlareSolverrRequestTimeout > 0) {
       flareSolverrRequestTimeout = parsedFlareSolverrRequestTimeout;
@@ -783,7 +788,8 @@ const bookmarksorganizer = {
       directRequestTimeoutDefaultMigrated : true,
       flareSolverrRequestTimeout : flareSolverrRequestTimeout,
       flareSolverrRequestTimeoutDefaultMigrated : true,
-      flareSolverrRequestTimeoutDefaultMigratedTo120 : true
+      flareSolverrRequestTimeoutDefaultMigratedTo120 : true,
+      flareSolverrRequestTimeoutDefaultMigratedTo90 : true
     });
 
     // eslint-disable-next-line require-atomic-updates
@@ -1607,7 +1613,7 @@ const bookmarksorganizer = {
           cmd : 'request.get',
           url : url,
           maxTimeout : timeout,
-          waitInSeconds : 30
+          waitInSeconds : 15
         }));
 
         if (signal.aborted) {

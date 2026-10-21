@@ -3,9 +3,10 @@
 const DEFAULT_MAX_CONCURRENT_REQUESTS = 2;
 const DEFAULT_DIRECT_REQUEST_TIMEOUT = 30;
 const PREVIOUS_DEFAULT_DIRECT_REQUEST_TIMEOUT = 15;
-const FLARESOLVERR_REQUEST_TIMEOUT = 120;
+const FLARESOLVERR_REQUEST_TIMEOUT = 90;
 const PREVIOUS_DEFAULT_FLARESOLVERR_TIMEOUT = 90;
 const PREVIOUS_DEFAULT_FLARESOLVERR_TIMEOUT_BEFORE_120 = 200;
+const PREVIOUS_DEFAULT_FLARESOLVERR_TIMEOUT_BEFORE_90 = 120;
 const DEFAULT_REQUEST_DELAY = 1;
 const DEFAULT_FLARESOLVERR_URL = 'http://localhost:8191/v1';
 
@@ -55,6 +56,7 @@ const options = {
       flareSolverrRequestTimeout : FLARESOLVERR_REQUEST_TIMEOUT,
       flareSolverrRequestTimeoutDefaultMigrated : false,
       flareSolverrRequestTimeoutDefaultMigratedTo120 : false,
+      flareSolverrRequestTimeoutDefaultMigratedTo90 : false,
       requestTimeout : null,
       requestTimeoutBeforeFlareSolverr : null,
       requestDelay : DEFAULT_REQUEST_DELAY,
@@ -91,6 +93,9 @@ const options = {
     if (option.flareSolverrRequestTimeoutDefaultMigratedTo120 !== true && flareSolverrRequestTimeout === PREVIOUS_DEFAULT_FLARESOLVERR_TIMEOUT_BEFORE_120) {
       flareSolverrRequestTimeout = FLARESOLVERR_REQUEST_TIMEOUT;
     }
+    if (option.flareSolverrRequestTimeoutDefaultMigratedTo90 !== true && flareSolverrRequestTimeout === PREVIOUS_DEFAULT_FLARESOLVERR_TIMEOUT_BEFORE_90) {
+      flareSolverrRequestTimeout = FLARESOLVERR_REQUEST_TIMEOUT;
+    }
     if (!Number.isInteger(flareSolverrRequestTimeout) || flareSolverrRequestTimeout <= 0) {
       flareSolverrRequestTimeout = FLARESOLVERR_REQUEST_TIMEOUT;
     }
@@ -100,7 +105,8 @@ const options = {
       directRequestTimeoutDefaultMigrated : true,
       flareSolverrRequestTimeout : flareSolverrRequestTimeout,
       flareSolverrRequestTimeoutDefaultMigrated : true,
-      flareSolverrRequestTimeoutDefaultMigratedTo120 : true
+      flareSolverrRequestTimeoutDefaultMigratedTo120 : true,
+      flareSolverrRequestTimeoutDefaultMigratedTo90 : true
     });
 
     elDirectRequestTimeout.value = directRequestTimeout;
