@@ -189,7 +189,7 @@
     "message": "Uyarılar"
   },
   "cloudflare_list_reset_confirmation_msg": {
-    "message": "Kaydedilmiş {0} alan adlı Cloudflare listesi temizlensin mi?"
+    "message": "Kaydedilmiş $1$ alan adlı Cloudflare listesi temizlensin mi?"
   },
   "whitelist_reset_confirmation_msg": {
     "message": "Beyaz listeyi gerçekten sıfırlamak istiyor musunuz?"

@@ -189,7 +189,7 @@
     "message": "Varningar"
   },
   "cloudflare_list_reset_confirmation_msg": {
-    "message": "Rensa den sparade Cloudflare-domänlistan med {0} domäner?"
+    "message": "Rensa den sparade Cloudflare-domänlistan med $1$ domäner?"
   },
   "whitelist_reset_confirmation_msg": {
     "message": "Vill du verkligen återställa vitlistan?"

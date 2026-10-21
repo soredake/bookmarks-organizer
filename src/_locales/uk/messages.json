@@ -216,7 +216,7 @@
     "message": "Попередження"
   },
   "cloudflare_list_reset_confirmation_msg": {
-    "message": "Очистити збережений список доменів Cloudflare ({0})?"
+    "message": "Очистити збережений список доменів Cloudflare ($1$)?"
   },
   "whitelist_reset_confirmation_msg": {
     "message": "Ви дійсно хочете скинути білий список?"

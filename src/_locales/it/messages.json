@@ -189,7 +189,7 @@
     "message": "Avvisi"
   },
   "cloudflare_list_reset_confirmation_msg": {
-    "message": "Vuoi cancellare l’elenco salvato dei domini Cloudflare ({0})?"
+    "message": "Vuoi cancellare l’elenco salvato dei domini Cloudflare ($1$)?"
   },
   "whitelist_reset_confirmation_msg": {
     "message": "Vuoi davvero svuotare la whitelist?"

@@ -189,7 +189,7 @@
     "message": "Varování"
   },
   "cloudflare_list_reset_confirmation_msg": {
-    "message": "Opravdu chcete vymazat uložený seznam domén Cloudflare ({0})?"
+    "message": "Opravdu chcete vymazat uložený seznam domén Cloudflare ($1$)?"
   },
   "whitelist_reset_confirmation_msg": {
     "message": "Do you really want to reset the whitelist?"

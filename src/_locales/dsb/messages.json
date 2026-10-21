@@ -189,7 +189,7 @@
     "message": "Warnowanja"
   },
   "cloudflare_list_reset_confirmation_msg": {
-    "message": "Cośo składowanu Cloudflare-domjenowu lisćinu z {0} zapiskami napšawdu wulašowaś?"
+    "message": "Cośo składowanu Cloudflare-domjenowu lisćinu z $1$ zapiskami napšawdu wulašowaś?"
   },
   "whitelist_reset_confirmation_msg": {
     "message": "Ma se běła lisćina napšawdu slědk stajiś?"
