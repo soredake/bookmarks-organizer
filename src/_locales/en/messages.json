@@ -54,7 +54,7 @@
     "message": "reset whitelist…"
   },
   "button_reset_cloudflare_list": {
-    "message": "clear Cloudflare domain list…"
+    "message": "Clear Cloudflare domain list…"
   },
   "button_return": {
     "message": "Back"
@@ -225,7 +225,7 @@
     "message": "Do you really want to reset the whitelist?"
   },
   "cloudflare_list_reset_confirmation_msg": {
-    "message": "Clear the saved Cloudflare domain list?"
+    "message": "Clear the saved Cloudflare domain list containing {0} domains?"
   },
   "option_flaresolverr_show_result": {
     "message": "Show direct and FlareSolverr results under links"

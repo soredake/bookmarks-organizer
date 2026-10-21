@@ -53,6 +53,9 @@
   "button_reset_whitelist": {
     "message": "Běłu lisćinu wróćo stajić…"
   },
+  "button_reset_cloudflare_list": {
+    "message": "Lisćinu Cloudflare-domenow wuprózdnić…"
+  },
   "button_return": {
     "message": "Wróćo"
   },
@@ -184,6 +187,9 @@
   },
   "status_warnings": {
     "message": "Warnowanja"
+  },
+  "cloudflare_list_reset_confirmation_msg": {
+    "message": "Ma so składowana lisćina Cloudflare-domenow z {0} zapiskami woprawdźe wuprózdnić?"
   },
   "whitelist_reset_confirmation_msg": {
     "message": "Ma so běła lisćina woprawdźe wróćo stajić?"

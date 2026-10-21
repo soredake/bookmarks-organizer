@@ -232,12 +232,17 @@ elResetWhitelistBtn.addEventListener('click', (e) => {
 });
 
 elResetCloudflareListBtn.addEventListener('click', async () => {
-  // eslint-disable-next-line no-alert
-  if (!elDisableConfirmations.checked && !confirm(browser.i18n.getMessage('cloudflare_list_reset_confirmation_msg') || 'Clear the saved Cloudflare domain list?')) {
-    return;
-  }
-
   try {
+    const { cloudflare = [] } = await browser.storage.local.get({ cloudflare : [] });
+    const domainCount = Array.isArray(cloudflare) ? cloudflare.length : 0;
+    if (!elDisableConfirmations.checked) {
+      const confirmation = browser.i18n.getMessage('cloudflare_list_reset_confirmation_msg', [domainCount]) || `Clear the saved Cloudflare domain list containing ${domainCount} domains?`;
+      // eslint-disable-next-line no-alert
+      if (!confirm(confirmation)) {
+        return;
+      }
+    }
+
     await browser.runtime.sendMessage({ message : 'clear-cloudflare-domains' });
   }
   catch (error) {

@@ -53,6 +53,9 @@
   "button_reset_whitelist": {
     "message": "Whitelist zurücksetzen…"
   },
+  "button_reset_cloudflare_list": {
+    "message": "Cloudflare-Domänenliste löschen…"
+  },
   "button_return": {
     "message": "Zurück"
   },
@@ -184,6 +187,9 @@
   },
   "status_warnings": {
     "message": "Warnungen"
+  },
+  "cloudflare_list_reset_confirmation_msg": {
+    "message": "Gespeicherte Cloudflare-Domänenliste mit {0} Einträgen löschen?"
   },
   "whitelist_reset_confirmation_msg": {
     "message": "Soll die Whitelist wirklich zurückgesetzt werden?"

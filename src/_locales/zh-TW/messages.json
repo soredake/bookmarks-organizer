@@ -53,6 +53,9 @@
   "button_reset_whitelist": {
     "message": "重設白名單……"
   },
+  "button_reset_cloudflare_list": {
+    "message": "清除 Cloudflare 網域清單…"
+  },
   "button_return": {
     "message": "返回"
   },
@@ -184,6 +187,9 @@
   },
   "status_warnings": {
     "message": "有警告"
+  },
+  "cloudflare_list_reset_confirmation_msg": {
+    "message": "要清除已儲存的 Cloudflare 網域清單（共 {0} 個）嗎？"
   },
   "whitelist_reset_confirmation_msg": {
     "message": "確定要重設白名單？"

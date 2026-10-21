@@ -123,6 +123,9 @@ const bookmarksorganizer = {
   /** @type {Set<string>} */
   cloudflareDomains : new Set(),
 
+  /** @type {Set<string>} */
+  directOnlyDomains : new Set(),
+
   /** @type {Promise<void>} */
   cloudflareDomainStorageQueue : Promise.resolve(),
 
@@ -685,6 +688,7 @@ const bookmarksorganizer = {
     bookmarksorganizer.internalCounter = 0;
     bookmarksorganizer.checkedBookmarks = 0;
     bookmarksorganizer.checkedBookmarkIds = new Set();
+    bookmarksorganizer.directOnlyDomains = new Set();
     bookmarksorganizer.bookmarkErrors = 0;
     bookmarksorganizer.bookmarkWarnings = 0;
     bookmarksorganizer.bookmarksResult = [];
@@ -943,7 +947,12 @@ const bookmarksorganizer = {
         bookmark.attempts = 0;
 
         let checkedBookmark = bookmark;
-        if (bookmarksorganizer.useFlareSolverr && bookmarksorganizer.useCloudflareDomainRouting && bookmarksorganizer.isCloudflareDomain(bookmark.url)) {
+        if (
+          bookmarksorganizer.useFlareSolverr &&
+          !bookmarksorganizer.isDirectOnlyDomain(bookmark.url) &&
+          bookmarksorganizer.useCloudflareDomainRouting &&
+          bookmarksorganizer.isCloudflareDomain(bookmark.url)
+        ) {
           checkedBookmark = await bookmarksorganizer.checkFlareSolverrResponse(bookmark);
         }
         else {
@@ -1124,13 +1133,14 @@ const bookmarksorganizer = {
       }
 
       const matchesFlareSolverrOnlyPattern = bookmarksorganizer.useFlareSolverr &&
+        !bookmarksorganizer.isDirectOnlyDomain(bookmark.url) &&
         (response.status !== STATUS.NOT_FOUND || bookmarksorganizer.try404WithFlareSolverr) &&
         [bookmark.url, response.url].some((url) => bookmarksorganizer.isFlareSolverrOnlyUrl(url));
       let flareSolverrEscalationDelay = null;
       if (matchesFlareSolverrOnlyPattern) {
         flareSolverrEscalationDelay = FLARESOLVERR_ONLY_PATTERN_DELAY_IN_MS;
       }
-      else if (bookmarksorganizer.useFlareSolverr && (
+      else if (bookmarksorganizer.useFlareSolverr && !bookmarksorganizer.isDirectOnlyDomain(bookmark.url) && (
         response.status === HTTP_SERVICE_UNAVAILABLE_STATUS || (response.status === STATUS.NOT_FOUND && bookmarksorganizer.try404WithFlareSolverr)
       )) {
         flareSolverrEscalationDelay = FLARESOLVERR_STATUS_ESCALATION_DELAY_IN_MS;
@@ -1142,9 +1152,13 @@ const bookmarksorganizer = {
         }
       }
 
-      const shouldUseFlareSolverr = bookmarksorganizer.useFlareSolverr && response.status !== STATUS.NOT_FOUND && (
-        response.status === HTTP_FORBIDDEN_STATUS || (challenge && ![HTTP_TOO_MANY_REQUESTS_STATUS, HTTP_SERVICE_UNAVAILABLE_STATUS].includes(response.status))
-      );
+      const shouldUseFlareSolverr = bookmarksorganizer.useFlareSolverr &&
+        !bookmarksorganizer.isDirectOnlyDomain(bookmark.url) &&
+        response.status !== STATUS.NOT_FOUND &&
+        (
+          response.status === HTTP_FORBIDDEN_STATUS ||
+          (challenge && ![HTTP_TOO_MANY_REQUESTS_STATUS, HTTP_SERVICE_UNAVAILABLE_STATUS].includes(response.status))
+        );
       if (shouldUseFlareSolverr && challenge && !bookmarksorganizer.stopRequested) {
         return bookmarksorganizer.checkFlareSolverrResponse(bookmark);
       }
@@ -1322,6 +1336,23 @@ const bookmarksorganizer = {
       const hostname = new URL(url).hostname.toLowerCase().replace(/^www\./, '').replace(/\.$/, '');
 
       return Array.from(bookmarksorganizer.cloudflareDomains).some((domain) => hostname === domain || hostname.endsWith(`.${domain}`));
+    }
+    catch (error) {
+      return false;
+    }
+  },
+
+  /**
+   * Checks whether the host was marked direct-only after a FlareSolverr parse failure.
+   *
+   * @param {string} url - URL to check
+   * @returns {boolean} whether its hostname is direct-only for this scan
+   */
+  isDirectOnlyDomain (url) {
+    try {
+      const hostname = new URL(url).hostname.toLowerCase().replace(/^www\./, '').replace(/\.$/, '');
+
+      return Array.from(bookmarksorganizer.directOnlyDomains).some((domain) => hostname === domain || hostname.endsWith(`.${domain}`));
     }
     catch (error) {
       return false;
@@ -1923,10 +1954,14 @@ const bookmarksorganizer = {
         return bookmark;
       }
       if (error instanceof SyntaxError) {
-        retryDirectly = !(
-          bookmarksorganizer.useCloudflareDomainRouting &&
-          bookmarksorganizer.isCloudflareDomain(bookmark.url)
-        );
+        try {
+          const hostname = new URL(bookmark.url).hostname.toLowerCase().replace(/^www\./, '').replace(/\.$/, '');
+          bookmarksorganizer.directOnlyDomains.add(hostname);
+          retryDirectly = true;
+        }
+        catch (urlError) {
+          // A malformed bookmark URL cannot be added to the direct-only list.
+        }
       }
       if (bookmarksorganizer.showRequestResults) {
         let flareSolverrResult = error.message;
@@ -1982,7 +2017,7 @@ const bookmarksorganizer = {
         // eslint-disable-next-line require-atomic-updates
         bookmark.attempts = 0;
 
-        return bookmarksorganizer.checkHttpResponse(bookmark, 'POST');
+        return bookmarksorganizer.checkHttpResponse(bookmark, 'HEAD');
       }
     }
 

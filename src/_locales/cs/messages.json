@@ -53,6 +53,9 @@
   "button_reset_whitelist": {
     "message": "reset whitelist…"
   },
+  "button_reset_cloudflare_list": {
+    "message": "vymazat seznam domén Cloudflare…"
+  },
   "button_return": {
     "message": "Zpět"
   },
@@ -184,6 +187,9 @@
   },
   "status_warnings": {
     "message": "Varování"
+  },
+  "cloudflare_list_reset_confirmation_msg": {
+    "message": "Opravdu chcete vymazat uložený seznam domén Cloudflare ({0})?"
   },
   "whitelist_reset_confirmation_msg": {
     "message": "Do you really want to reset the whitelist?"

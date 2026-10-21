@@ -53,6 +53,9 @@
   "button_reset_whitelist": {
     "message": "скинути білий список…"
   },
+  "button_reset_cloudflare_list": {
+    "message": "Очистити список доменів Cloudflare…"
+  },
   "button_return": {
     "message": "Назад"
   },
@@ -211,6 +214,9 @@
   },
   "status_warnings": {
     "message": "Попередження"
+  },
+  "cloudflare_list_reset_confirmation_msg": {
+    "message": "Очистити збережений список доменів Cloudflare ({0})?"
   },
   "whitelist_reset_confirmation_msg": {
     "message": "Ви дійсно хочете скинути білий список?"

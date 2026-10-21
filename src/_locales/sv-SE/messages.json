@@ -53,6 +53,9 @@
   "button_reset_whitelist": {
     "message": "Återställ vitlistan…"
   },
+  "button_reset_cloudflare_list": {
+    "message": "Rensa Cloudflares domänlista…"
+  },
   "button_return": {
     "message": "Tillbaka"
   },
@@ -184,6 +187,9 @@
   },
   "status_warnings": {
     "message": "Varningar"
+  },
+  "cloudflare_list_reset_confirmation_msg": {
+    "message": "Rensa den sparade Cloudflare-domänlistan med {0} domäner?"
   },
   "whitelist_reset_confirmation_msg": {
     "message": "Vill du verkligen återställa vitlistan?"

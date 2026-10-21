@@ -53,6 +53,9 @@
   "button_reset_whitelist": {
     "message": "witte lijst herinitialiseren…"
   },
+  "button_reset_cloudflare_list": {
+    "message": "Cloudflare-domeinlijst wissen…"
+  },
   "button_return": {
     "message": "Terug"
   },
@@ -184,6 +187,9 @@
   },
   "status_warnings": {
     "message": "Waarschuwingen"
+  },
+  "cloudflare_list_reset_confirmation_msg": {
+    "message": "De opgeslagen Cloudflare-domeinlijst met {0} domeinen wissen?"
   },
   "whitelist_reset_confirmation_msg": {
     "message": "Wilt u de witte lijst echt herinitialiseren?"

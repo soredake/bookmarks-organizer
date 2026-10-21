@@ -53,6 +53,9 @@
   "button_reset_whitelist": {
     "message": "reset whitelist…"
   },
+  "button_reset_cloudflare_list": {
+    "message": "Borrar la lista de dominios de Cloudflare…"
+  },
   "button_return": {
     "message": "Volver"
   },
@@ -184,6 +187,9 @@
   },
   "status_warnings": {
     "message": "Avisos"
+  },
+  "cloudflare_list_reset_confirmation_msg": {
+    "message": "¿Borrar la lista guardada de dominios de Cloudflare ({0})?"
   },
   "whitelist_reset_confirmation_msg": {
     "message": "Do you really want to reset the whitelist?"

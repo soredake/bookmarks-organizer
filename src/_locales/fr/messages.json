@@ -53,6 +53,9 @@
   "button_reset_whitelist": {
     "message": "Réinitialiser la liste blanche…"
   },
+  "button_reset_cloudflare_list": {
+    "message": "Effacer la liste des domaines Cloudflare…"
+  },
   "button_return": {
     "message": "Retour"
   },
@@ -184,6 +187,9 @@
   },
   "status_warnings": {
     "message": "Avertissements"
+  },
+  "cloudflare_list_reset_confirmation_msg": {
+    "message": "Effacer la liste enregistrée des domaines Cloudflare ({0}) ?"
   },
   "whitelist_reset_confirmation_msg": {
     "message": "Souhaitez-vous vraiment réinitialiser la liste blanche ?"

@@ -53,6 +53,9 @@
   "button_reset_whitelist": {
     "message": "wyczyść białą listę…"
   },
+  "button_reset_cloudflare_list": {
+    "message": "Wyczyść listę domen Cloudflare…"
+  },
   "button_return": {
     "message": "Wstecz"
   },
@@ -184,6 +187,9 @@
   },
   "status_warnings": {
     "message": "Ostrzeżeń"
+  },
+  "cloudflare_list_reset_confirmation_msg": {
+    "message": "Wyczyścić zapisaną listę domen Cloudflare ({0})?"
   },
   "whitelist_reset_confirmation_msg": {
     "message": "Czy na pewno chcesz wyczyścić białą listę?"

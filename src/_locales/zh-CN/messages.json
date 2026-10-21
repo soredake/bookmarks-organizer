@@ -53,6 +53,9 @@
   "button_reset_whitelist": {
     "message": "reset whitelist…"
   },
+  "button_reset_cloudflare_list": {
+    "message": "清除 Cloudflare 域名列表…"
+  },
   "button_return": {
     "message": "返回"
   },
@@ -184,6 +187,9 @@
   },
   "status_warnings": {
     "message": "警告"
+  },
+  "cloudflare_list_reset_confirmation_msg": {
+    "message": "清除已保存的 Cloudflare 域名列表（共 {0} 个）？"
   },
   "whitelist_reset_confirmation_msg": {
     "message": "Do you really want to reset the whitelist?"
