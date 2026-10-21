@@ -245,6 +245,9 @@ const bookmarksorganizer = {
   /** @type {Set<string>} */
   checkedBookmarkIds : new Set(),
 
+  /** @type {Map<string, bookmarks.BookmarkTreeNode>} */
+  activeBookmarkChecks : new Map(),
+
   /**
    * The number of found errors.
    *
@@ -688,6 +691,7 @@ const bookmarksorganizer = {
     bookmarksorganizer.internalCounter = 0;
     bookmarksorganizer.checkedBookmarks = 0;
     bookmarksorganizer.checkedBookmarkIds = new Set();
+    bookmarksorganizer.activeBookmarkChecks = new Map();
     bookmarksorganizer.directOnlyDomains = new Set();
     bookmarksorganizer.bookmarkErrors = 0;
     bookmarksorganizer.bookmarkWarnings = 0;
@@ -2217,6 +2221,10 @@ const bookmarksorganizer = {
     const tasks = bookmarksToProcess.map(async (aBookmark) => {
       try {
         if (!bookmarksorganizer.stopRequested && !bookmarksorganizer.checkFinalized) {
+          if (aBookmark.url) {
+            bookmarksorganizer.activeBookmarkChecks.set(aBookmark.id, aBookmark);
+          }
+
           await bookmarksorganizer.checkForBrokenBookmark(aBookmark, mode, type);
         }
       }
@@ -2237,6 +2245,9 @@ const bookmarksorganizer = {
           bookmarksorganizer.markBookmarkChecked(aBookmark);
           bookmarksorganizer.updateProgressUi();
         }
+      }
+      finally {
+        bookmarksorganizer.activeBookmarkChecks.delete(aBookmark.id);
       }
     });
 
@@ -2530,6 +2541,17 @@ const bookmarksorganizer = {
   async finishCheck (mode) {
     if (!bookmarksorganizer.inProgress || bookmarksorganizer.checkFinalized) {
       return;
+    }
+
+    if (bookmarksorganizer.stopRequested) {
+      for (const bookmark of bookmarksorganizer.activeBookmarkChecks.values()) {
+        bookmark.status = STATUS.UNKNOWN;
+        if ((bookmarksorganizer.type === 'all' || bookmarksorganizer.type === 'errors') && !bookmarksorganizer.bookmarksResult.some(({ id }) => id === bookmark.id)) {
+          bookmarksorganizer.bookmarksResult.push(bookmark);
+        }
+
+        bookmarksorganizer.markBookmarkChecked(bookmark);
+      }
     }
 
     bookmarksorganizer.checkFinalized = true;
