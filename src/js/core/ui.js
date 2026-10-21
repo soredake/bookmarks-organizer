@@ -321,17 +321,18 @@ const ui = {
     elStopButton.disabled = true;
     browser.runtime.sendMessage({ message : 'stop' }).catch(() => null);
 
-    ui.finishPartialCheck();
+    ui.finishPartialCheck(null, true);
   },
 
   /**
    * Finishes the visible check from its latest partial results snapshot.
    *
    * @param {?string} checkId - check identity for watchdog-triggered completion
+   * @param {boolean} stopped - whether the user pressed the Stop button
    *
    * @returns {void}
    */
-  finishPartialCheck (checkId = null) {
+  finishPartialCheck (checkId = null, stopped = false) {
     if (ui.mode !== 'broken-bookmarks' || elStopButton.classList.contains('hidden')) {
       return;
     }
@@ -349,7 +350,7 @@ const ui = {
       bookmarksWarnings : ui.warnings,
       disableConfirmations : ui.disableConfirmations,
       debug : [],
-      stopped : true,
+      stopped : stopped,
       checkId : ui.checkId
     });
   },

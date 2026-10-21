@@ -228,6 +228,9 @@ const bookmarksorganizer = {
    */
   checkedBookmarks : 0,
 
+  /** @type {Set<string>} */
+  checkedBookmarkIds : new Set(),
+
   /**
    * The number of found errors.
    *
@@ -667,6 +670,7 @@ const bookmarksorganizer = {
     bookmarksorganizer.activeRequestCancellations.clear();
     bookmarksorganizer.internalCounter = 0;
     bookmarksorganizer.checkedBookmarks = 0;
+    bookmarksorganizer.checkedBookmarkIds = new Set();
     bookmarksorganizer.bookmarkErrors = 0;
     bookmarksorganizer.bookmarkWarnings = 0;
     bookmarksorganizer.bookmarksResult = [];
@@ -899,13 +903,13 @@ const bookmarksorganizer = {
       bookmarksorganizer.internalCounter++;
 
       if (bookmarksorganizer.USE_SKIP_LIST && bookmarksorganizer.ignoreForBrokenBookmarks.some((i) => new RegExp('\\b' + i + '\\b').test(bookmark.url))) {
-        bookmarksorganizer.checkedBookmarks++;
+        bookmarksorganizer.markBookmarkChecked(bookmark);
 
         return;
       }
 
       if (bookmarksorganizer.whitelist.includes(bookmark.id)) {
-        bookmarksorganizer.checkedBookmarks++;
+        bookmarksorganizer.markBookmarkChecked(bookmark);
 
         return;
       }
@@ -917,7 +921,7 @@ const bookmarksorganizer = {
         if (bookmarksorganizer.checkFinalized) {
           return;
         }
-        bookmarksorganizer.checkedBookmarks++;
+        bookmarksorganizer.markBookmarkChecked(bookmark);
 
         switch (checkedBookmark.status) {
           case STATUS.REDIRECT:
@@ -948,12 +952,25 @@ const bookmarksorganizer = {
         bookmarksorganizer.updateProgressUi();
       }
       else {
-        bookmarksorganizer.checkedBookmarks++;
+        bookmarksorganizer.markBookmarkChecked(bookmark);
         bookmarksorganizer.updateProgressUi();
       }
     }
     else {
       bookmarksorganizer.bookmarksResult.push(bookmark);
+    }
+  },
+
+  /**
+   * Counts a bookmark once, even if its task later throws while reporting results.
+   *
+   * @param {bookmarks.BookmarkTreeNode} bookmark - the bookmark that completed checking
+   * @returns {void}
+   */
+  markBookmarkChecked (bookmark) {
+    if (!bookmarksorganizer.checkedBookmarkIds.has(bookmark.id)) {
+      bookmarksorganizer.checkedBookmarkIds.add(bookmark.id);
+      bookmarksorganizer.checkedBookmarks++;
     }
   },
 
@@ -1998,10 +2015,8 @@ const bookmarksorganizer = {
             bookmarksorganizer.bookmarksResult.push(aBookmark);
           }
 
-          if (bookmarksorganizer.stopRequested) {
-            bookmarksorganizer.checkedBookmarks++;
-            bookmarksorganizer.updateProgressUi();
-          }
+          bookmarksorganizer.markBookmarkChecked(aBookmark);
+          bookmarksorganizer.updateProgressUi();
         }
       }
     });
