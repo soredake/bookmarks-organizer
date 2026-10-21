@@ -149,9 +149,6 @@
   "option_cloudflare_domain_routing_description": {
     "message": "When enabled with FlareSolverr, Cloudflare-challenged domains are saved and their links are distributed throughout the check."
   },
-  "option_flaresolverr_try_404": {
-    "message": "Try to check 404 URLs with FlareSolverr (can help with some anti-bot systems)"
-  },
   "option_request_delay": {
     "message": "Delay between requests"
   },

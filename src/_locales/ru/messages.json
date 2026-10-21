@@ -143,9 +143,6 @@
   "option_flaresolverr_description": {
     "message": "При включении проверка ссылок будет выполняться через этот сервер FlareSolverr. Не открывайте сервер для общего доступа из интернета."
   },
-  "option_flaresolverr_try_404": {
-    "message": "Пробовать проверять URL с кодом 404 через FlareSolverr (может помочь с некоторыми системами защиты от ботов)"
-  },
   "option_request_delay": {
     "message": "Задержка между запросами"
   },

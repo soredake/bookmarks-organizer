@@ -109,9 +109,6 @@ const bookmarksorganizer = {
   useFlareSolverr : false,
 
   /** @type {boolean} */
-  try404WithFlareSolverr : false,
-
-  /** @type {boolean} */
   showRequestResults : false,
 
   /** @type {boolean} */
@@ -734,7 +731,6 @@ const bookmarksorganizer = {
       requestTimeoutBeforeFlareSolverr : null,
       requestDelay : DEFAULT_REQUEST_DELAY_IN_SECONDS,
       useFlareSolverr : false,
-      try404WithFlareSolverr : false,
       flareSolverrUrl : 'http://localhost:8191/v1',
       showFlareSolverrResult : true,
       shuffleUrls : true
@@ -757,8 +753,6 @@ const bookmarksorganizer = {
 
     // eslint-disable-next-line require-atomic-updates
     bookmarksorganizer.useFlareSolverr = options.useFlareSolverr === true;
-    // eslint-disable-next-line require-atomic-updates
-    bookmarksorganizer.try404WithFlareSolverr = bookmarksorganizer.useFlareSolverr && options.try404WithFlareSolverr === true;
     // eslint-disable-next-line require-atomic-updates
     bookmarksorganizer.showRequestResults = options.showFlareSolverrResult === true;
     // eslint-disable-next-line require-atomic-updates
@@ -1138,14 +1132,14 @@ const bookmarksorganizer = {
 
       const matchesFlareSolverrOnlyPattern = bookmarksorganizer.useFlareSolverr &&
         !bookmarksorganizer.isDirectOnlyDomain(bookmark.url) &&
-        (response.status !== STATUS.NOT_FOUND || bookmarksorganizer.try404WithFlareSolverr) &&
+        response.status !== STATUS.NOT_FOUND &&
         [bookmark.url, response.url].some((url) => bookmarksorganizer.isFlareSolverrOnlyUrl(url));
       let flareSolverrEscalationDelay = null;
       if (matchesFlareSolverrOnlyPattern) {
         flareSolverrEscalationDelay = FLARESOLVERR_ONLY_PATTERN_DELAY_IN_MS;
       }
       else if (bookmarksorganizer.useFlareSolverr && !bookmarksorganizer.isDirectOnlyDomain(bookmark.url) && (
-        response.status === HTTP_SERVICE_UNAVAILABLE_STATUS || (response.status === STATUS.NOT_FOUND && bookmarksorganizer.try404WithFlareSolverr)
+        response.status === HTTP_SERVICE_UNAVAILABLE_STATUS
       )) {
         flareSolverrEscalationDelay = FLARESOLVERR_STATUS_ESCALATION_DELAY_IN_MS;
       }
