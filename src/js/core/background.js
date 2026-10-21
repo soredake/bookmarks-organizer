@@ -1067,7 +1067,9 @@ const bookmarksorganizer = {
         bookmark.status = STATUS.UNKNOWN;
       }
 
-      const matchesFlareSolverrOnlyPattern = bookmarksorganizer.useFlareSolverr && [bookmark.url, response.url].some((url) => bookmarksorganizer.isFlareSolverrOnlyUrl(url));
+      const matchesFlareSolverrOnlyPattern = bookmarksorganizer.useFlareSolverr &&
+        (response.status !== STATUS.NOT_FOUND || bookmarksorganizer.try404WithFlareSolverr) &&
+        [bookmark.url, response.url].some((url) => bookmarksorganizer.isFlareSolverrOnlyUrl(url));
       let flareSolverrEscalationDelay = null;
       if (matchesFlareSolverrOnlyPattern) {
         flareSolverrEscalationDelay = FLARESOLVERR_ONLY_PATTERN_DELAY_IN_MS;
