@@ -225,7 +225,7 @@
     "message": "Do you really want to reset the whitelist?"
   },
   "cloudflare_list_reset_confirmation_msg": {
-    "message": "Clear the saved Cloudflare domain list containing $1$ domains?"
+    "message": "Clear the saved Cloudflare domain list containing $1 domains?"
   },
   "option_flaresolverr_show_result": {
     "message": "Show direct and FlareSolverr results under links"

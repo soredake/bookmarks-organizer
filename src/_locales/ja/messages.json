@@ -189,7 +189,7 @@
     "message": "警告"
   },
   "cloudflare_list_reset_confirmation_msg": {
-    "message": "保存されているCloudflareドメイン一覧（$1$件）を消去しますか？"
+    "message": "保存されているCloudflareドメイン一覧（$1件）を消去しますか？"
   },
   "whitelist_reset_confirmation_msg": {
     "message": "本当にホワイトリストをリセットしますか？"

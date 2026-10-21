@@ -189,7 +189,7 @@
     "message": "Avisos"
   },
   "cloudflare_list_reset_confirmation_msg": {
-    "message": "¿Borrar la lista guardada de dominios de Cloudflare ($1$)?"
+    "message": "¿Borrar la lista guardada de dominios de Cloudflare ($1)?"
   },
   "whitelist_reset_confirmation_msg": {
     "message": "Do you really want to reset the whitelist?"

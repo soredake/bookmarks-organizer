@@ -189,7 +189,7 @@
     "message": "Avisos"
   },
   "cloudflare_list_reset_confirmation_msg": {
-    "message": "Limpar a lista salva de domínios do Cloudflare ($1$)?"
+    "message": "Limpar a lista salva de domínios do Cloudflare ($1)?"
   },
   "whitelist_reset_confirmation_msg": {
     "message": "Você tem certeza que deseja limpar a lista branca?"

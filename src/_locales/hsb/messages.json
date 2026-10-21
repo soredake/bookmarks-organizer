@@ -189,7 +189,7 @@
     "message": "Warnowanja"
   },
   "cloudflare_list_reset_confirmation_msg": {
-    "message": "Ma so składowana lisćina Cloudflare-domenow z $1$ zapiskami woprawdźe wuprózdnić?"
+    "message": "Ma so składowana lisćina Cloudflare-domenow z $1 zapiskami woprawdźe wuprózdnić?"
   },
   "whitelist_reset_confirmation_msg": {
     "message": "Ma so běła lisćina woprawdźe wróćo stajić?"

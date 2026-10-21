@@ -1815,8 +1815,8 @@ const bookmarksorganizer = {
         request.send(JSON.stringify({
           cmd : 'request.get',
           url : url,
-          maxTimeout : timeout,
-          waitInSeconds : 15
+          maxTimeout : timeout
+          // waitInSeconds : 15
         }));
 
         if (signal.aborted) {

@@ -189,7 +189,7 @@
     "message": "Ostrzeżeń"
   },
   "cloudflare_list_reset_confirmation_msg": {
-    "message": "Wyczyścić zapisaną listę domen Cloudflare ($1$)?"
+    "message": "Wyczyścić zapisaną listę domen Cloudflare ($1)?"
   },
   "whitelist_reset_confirmation_msg": {
     "message": "Czy na pewno chcesz wyczyścić białą listę?"

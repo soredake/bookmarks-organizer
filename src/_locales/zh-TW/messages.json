@@ -189,7 +189,7 @@
     "message": "有警告"
   },
   "cloudflare_list_reset_confirmation_msg": {
-    "message": "要清除已儲存的 Cloudflare 網域清單（共 $1$ 個）嗎？"
+    "message": "要清除已儲存的 Cloudflare 網域清單（共 $1 個）嗎？"
   },
   "whitelist_reset_confirmation_msg": {
     "message": "確定要重設白名單？"

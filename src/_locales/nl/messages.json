@@ -189,7 +189,7 @@
     "message": "Waarschuwingen"
   },
   "cloudflare_list_reset_confirmation_msg": {
-    "message": "De opgeslagen Cloudflare-domeinlijst met $1$ domeinen wissen?"
+    "message": "De opgeslagen Cloudflare-domeinlijst met $1 domeinen wissen?"
   },
   "whitelist_reset_confirmation_msg": {
     "message": "Wilt u de witte lijst echt herinitialiseren?"
