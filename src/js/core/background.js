@@ -5,11 +5,7 @@
 const MIN_PROGRESS = 0.01;
 const TIMEOUT_500_MS = 500;
 const DEFAULT_REQUEST_TIMEOUT_IN_SECONDS = 30;
-const PREVIOUS_DEFAULT_REQUEST_TIMEOUT_IN_SECONDS = 15;
 const FLARESOLVERR_REQUEST_TIMEOUT_IN_SECONDS = 90;
-const PREVIOUS_DEFAULT_FLARESOLVERR_TIMEOUT_IN_SECONDS = 90;
-const PREVIOUS_DEFAULT_FLARESOLVERR_TIMEOUT_BEFORE_120_IN_SECONDS = 200;
-const PREVIOUS_DEFAULT_FLARESOLVERR_TIMEOUT_BEFORE_90_IN_SECONDS = 120;
 const HTTP_OK_STATUS = 200;
 const HTTP_MULTIPLE_CHOICES_STATUS = 300;
 const HTTP_ERROR_STATUS = 400;
@@ -719,11 +715,7 @@ const bookmarksorganizer = {
       cloudflare : [],
       useCloudflareDomainRouting : true,
       directRequestTimeout : null,
-      directRequestTimeoutDefaultMigrated : false,
       flareSolverrRequestTimeout : FLARESOLVERR_REQUEST_TIMEOUT_IN_SECONDS,
-      flareSolverrRequestTimeoutDefaultMigrated : false,
-      flareSolverrRequestTimeoutDefaultMigratedTo120 : false,
-      flareSolverrRequestTimeoutDefaultMigratedTo90 : false,
       requestTimeout : null,
       requestTimeoutBeforeFlareSolverr : null,
       requestDelay : DEFAULT_REQUEST_DELAY_IN_SECONDS,
@@ -783,19 +775,7 @@ const bookmarksorganizer = {
         directRequestTimeout = DEFAULT_REQUEST_TIMEOUT_IN_SECONDS;
       }
     }
-    if (options.directRequestTimeoutDefaultMigrated !== true && directRequestTimeout === PREVIOUS_DEFAULT_REQUEST_TIMEOUT_IN_SECONDS) {
-      directRequestTimeout = DEFAULT_REQUEST_TIMEOUT_IN_SECONDS;
-    }
-    let parsedFlareSolverrRequestTimeout = parseInt(options.flareSolverrRequestTimeout);
-    if (options.flareSolverrRequestTimeoutDefaultMigrated !== true && parsedFlareSolverrRequestTimeout === PREVIOUS_DEFAULT_FLARESOLVERR_TIMEOUT_IN_SECONDS) {
-      parsedFlareSolverrRequestTimeout = FLARESOLVERR_REQUEST_TIMEOUT_IN_SECONDS;
-    }
-    if (options.flareSolverrRequestTimeoutDefaultMigratedTo120 !== true && parsedFlareSolverrRequestTimeout === PREVIOUS_DEFAULT_FLARESOLVERR_TIMEOUT_BEFORE_120_IN_SECONDS) {
-      parsedFlareSolverrRequestTimeout = FLARESOLVERR_REQUEST_TIMEOUT_IN_SECONDS;
-    }
-    if (options.flareSolverrRequestTimeoutDefaultMigratedTo90 !== true && parsedFlareSolverrRequestTimeout === PREVIOUS_DEFAULT_FLARESOLVERR_TIMEOUT_BEFORE_90_IN_SECONDS) {
-      parsedFlareSolverrRequestTimeout = FLARESOLVERR_REQUEST_TIMEOUT_IN_SECONDS;
-    }
+    const parsedFlareSolverrRequestTimeout = parseInt(options.flareSolverrRequestTimeout);
     let flareSolverrRequestTimeout = FLARESOLVERR_REQUEST_TIMEOUT_IN_SECONDS;
     if (Number.isInteger(parsedFlareSolverrRequestTimeout) && parsedFlareSolverrRequestTimeout > 0) {
       flareSolverrRequestTimeout = parsedFlareSolverrRequestTimeout;
@@ -803,11 +783,7 @@ const bookmarksorganizer = {
 
     await browser.storage.local.set({
       directRequestTimeout : directRequestTimeout,
-      directRequestTimeoutDefaultMigrated : true,
-      flareSolverrRequestTimeout : flareSolverrRequestTimeout,
-      flareSolverrRequestTimeoutDefaultMigrated : true,
-      flareSolverrRequestTimeoutDefaultMigratedTo120 : true,
-      flareSolverrRequestTimeoutDefaultMigratedTo90 : true
+      flareSolverrRequestTimeout : flareSolverrRequestTimeout
     });
 
     // eslint-disable-next-line require-atomic-updates
