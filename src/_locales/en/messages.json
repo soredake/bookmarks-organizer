@@ -53,6 +53,9 @@
   "button_reset_whitelist": {
     "message": "reset whitelist…"
   },
+  "button_reset_cloudflare_list": {
+    "message": "clear Cloudflare domain list…"
+  },
   "button_return": {
     "message": "Back"
   },
@@ -140,6 +143,12 @@
   "option_flaresolverr_description": {
     "message": "When enabled, link checks are sent through this FlareSolverr server. Keep the server private."
   },
+  "option_cloudflare_domain_routing": {
+    "message": "Remember Cloudflare-protected domains and check them only with FlareSolverr"
+  },
+  "option_cloudflare_domain_routing_description": {
+    "message": "When enabled with FlareSolverr, Cloudflare-challenged domains are saved and their links are distributed throughout the check."
+  },
   "option_flaresolverr_try_404": {
     "message": "Try to check 404 URLs with FlareSolverr (can help with some anti-bot systems)"
   },
@@ -214,6 +223,9 @@
   },
   "whitelist_reset_confirmation_msg": {
     "message": "Do you really want to reset the whitelist?"
+  },
+  "cloudflare_list_reset_confirmation_msg": {
+    "message": "Clear the saved Cloudflare domain list?"
   },
   "option_flaresolverr_show_result": {
     "message": "Show direct and FlareSolverr results under links"

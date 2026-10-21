@@ -17,11 +17,13 @@ const elDirectRequestTimeout = document.getElementById('request-timeout-direct')
 const elFlareSolverrRequestTimeout = document.getElementById('request-timeout-flaresolverr');
 const elRequestDelay = document.getElementById('request-delay');
 const elUseFlareSolverr = document.getElementById('use-flaresolverr');
+const elUseCloudflareDomainRouting = document.getElementById('use-cloudflare-domain-routing');
 const elTry404WithFlareSolverr = document.getElementById('try-404-flaresolverr');
 const elFlareSolverrUrl = document.getElementById('flaresolverr-url');
 const elShowFlareSolverrResult = document.getElementById('show-flaresolverr-result');
 const elShuffleUrls = document.getElementById('shuffle-urls');
 const elResetWhitelistBtn = document.getElementById('reset-whitelist');
+const elResetCloudflareListBtn = document.getElementById('reset-cloudflare-list');
 const elReturnBtn = document.getElementById('return-button');
 
 /**
@@ -61,6 +63,7 @@ const options = {
       requestTimeoutBeforeFlareSolverr : null,
       requestDelay : DEFAULT_REQUEST_DELAY,
       useFlareSolverr : false,
+      useCloudflareDomainRouting : true,
       try404WithFlareSolverr : false,
       flareSolverrUrl : DEFAULT_FLARESOLVERR_URL,
       showFlareSolverrResult : true,
@@ -113,6 +116,7 @@ const options = {
     elFlareSolverrRequestTimeout.value = flareSolverrRequestTimeout;
     elRequestDelay.value = option.requestDelay;
     elUseFlareSolverr.checked = option.useFlareSolverr;
+    elUseCloudflareDomainRouting.checked = option.useCloudflareDomainRouting !== false;
     elTry404WithFlareSolverr.checked = option.try404WithFlareSolverr;
     elFlareSolverrUrl.value = option.flareSolverrUrl;
     elShowFlareSolverrResult.checked = option.showFlareSolverrResult;
@@ -179,6 +183,10 @@ elUseFlareSolverr.addEventListener('change', async (e) => {
   options.setFlareSolverrOptionsEnabled(enabled);
 });
 
+elUseCloudflareDomainRouting.addEventListener('change', (e) => {
+  browser.storage.local.set({ useCloudflareDomainRouting : e.target.checked });
+});
+
 elTry404WithFlareSolverr.addEventListener('change', (e) => {
   browser.storage.local.set({ try404WithFlareSolverr : e.target.checked });
 });
@@ -221,4 +229,19 @@ elResetWhitelistBtn.addEventListener('click', (e) => {
   }
 
   browser.storage.local.set({ whitelist : [] });
+});
+
+elResetCloudflareListBtn.addEventListener('click', async () => {
+  // eslint-disable-next-line no-alert
+  if (!elDisableConfirmations.checked && !confirm(browser.i18n.getMessage('cloudflare_list_reset_confirmation_msg') || 'Clear the saved Cloudflare domain list?')) {
+    return;
+  }
+
+  try {
+    await browser.runtime.sendMessage({ message : 'clear-cloudflare-domains' });
+  }
+  catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Unable to clear Cloudflare domain list', error);
+  }
 });

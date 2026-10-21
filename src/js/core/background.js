@@ -30,6 +30,7 @@ const RETRY_DELAY_MAX_IN_MS = 60000;
 const FLARESOLVERR_JSON_PARSE_RETRY_DELAY_IN_MS = 5000;
 const FLARESOLVERR_ONLY_PATTERN_DELAY_IN_MS = 5000;
 const FLARESOLVERR_STATUS_ESCALATION_DELAY_IN_MS = 10000;
+const INTERLEAVE_POSITION_OFFSET = 0.5;
 const CHALLENGE_BODY_MAX_LENGTH = 65536;
 const CLOUDFLARE_CHALLENGE_MARKERS = /cf-mitigated|__cf_chl_rt_tk|__cf_chl_|cf-chl/i;
 const FLARESOLVERR_ONLY_URL_PATTERNS = [/\/altcha\//i, /__cake_test/i];
@@ -115,6 +116,15 @@ const bookmarksorganizer = {
 
   /** @type {boolean} */
   shuffleUrls : false,
+
+  /** @type {boolean} */
+  useCloudflareDomainRouting : true,
+
+  /** @type {Set<string>} */
+  cloudflareDomains : new Set(),
+
+  /** @type {Promise<void>} */
+  cloudflareDomainStorageQueue : Promise.resolve(),
 
   /**
    * FlareSolverr API endpoint.
@@ -561,6 +571,9 @@ const bookmarksorganizer = {
         await bookmarksorganizer.finishCheck(bookmarksorganizer.mode);
       }
     }
+    else if (response.message === 'clear-cloudflare-domains') {
+      await bookmarksorganizer.clearCloudflareDomains();
+    }
     else if (response.message === 'edit') {
       await browser.bookmarks.update(response.bookmarkId, {
         title : response.title,
@@ -701,6 +714,8 @@ const bookmarksorganizer = {
       disableConfirmations : false,
       whitelist : [],
       maxConcurrentRequests : bookmarksorganizer.QUEUE_SIZE,
+      cloudflare : [],
+      useCloudflareDomainRouting : true,
       directRequestTimeout : null,
       directRequestTimeoutDefaultMigrated : false,
       flareSolverrRequestTimeout : FLARESOLVERR_REQUEST_TIMEOUT_IN_SECONDS,
@@ -723,6 +738,10 @@ const bookmarksorganizer = {
     bookmarksorganizer.disableConfirmations = options.disableConfirmations;
     // eslint-disable-next-line require-atomic-updates
     bookmarksorganizer.whitelist = options.whitelist;
+    // eslint-disable-next-line require-atomic-updates
+    bookmarksorganizer.cloudflareDomains = new Set(bookmarksorganizer.normalizeCloudflareDomains(options.cloudflare));
+    // eslint-disable-next-line require-atomic-updates
+    bookmarksorganizer.useCloudflareDomainRouting = options.useCloudflareDomainRouting !== false;
 
     const parsedMaxConcurrentRequests = parseInt(options.maxConcurrentRequests);
     // eslint-disable-next-line require-atomic-updates
@@ -923,7 +942,13 @@ const bookmarksorganizer = {
       if ((/^https?:\/\//).test(bookmark.url)) {
         bookmark.attempts = 0;
 
-        const checkedBookmark = await bookmarksorganizer.checkHttpResponse(bookmark, 'HEAD');
+        let checkedBookmark = bookmark;
+        if (bookmarksorganizer.useFlareSolverr && bookmarksorganizer.useCloudflareDomainRouting && bookmarksorganizer.isCloudflareDomain(bookmark.url)) {
+          checkedBookmark = await bookmarksorganizer.checkFlareSolverrResponse(bookmark);
+        }
+        else {
+          checkedBookmark = await bookmarksorganizer.checkHttpResponse(bookmark, 'HEAD');
+        }
         if (bookmarksorganizer.checkFinalized) {
           return;
         }
@@ -1044,6 +1069,11 @@ const bookmarksorganizer = {
           challenge : await bookmarksorganizer.isCloudflareChallengeResponse(directResponse)
         };
       })(), controller, bookmarksorganizer.DIRECT_REQUEST_TIMEOUT_IN_MS, true);
+      const shouldRememberCloudflareDomain =
+        bookmarksorganizer.useCloudflareDomainRouting &&
+        bookmark.attempts === 1 &&
+        response.status === HTTP_FORBIDDEN_STATUS &&
+        challenge;
       if (bookmarksorganizer.showRequestResults) {
         // eslint-disable-next-line require-atomic-updates
         bookmark.directRequestResult = `HTTP ${response.status}`;
@@ -1051,6 +1081,9 @@ const bookmarksorganizer = {
       controller.abort();
       bookmarksorganizer.releaseDirectRequestSlot();
       directSlotAcquired = false;
+      if (shouldRememberCloudflareDomain) {
+        await bookmarksorganizer.addCloudflareDomain(bookmark.url);
+      }
 
       if (response.status === STATUS.NOT_FOUND) {
         // eslint-disable-next-line require-atomic-updates
@@ -1259,6 +1292,145 @@ const bookmarksorganizer = {
     }
 
     return false;
+  },
+
+  /**
+   * Normalizes saved Cloudflare hostnames from storage.
+   *
+   * @param {Array<string>} domains - hostnames stored in local storage
+   * @returns {Array<string>} normalized hostnames
+   */
+  normalizeCloudflareDomains (domains) {
+    if (!Array.isArray(domains)) {
+      return [];
+    }
+
+    return Array.from(new Set(domains
+      .filter((domain) => typeof domain === 'string')
+      .map((domain) => domain.toLowerCase().replace(/^www\./, '').replace(/\.$/, ''))
+      .filter(Boolean)));
+  },
+
+  /**
+   * Checks whether a URL belongs to a previously detected Cloudflare-protected host.
+   *
+   * @param {string} url - URL to check
+   * @returns {boolean} whether its hostname is in the saved domain list
+   */
+  isCloudflareDomain (url) {
+    try {
+      const hostname = new URL(url).hostname.toLowerCase().replace(/^www\./, '').replace(/\.$/, '');
+
+      return Array.from(bookmarksorganizer.cloudflareDomains).some((domain) => hostname === domain || hostname.endsWith(`.${domain}`));
+    }
+    catch (error) {
+      return false;
+    }
+  },
+
+  /**
+   * Saves a newly detected Cloudflare-protected host and serializes concurrent storage updates.
+   *
+   * @param {string} url - URL that returned a Cloudflare challenge
+   * @returns {Promise<void>} resolves after the updated list has been persisted
+   */
+  addCloudflareDomain (url) {
+    try {
+      const hostname = new URL(url).hostname.toLowerCase().replace(/^www\./, '').replace(/\.$/, '');
+      if (!hostname || bookmarksorganizer.cloudflareDomains.has(hostname)) {
+        return Promise.resolve();
+      }
+
+      bookmarksorganizer.cloudflareDomains.add(hostname);
+
+      bookmarksorganizer.cloudflareDomainStorageQueue = bookmarksorganizer.cloudflareDomainStorageQueue
+        // eslint-disable-next-line promise/prefer-await-to-callbacks
+        .then(async () => {
+          const { cloudflare } = await browser.storage.local.get({ cloudflare : [] });
+          const domains = bookmarksorganizer.normalizeCloudflareDomains(cloudflare);
+          if (!domains.includes(hostname)) {
+            domains.push(hostname);
+          }
+
+          return browser.storage.local.set({ cloudflare : domains });
+        })
+        // eslint-disable-next-line promise/prefer-await-to-callbacks
+        .catch((error) => {
+          // eslint-disable-next-line no-console
+          console.error('Unable to save Cloudflare domain list', error);
+        });
+
+      return bookmarksorganizer.cloudflareDomainStorageQueue;
+    }
+    catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Unable to detect Cloudflare domain from URL', error);
+
+      return Promise.resolve();
+    }
+  },
+
+  /**
+   * Clears saved Cloudflare hosts and any loaded in-memory copy.
+   *
+   * @returns {Promise<void>} resolves after the list has been cleared
+   */
+  clearCloudflareDomains () {
+    bookmarksorganizer.cloudflareDomains.clear();
+
+    bookmarksorganizer.cloudflareDomainStorageQueue = bookmarksorganizer.cloudflareDomainStorageQueue
+      // eslint-disable-next-line promise/prefer-await-to-callbacks
+      .then(() => browser.storage.local.set({ cloudflare : [] }))
+      // eslint-disable-next-line promise/prefer-await-to-callbacks
+      .catch((error) => {
+        // eslint-disable-next-line no-console
+        console.error('Unable to clear Cloudflare domain list', error);
+      });
+
+    return bookmarksorganizer.cloudflareDomainStorageQueue;
+  },
+
+  /**
+   * Evenly distributes saved Cloudflare-domain bookmarks among direct bookmarks.
+   *
+   * @param {Array<bookmarks.BookmarkTreeNode>} bookmarks - bookmarks to order
+   * @returns {Array<bookmarks.BookmarkTreeNode>} reordered bookmarks
+   */
+  interleaveCloudflareBookmarks (bookmarks) {
+    const urlIndexes = [];
+    const cloudflareBookmarks = [];
+    const directBookmarks = [];
+
+    bookmarks.forEach((bookmark, index) => {
+      if (bookmark.url) {
+        urlIndexes.push(index);
+        (bookmarksorganizer.isCloudflareDomain(bookmark.url) ? cloudflareBookmarks : directBookmarks).push(bookmark);
+      }
+    });
+
+    if (cloudflareBookmarks.length === 0 || directBookmarks.length === 0) {
+      return bookmarks;
+    }
+
+    const interleaved = new Array(urlIndexes.length);
+    cloudflareBookmarks.forEach((bookmark, index) => {
+      const position = Math.floor(((index + INTERLEAVE_POSITION_OFFSET) * urlIndexes.length) / cloudflareBookmarks.length);
+      interleaved[position] = bookmark;
+    });
+
+    let directIndex = 0;
+    for (let index = 0; index < interleaved.length; index++) {
+      if (!interleaved[index]) {
+        interleaved[index] = directBookmarks[directIndex++];
+      }
+    }
+
+    const result = bookmarks.slice();
+    urlIndexes.forEach((bookmarkIndex, index) => {
+      result[bookmarkIndex] = interleaved[index];
+    });
+
+    return result;
   },
 
   /**
@@ -1751,7 +1923,10 @@ const bookmarksorganizer = {
         return bookmark;
       }
       if (error instanceof SyntaxError) {
-        retryDirectly = true;
+        retryDirectly = !(
+          bookmarksorganizer.useCloudflareDomainRouting &&
+          bookmarksorganizer.isCloudflareDomain(bookmark.url)
+        );
       }
       if (bookmarksorganizer.showRequestResults) {
         let flareSolverrResult = error.message;
@@ -1999,6 +2174,9 @@ const bookmarksorganizer = {
 
     if (bookmarksorganizer.shuffleUrls) {
       bookmarksToProcess = bookmarksorganizer.shuffleBookmarksByDomain(bookmarksToProcess);
+    }
+    if (bookmarksorganizer.useFlareSolverr && bookmarksorganizer.useCloudflareDomainRouting) {
+      bookmarksToProcess = bookmarksorganizer.interleaveCloudflareBookmarks(bookmarksToProcess);
     }
 
     const tasks = bookmarksToProcess.map(async (aBookmark) => {
