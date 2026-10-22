@@ -1273,7 +1273,9 @@ elShowFlareSolverrErrorsButton.addEventListener('click', () => {
   });
 });
 elSettingsButton.addEventListener('click', () => {
-  window.location.assign(browser.runtime.getURL('html/options.html'));
+  const optionsUrl = new URL(browser.runtime.getURL('html/options.html'));
+  optionsUrl.searchParams.set('returnTo', 'ui');
+  browser.tabs.create({ url : optionsUrl.href });
 });
 
 browser.runtime.onMessage.addListener(ui.handleResponse);
