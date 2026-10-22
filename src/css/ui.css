@@ -761,13 +761,21 @@ button#reset-whitelist {
   background-color: var(--color-box-background);
 }
 
+#control-bar form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 #control-bar select {
   appearance: none;
-  margin: 12px 5px 12px 10px;
+  box-sizing: border-box;
+  margin: 12px 0 12px 10px;
   padding-left: 10px;
   padding-right: 40px;
   width: 310px;
   height: 40px;
+  font-family: inherit;
   font-size: 18px;
   border: 2px solid var(--color-body-text);
   background-image: url('../images/arrow-down.png');
@@ -800,8 +808,20 @@ button#reset-whitelist {
   font-size: 14px;
 }
 
+#control-bar button {
+  box-sizing: border-box;
+  margin: 12px 0;
+  padding: 0 12px;
+  height: 40px;
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
 #settings-button {
-  margin: 12px 5px;
+  margin: 12px 10px 12px 0;
   padding: 0;
   width: 40px;
   height: 40px;
@@ -814,11 +834,6 @@ button#reset-whitelist {
   vertical-align: top;
   cursor: pointer;
   transition: background-color ease 250ms, color ease 250ms;
-}
-
-#show-flaresolverr-errors {
-  padding: 0 10px;
-  font-size: 14px;
 }
 
 #settings-button:hover {
