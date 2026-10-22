@@ -30,26 +30,30 @@ higher is required for the latest version of Bookmarks Organizer).**
 
 - **Configurable request controls:** Set the maximum number of simultaneous direct requests (two by default), the delay
   between requests (one second by default), and separate timeouts for direct requests (30 seconds by default) and
-  FlareSolverr requests (120 seconds by default). Direct requests use the configured concurrency limit; FlareSolverr
-  requests have their own limit of two and do not occupy direct-request slots.
-- **Optional FlareSolverr support:** Try direct requests first and escalate eligible challenge responses to a configured
-  FlareSolverr `/v1` endpoint when a direct request returns 403 with Cloudflare challenge markers. FlareSolverr calls
-  use POST and follow redirects. Other statuses and URL patterns do not escalate to FlareSolverr.
-- **Safer response handling:** Direct checks start with HEAD and fall back to GET when needed. A clean 404 is treated as
-  a dead link; blocked responses, timeouts, and network errors are reported as unknown when they cannot establish that
-  a link is dead. Retryable failures get one retry after a 30–60 second jittered delay; 429 and 503 responses retry
-  after five seconds. Clean 404 responses are   not retried by default. FlareSolverr requests are not retried; optionally, JSON parse
-  failures can put that host on a direct-only list for the current check and schedule a direct HEAD retry after five seconds.
-- **Redirect and response details:** Follow redirects to their final destination and show the resulting URL. An option,
-  enabled by default, displays the final HTTP result from both direct checks and FlareSolverr beneath each bookmark.
-- **Less predictable scan traffic:** Shuffle URLs before checking (enabled by default), spreading links from the same
-  domain apart where possible to reduce bursts against one site.
-- **Reliable long-running checks:** Enforce hard FlareSolverr timeouts with an independent watchdog, release FlareSolverr
-  capacity when a request times out, and keep its queue separate from direct requests. The Stop button cancels active
-  and queued work promptly and displays the results collected so far. Normal completion is kept distinct from a
-  watchdog-triggered stop, and bookmark totals are counted without showing partial counts.
-- **Interface and localization fixes:** Translate the new settings and stop status, keep translated text from colliding
-  with buttons, repair filter-checkbox presentation, and open settings in the current tab.
+  FlareSolverr requests (120 seconds by default). FlareSolverr requests have a separate concurrency limit of two.
+- **Optional FlareSolverr support:** Direct checks are tried first. A response is sent to the configured FlareSolverr
+  `/v1` endpoint only when it returns HTTP 403 with Cloudflare challenge markers; other statuses and URL patterns do not
+  trigger FlareSolverr. When result details are enabled, this specific 403 is identified as a Cloudflare block if
+  FlareSolverr is disabled.
+- **Cloudflare domain scheduling:** When enabled alongside FlareSolverr, domains identified by a 403 response with
+  Cloudflare markers are remembered. Their bookmarks are spread throughout the scan to reduce consecutive checks to
+  protected domains. The saved domain list can be cleared from settings.
+- **Retry and fallback handling:** Direct checks start with HEAD and fall back to GET when needed. A 404 is treated as a
+  dead link; blocked responses, timeouts, and network errors that cannot confirm a dead link are reported as unknown.
+  Retryable direct failures are retried once after a 30–60 second jittered delay, while 429 and 503 responses are
+  retried after five seconds. FlareSolverr requests are not retried. An optional setting can retry a link directly after
+  an invalid FlareSolverr JSON response and bypass FlareSolverr for that domain for the rest of the current scan.
+- **Redirect and response details:** Redirects are followed to their final destination and the resulting URL is shown.
+  An option, enabled by default, displays the final HTTP result from direct checks and FlareSolverr beneath each
+  bookmark.
+- **Network error codes:** When Firefox provides a specific network error code for a failed direct request, such as an
+  SSL error, the result displays that code instead of the generic fetch error.
+- **FlareSolverr diagnostics:** With debug output enabled, invalid JSON responses are recorded with their bookmark URLs
+  and response bodies. After a scan, including a stopped scan, the diagnostics can be opened in a separate page.
+- **Long-running check safeguards:** FlareSolverr requests have an independent watchdog timeout and a separate queue
+  from direct requests. The Stop button cancels active and queued work and displays the results collected so far.
+- **Interface behavior:** Settings open in a new tab so completed scan results remain open in the main tab. Fork-specific
+  settings and status messages are translated across all supported locales.
 
 ### Shortcuts
 
