@@ -1268,7 +1268,9 @@ elRepairAllRedirects.addEventListener('click', ui.repairAllRedirects);
 elDeleteAllBookmarksWithErrors.addEventListener('click', ui.deleteAllBookmarksWithErrors);
 elSearch.addEventListener('input', ui.applySearchFieldFilter);
 elShowFlareSolverrErrorsButton.addEventListener('click', () => {
-  window.location.assign(browser.runtime.getURL('html/flaresolverr-errors.html'));
+  browser.tabs.create({
+    url : browser.runtime.getURL('html/flaresolverr-errors.html')
+  });
 });
 elSettingsButton.addEventListener('click', () => {
   window.location.assign(browser.runtime.getURL('html/options.html'));
