@@ -144,16 +144,49 @@
     "message": "停用確認訊息（不推薦）"
   },
   "option_request_timeout_direct": {
-    "message": "Request timeout"
+    "message": "請求逾時"
   },
   "option_request_timeout_direct_description": {
-    "message": "If a page does not load within this time, the request is considered failed."
+    "message": "如果頁面未能在此時間內載入，該請求會被視為失敗。"
   },
   "option_request_timeout_flaresolverr": {
-    "message": "Request timeout (FlareSolverr)"
+    "message": "請求逾時 (FlareSolverr)"
   },
   "option_request_timeout_flaresolverr_description": {
-    "message": "If a page does not load within this time, the request is considered failed."
+    "message": "如果頁面未能在此時間內載入，該請求會被視為失敗。"
+  },
+  "option_flaresolverr_enabled": {
+    "message": "使用 FlareSolverr"
+  },
+  "option_flaresolverr_url": {
+    "message": "FlareSolverr API 網址"
+  },
+  "option_flaresolverr_description": {
+    "message": "啟用後，連結檢查會透過此 FlareSolverr 伺服器進行。請勿公開此伺服器。"
+  },
+  "option_flaresolverr_json_error_direct_fallback": {
+    "message": "JSON 回應無效時直接重試，並對該網域略過 FlareSolverr"
+  },
+  "option_flaresolverr_json_error_direct_fallback_description": {
+    "message": "啟用後，若 JSON 回應無效，該網域在本次檢查期間會標記為僅能直接連線，並直接重試該連結。"
+  },
+  "option_request_delay": {
+    "message": "請求間隔"
+  },
+  "option_request_delay_description": {
+    "message": "檢查下一個項目前的等待時間。"
+  },
+  "option_request_timeout": {
+    "message": "請求逾時"
+  },
+  "option_request_timeout_description": {
+    "message": "如果頁面未能在此時間內載入，該請求會被視為失敗。"
+  },
+  "seconds": {
+    "message": "秒"
+  },
+  "redirect_result": {
+    "message": "偵測到重新導向"
   },
   "settings_button_title": {
     "message": "設定"

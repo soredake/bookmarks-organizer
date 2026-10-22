@@ -144,16 +144,49 @@
     "message": "Désactiver les messages de confirmation (déconseillé)"
   },
   "option_request_timeout_direct": {
-    "message": "Request timeout"
+    "message": "Délai d’expiration de la requête"
   },
   "option_request_timeout_direct_description": {
-    "message": "If a page does not load within this time, the request is considered failed."
+    "message": "Si une page ne se charge pas dans ce délai, la requête est considérée comme ayant échoué."
   },
   "option_request_timeout_flaresolverr": {
-    "message": "Request timeout (FlareSolverr)"
+    "message": "Délai d’expiration de la requête (FlareSolverr)"
   },
   "option_request_timeout_flaresolverr_description": {
-    "message": "If a page does not load within this time, the request is considered failed."
+    "message": "Si une page ne se charge pas dans ce délai, la requête est considérée comme ayant échoué."
+  },
+  "option_flaresolverr_enabled": {
+    "message": "Utiliser FlareSolverr"
+  },
+  "option_flaresolverr_url": {
+    "message": "URL de l’API FlareSolverr"
+  },
+  "option_flaresolverr_description": {
+    "message": "Lorsque cette option est activée, les liens sont vérifiés via ce serveur FlareSolverr. Gardez le serveur privé."
+  },
+  "option_flaresolverr_json_error_direct_fallback": {
+    "message": "Réessayer directement et ignorer FlareSolverr pour un domaine si sa réponse JSON est invalide"
+  },
+  "option_flaresolverr_json_error_direct_fallback_description": {
+    "message": "Lorsque cette option est activée, une réponse JSON invalide marque le domaine comme accessible uniquement directement pendant la vérification en cours, puis le lien est réessayé directement."
+  },
+  "option_request_delay": {
+    "message": "Délai entre les requêtes"
+  },
+  "option_request_delay_description": {
+    "message": "Durée à attendre avant de vérifier l’élément suivant."
+  },
+  "option_request_timeout": {
+    "message": "Délai d’expiration de la requête"
+  },
+  "option_request_timeout_description": {
+    "message": "Si une page ne se charge pas dans ce délai, la requête est considérée comme ayant échoué."
+  },
+  "seconds": {
+    "message": "secondes"
+  },
+  "redirect_result": {
+    "message": "Redirection détectée"
   },
   "settings_button_title": {
     "message": "Paramètres"

@@ -144,16 +144,49 @@
     "message": "Wyłącz komunikaty potwierdzeń (nie zalecane)"
   },
   "option_request_timeout_direct": {
-    "message": "Request timeout"
+    "message": "Limit czasu żądania"
   },
   "option_request_timeout_direct_description": {
-    "message": "If a page does not load within this time, the request is considered failed."
+    "message": "Jeśli strona nie załaduje się w tym czasie, żądanie zostanie uznane za nieudane."
   },
   "option_request_timeout_flaresolverr": {
-    "message": "Request timeout (FlareSolverr)"
+    "message": "Limit czasu żądania (FlareSolverr)"
   },
   "option_request_timeout_flaresolverr_description": {
-    "message": "If a page does not load within this time, the request is considered failed."
+    "message": "Jeśli strona nie załaduje się w tym czasie, żądanie zostanie uznane za nieudane."
+  },
+  "option_flaresolverr_enabled": {
+    "message": "Używaj FlareSolverr"
+  },
+  "option_flaresolverr_url": {
+    "message": "Adres API FlareSolverr"
+  },
+  "option_flaresolverr_description": {
+    "message": "Po włączeniu odnośniki są sprawdzane przez ten serwer FlareSolverr. Nie udostępniaj serwera publicznie."
+  },
+  "option_flaresolverr_json_error_direct_fallback": {
+    "message": "Ponów bezpośrednio i pomiń FlareSolverr dla domeny, jeśli odpowiedź zawiera nieprawidłowy JSON"
+  },
+  "option_flaresolverr_json_error_direct_fallback_description": {
+    "message": "Po włączeniu nieprawidłowa odpowiedź JSON oznacza domenę jako dostępną tylko bezpośrednio na czas bieżącego sprawdzania, a odnośnik zostaje sprawdzony ponownie bezpośrednio."
+  },
+  "option_request_delay": {
+    "message": "Opóźnienie między żądaniami"
+  },
+  "option_request_delay_description": {
+    "message": "Jak długo czekać przed sprawdzeniem następnego elementu."
+  },
+  "option_request_timeout": {
+    "message": "Limit czasu żądania"
+  },
+  "option_request_timeout_description": {
+    "message": "Jeśli strona nie załaduje się w tym czasie, żądanie zostanie uznane za nieudane."
+  },
+  "seconds": {
+    "message": "sekund"
+  },
+  "redirect_result": {
+    "message": "Wykryto przekierowanie"
   },
   "settings_button_title": {
     "message": "Ustawienia"

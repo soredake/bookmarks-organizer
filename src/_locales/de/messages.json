@@ -99,7 +99,7 @@
     "message": "Warnungen"
   },
   "greeting": {
-    "message": "Hey!"
+    "message": "Hallo!"
   },
   "intro_check": {
     "message": "Die Überprüfung der Lesezeichen kann, abhängig vom ausgewählten Modus, der Anzahl der Lesezeichen sowie der Internetgeschwindigkeit, mehrere Minuten dauern. Bitte beachte, dass während der Überprüfung auf defekte Lesezeichen das Laden von Webseiten spürbar verlangsamt sein kann."
@@ -144,16 +144,49 @@
     "message": "Bestätigungs-Hinweise deaktivieren (nicht empfohlen)"
   },
   "option_request_timeout_direct": {
-    "message": "Request timeout"
+    "message": "Zeitlimit für Anfragen"
   },
   "option_request_timeout_direct_description": {
-    "message": "If a page does not load within this time, the request is considered failed."
+    "message": "Wenn eine Seite innerhalb dieser Zeit nicht geladen wird, gilt die Anfrage als fehlgeschlagen."
   },
   "option_request_timeout_flaresolverr": {
-    "message": "Request timeout (FlareSolverr)"
+    "message": "Zeitlimit für Anfragen (FlareSolverr)"
   },
   "option_request_timeout_flaresolverr_description": {
-    "message": "If a page does not load within this time, the request is considered failed."
+    "message": "Wenn eine Seite innerhalb dieser Zeit nicht geladen wird, gilt die Anfrage als fehlgeschlagen."
+  },
+  "option_flaresolverr_enabled": {
+    "message": "FlareSolverr verwenden"
+  },
+  "option_flaresolverr_url": {
+    "message": "FlareSolverr-API-URL"
+  },
+  "option_flaresolverr_description": {
+    "message": "Wenn diese Option aktiviert ist, werden Links über diesen FlareSolverr-Server geprüft. Halte den Server privat."
+  },
+  "option_flaresolverr_json_error_direct_fallback": {
+    "message": "Bei ungültiger JSON-Antwort direkt erneut versuchen und FlareSolverr für die Domain umgehen"
+  },
+  "option_flaresolverr_json_error_direct_fallback_description": {
+    "message": "Wenn diese Option aktiviert ist, wird die Domain bei einer ungültigen JSON-Antwort für die aktuelle Prüfung als nur direkt erreichbar markiert und der Link direkt erneut geprüft."
+  },
+  "option_request_delay": {
+    "message": "Verzögerung zwischen Anfragen"
+  },
+  "option_request_delay_description": {
+    "message": "Wartezeit vor der Prüfung des nächsten Eintrags."
+  },
+  "option_request_timeout": {
+    "message": "Zeitlimit für Anfragen"
+  },
+  "option_request_timeout_description": {
+    "message": "Wenn eine Seite innerhalb dieser Zeit nicht geladen wird, gilt die Anfrage als fehlgeschlagen."
+  },
+  "seconds": {
+    "message": "Sekunden"
+  },
+  "redirect_result": {
+    "message": "Weiterleitung erkannt"
   },
   "settings_button_title": {
     "message": "Einstellungen"

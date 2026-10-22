@@ -6,7 +6,7 @@
     "message": "纠正所有重定向"
   },
   "bookmark_action_add_to_whitelist": {
-    "message": "add to whitelist"
+    "message": "添加到白名单"
   },
   "bookmark_action_edit": {
     "message": "编辑"
@@ -30,7 +30,7 @@
     "message": "确定更改此书签的网址？此操作不能撤销！"
   },
   "bookmark_confirmation_whitelist": {
-    "message": "Are you sure you want this bookmark to be permanently ignored?"
+    "message": "确定要永久忽略此书签吗？"
   },
   "bookmark_name": {
     "message": "名称"
@@ -60,7 +60,7 @@
     "message": "未记录 FlareSolverr JSON 错误。"
   },
   "button_reset_whitelist": {
-    "message": "reset whitelist…"
+    "message": "重置白名单…"
   },
   "button_reset_cloudflare_list": {
     "message": "清除 Cloudflare 域名列表…"
@@ -99,7 +99,7 @@
     "message": "警告"
   },
   "greeting": {
-    "message": "Hey!"
+    "message": "你好！"
   },
   "intro_check": {
     "message": "检查所有书签可能需要几分钟，这取决于您所选择的模式、书签数量，以及您的网络速度。在检查失效书签期间，您的网络加载速度可能变慢。"
@@ -144,16 +144,49 @@
     "message": "禁用确认消息（不推荐）"
   },
   "option_request_timeout_direct": {
-    "message": "Request timeout"
+    "message": "请求超时"
   },
   "option_request_timeout_direct_description": {
-    "message": "If a page does not load within this time, the request is considered failed."
+    "message": "如果页面在此时间内未能加载，则视为请求失败。"
   },
   "option_request_timeout_flaresolverr": {
-    "message": "Request timeout (FlareSolverr)"
+    "message": "请求超时 (FlareSolverr)"
   },
   "option_request_timeout_flaresolverr_description": {
-    "message": "If a page does not load within this time, the request is considered failed."
+    "message": "如果页面在此时间内未能加载，则视为请求失败。"
+  },
+  "option_flaresolverr_enabled": {
+    "message": "使用 FlareSolverr"
+  },
+  "option_flaresolverr_url": {
+    "message": "FlareSolverr API 地址"
+  },
+  "option_flaresolverr_description": {
+    "message": "启用后，链接检查将通过此 FlareSolverr 服务器进行。请勿公开此服务器。"
+  },
+  "option_flaresolverr_json_error_direct_fallback": {
+    "message": "JSON 响应无效时直接重试，并对该域名绕过 FlareSolverr"
+  },
+  "option_flaresolverr_json_error_direct_fallback_description": {
+    "message": "启用后，如果 JSON 响应无效，该域名在本次检查期间将标记为仅直接访问，并直接重试该链接。"
+  },
+  "option_request_delay": {
+    "message": "请求间隔"
+  },
+  "option_request_delay_description": {
+    "message": "检查下一项之前的等待时间。"
+  },
+  "option_request_timeout": {
+    "message": "请求超时"
+  },
+  "option_request_timeout_description": {
+    "message": "如果页面在此时间内未能加载，则视为请求失败。"
+  },
+  "seconds": {
+    "message": "秒"
+  },
+  "redirect_result": {
+    "message": "检测到重定向"
   },
   "settings_button_title": {
     "message": "设置"
@@ -162,13 +195,13 @@
     "message": "最大并发网络请求数"
   },
   "permission_description": {
-    "message": "In order for the check for broken bookmarks to work, it is technically necessary to grant permission to access the data for all websites."
+    "message": "要检查失效书签，技术上需要授予访问所有网站数据的权限。"
   },
   "permission_grant_button": {
-    "message": "Grant permission"
+    "message": "授予权限"
   },
   "permission_needed": {
-    "message": "Permission required"
+    "message": "需要权限"
   },
   "save_bookmark": {
     "message": "保存"
@@ -201,7 +234,7 @@
     "message": "清除已保存的 Cloudflare 域名列表（共 $1 个）？"
   },
   "whitelist_reset_confirmation_msg": {
-    "message": "Do you really want to reset the whitelist?"
+    "message": "确定要重置白名单吗？"
   },
   "option_flaresolverr_show_result": {
     "message": "在链接下方显示直接请求和 FlareSolverr 的结果"

@@ -117,7 +117,7 @@
     "message": "Todos os favoritos estão OK!"
   },
   "no_marked_bookmarks_title": {
-    "message": "Yay!"
+    "message": "Oba!"
   },
   "omnibox_command_check_duplicates": {
     "message": "Procurar duplicados"
@@ -144,16 +144,49 @@
     "message": "Desabilitar mensagens de confirmação (não recomendado)"
   },
   "option_request_timeout_direct": {
-    "message": "Request timeout"
+    "message": "Tempo limite da solicitação"
   },
   "option_request_timeout_direct_description": {
-    "message": "If a page does not load within this time, the request is considered failed."
+    "message": "Se uma página não carregar dentro desse tempo, a solicitação será considerada malsucedida."
   },
   "option_request_timeout_flaresolverr": {
-    "message": "Request timeout (FlareSolverr)"
+    "message": "Tempo limite da solicitação (FlareSolverr)"
   },
   "option_request_timeout_flaresolverr_description": {
-    "message": "If a page does not load within this time, the request is considered failed."
+    "message": "Se uma página não carregar dentro desse tempo, a solicitação será considerada malsucedida."
+  },
+  "option_flaresolverr_enabled": {
+    "message": "Usar FlareSolverr"
+  },
+  "option_flaresolverr_url": {
+    "message": "URL da API do FlareSolverr"
+  },
+  "option_flaresolverr_description": {
+    "message": "Quando ativado, os links são verificados por este servidor FlareSolverr. Mantenha o servidor privado."
+  },
+  "option_flaresolverr_json_error_direct_fallback": {
+    "message": "Tentar novamente diretamente e ignorar o FlareSolverr para um domínio se a resposta JSON for inválida"
+  },
+  "option_flaresolverr_json_error_direct_fallback_description": {
+    "message": "Quando ativado, uma resposta JSON inválida marca o domínio como acessível somente diretamente durante a verificação atual e tenta verificar o link novamente de forma direta."
+  },
+  "option_request_delay": {
+    "message": "Atraso entre solicitações"
+  },
+  "option_request_delay_description": {
+    "message": "Quanto tempo esperar antes de verificar o próximo item."
+  },
+  "option_request_timeout": {
+    "message": "Tempo limite da solicitação"
+  },
+  "option_request_timeout_description": {
+    "message": "Se uma página não carregar dentro desse tempo, a solicitação será considerada malsucedida."
+  },
+  "seconds": {
+    "message": "segundos"
+  },
+  "redirect_result": {
+    "message": "Redirecionamento detectado"
   },
   "settings_button_title": {
     "message": "Configurações"

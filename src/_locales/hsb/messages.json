@@ -144,16 +144,49 @@
     "message": "Wobkrućenske pokazki znjemóžnić (njeporuča so)"
   },
   "option_request_timeout_direct": {
-    "message": "Request timeout"
+    "message": "Časowy limit naprašowanja"
   },
   "option_request_timeout_direct_description": {
-    "message": "If a page does not load within this time, the request is considered failed."
+    "message": "Jeli so strona w tutym času njezačita, so naprašowanje jako njepłaćiwe hódnoći."
   },
   "option_request_timeout_flaresolverr": {
-    "message": "Request timeout (FlareSolverr)"
+    "message": "Časowy limit naprašowanja (FlareSolverr)"
   },
   "option_request_timeout_flaresolverr_description": {
-    "message": "If a page does not load within this time, the request is considered failed."
+    "message": "Jeli so strona w tutym času njezačita, so naprašowanje jako njepłaćiwe hódnoći."
+  },
+  "option_flaresolverr_enabled": {
+    "message": "FlareSolverr wužiwać"
+  },
+  "option_flaresolverr_url": {
+    "message": "API-adresa FlareSolverr"
+  },
+  "option_flaresolverr_description": {
+    "message": "Jeli je to zmóžnjene, so wotkazy přez tutón serwer FlareSolverr přepruwuja. Wostajće serwer priwatny."
+  },
+  "option_flaresolverr_json_error_direct_fallback": {
+    "message": "Při njepłaćiwej JSON-wotmołwje direktnje hišće raz přepruwować a FlareSolverr za domenu wobijać"
+  },
+  "option_flaresolverr_json_error_direct_fallback_description": {
+    "message": "Jeli je to zmóžnjene, njepłaćiwa JSON-wotmołwa domenu za aktualne přepruwowanje jako jenož direktnje přistupnu woznamjenja a wotkaz so direktnje hišće raz přepruwuje."
+  },
+  "option_request_delay": {
+    "message": "Zapoždźenje mjez naprašowanjemi"
+  },
+  "option_request_delay_description": {
+    "message": "Čas, kotryž čakaće před přepruwowanjom přichodneje zapiski."
+  },
+  "option_request_timeout": {
+    "message": "Časowy limit naprašowanja"
+  },
+  "option_request_timeout_description": {
+    "message": "Jeli so strona w tutym času njezačita, so naprašowanje jako njepłaćiwe hódnoći."
+  },
+  "seconds": {
+    "message": "sekundy"
+  },
+  "redirect_result": {
+    "message": "Dalejposrědkowanje namakane"
   },
   "settings_button_title": {
     "message": "Nastajenja"

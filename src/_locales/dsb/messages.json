@@ -144,16 +144,49 @@
     "message": "Wobkšuśeńske pokazki znjemóžniś (njepśirázijo se)"
   },
   "option_request_timeout_direct": {
-    "message": "Request timeout"
+    "message": "Casowy limit napšašowanja"
   },
   "option_request_timeout_direct_description": {
-    "message": "If a page does not load within this time, the request is considered failed."
+    "message": "Jolic se bok w tom casu njezacyta, se napšašowanje ako njepłaśiwe gódnośi."
   },
   "option_request_timeout_flaresolverr": {
-    "message": "Request timeout (FlareSolverr)"
+    "message": "Casowy limit napšašowanja (FlareSolverr)"
   },
   "option_request_timeout_flaresolverr_description": {
-    "message": "If a page does not load within this time, the request is considered failed."
+    "message": "Jolic se bok w tom casu njezacyta, se napšašowanje ako njepłaśiwe gódnośi."
+  },
+  "option_flaresolverr_enabled": {
+    "message": "FlareSolverr wužywaś"
+  },
+  "option_flaresolverr_url": {
+    "message": "API-adresa FlareSolverr"
+  },
+  "option_flaresolverr_description": {
+    "message": "Jolic to jo zmóžnjone, se wótkaze pśez toś ten serwer FlareSolverr pśeglěduju. Wóstajśo serwer priwatny."
+  },
+  "option_flaresolverr_json_error_direct_fallback": {
+    "message": "Pśi njepłaśiwem JSON-wótegronje znowego direktnje pśeglědowaś a FlareSolverr za domeno wobejś"
+  },
+  "option_flaresolverr_json_error_direct_fallback_description": {
+    "message": "Jolic to jo zmóžnjone, njepłaśiwe JSON-wótegrono domeno za aktualnu kontrolu ako jano direktnje pśistupnu wóznamjenijo a wótkaz se direktnje znowego pśeglědujo."
+  },
+  "option_request_delay": {
+    "message": "Pśestawka mjazy napšašowanjami"
+  },
+  "option_request_delay_description": {
+    "message": "Cas, kótaryž cakaśo pśed pśeglědowanim pśiduceje zapiski."
+  },
+  "option_request_timeout": {
+    "message": "Casowy limit napšašowanja"
+  },
+  "option_request_timeout_description": {
+    "message": "Jolic se bok w tom casu njezacyta, se napšašowanje ako njepłaśiwe gódnośi."
+  },
+  "seconds": {
+    "message": "sekundy"
+  },
+  "redirect_result": {
+    "message": "Dalejposrědnjenje namakane"
   },
   "settings_button_title": {
     "message": "Nastajenja"

@@ -6,7 +6,7 @@
     "message": "opravit všechna přesměrování"
   },
   "bookmark_action_add_to_whitelist": {
-    "message": "add to whitelist"
+    "message": "Přidat na seznam povolených"
   },
   "bookmark_action_edit": {
     "message": "upravit"
@@ -30,7 +30,7 @@
     "message": "Opravdu chcete změnit URL adresu této záložky? Tato akce nemůže být vrácena."
   },
   "bookmark_confirmation_whitelist": {
-    "message": "Are you sure you want this bookmark to be permanently ignored?"
+    "message": "Opravdu chcete tuto záložku trvale ignorovat?"
   },
   "bookmark_name": {
     "message": "Název"
@@ -60,7 +60,7 @@
     "message": "Nebyly zaznamenány žádné chyby JSON FlareSolverr."
   },
   "button_reset_whitelist": {
-    "message": "reset whitelist…"
+    "message": "Obnovit seznam povolených…"
   },
   "button_reset_cloudflare_list": {
     "message": "vymazat seznam domén Cloudflare…"
@@ -141,19 +141,52 @@
     "message": "Povolit ladící výstup"
   },
   "option_disable_confirmations": {
-    "message": "Disable confirmation messages (not recommended)"
+    "message": "Zakázat potvrzovací zprávy (nedoporučuje se)"
   },
   "option_request_timeout_direct": {
-    "message": "Request timeout"
+    "message": "Časový limit požadavku"
   },
   "option_request_timeout_direct_description": {
-    "message": "If a page does not load within this time, the request is considered failed."
+    "message": "Pokud se stránka nenačte v tomto čase, požadavek se považuje za neúspěšný."
   },
   "option_request_timeout_flaresolverr": {
-    "message": "Request timeout (FlareSolverr)"
+    "message": "Časový limit požadavku (FlareSolverr)"
   },
   "option_request_timeout_flaresolverr_description": {
-    "message": "If a page does not load within this time, the request is considered failed."
+    "message": "Pokud se stránka nenačte v tomto čase, požadavek se považuje za neúspěšný."
+  },
+  "option_flaresolverr_enabled": {
+    "message": "Používat FlareSolverr"
+  },
+  "option_flaresolverr_url": {
+    "message": "Adresa API FlareSolverr"
+  },
+  "option_flaresolverr_description": {
+    "message": "Je-li tato možnost zapnutá, budou se odkazy kontrolovat přes tento server FlareSolverr. Server nezpřístupňujte veřejně."
+  },
+  "option_flaresolverr_json_error_direct_fallback": {
+    "message": "Při neplatné odpovědi JSON opakovat kontrolu přímo a pro doménu obejít FlareSolverr"
+  },
+  "option_flaresolverr_json_error_direct_fallback_description": {
+    "message": "Je-li tato možnost zapnutá, neplatná odpověď JSON označí doménu během aktuální kontroly jako dostupnou pouze pro přímé požadavky a odkaz se zkontroluje přímo."
+  },
+  "option_request_delay": {
+    "message": "Prodleva mezi požadavky"
+  },
+  "option_request_delay_description": {
+    "message": "Jak dlouho čekat před kontrolou další položky."
+  },
+  "option_request_timeout": {
+    "message": "Časový limit požadavku"
+  },
+  "option_request_timeout_description": {
+    "message": "Pokud se stránka nenačte v tomto čase, požadavek se považuje za neúspěšný."
+  },
+  "seconds": {
+    "message": "sekund"
+  },
+  "redirect_result": {
+    "message": "Zjištěno přesměrování"
   },
   "settings_button_title": {
     "message": "Nastavení"
@@ -162,13 +195,13 @@
     "message": "Maximální počet souběžných síťových požadavků"
   },
   "permission_description": {
-    "message": "In order for the check for broken bookmarks to work, it is technically necessary to grant permission to access the data for all websites."
+    "message": "Aby bylo možné kontrolovat nefunkční záložky, je z technických důvodů nutné udělit oprávnění k přístupu k datům všech webových stránek."
   },
   "permission_grant_button": {
-    "message": "Grant permission"
+    "message": "Udělit oprávnění"
   },
   "permission_needed": {
-    "message": "Permission required"
+    "message": "Je vyžadováno oprávnění"
   },
   "save_bookmark": {
     "message": "Uložit"
@@ -201,7 +234,7 @@
     "message": "Opravdu chcete vymazat uložený seznam domén Cloudflare ($1)?"
   },
   "whitelist_reset_confirmation_msg": {
-    "message": "Do you really want to reset the whitelist?"
+    "message": "Opravdu chcete obnovit seznam povolených?"
   },
   "option_flaresolverr_show_result": {
     "message": "Zobrazit výsledky přímých požadavků a FlareSolverr pod odkazy"

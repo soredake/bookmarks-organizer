@@ -99,7 +99,7 @@
     "message": "Avvisi"
   },
   "greeting": {
-    "message": "Hey!"
+    "message": "Ciao!"
   },
   "intro_check": {
     "message": "La verifica dei segnalibri può richiedere diversi minuti, a seconda della modalità selezionata, del numero di segnalibri e della velocità di Internet. Si prega di notare che durante il controllo dei segnalibri non funzionanti, il caricamento dei siti Web può essere notevolmente rallentato."
@@ -144,16 +144,49 @@
     "message": "Disabilita i messaggi di conferma (non consigliato)"
   },
   "option_request_timeout_direct": {
-    "message": "Request timeout"
+    "message": "Timeout della richiesta"
   },
   "option_request_timeout_direct_description": {
-    "message": "If a page does not load within this time, the request is considered failed."
+    "message": "Se una pagina non viene caricata entro questo tempo, la richiesta viene considerata non riuscita."
   },
   "option_request_timeout_flaresolverr": {
-    "message": "Request timeout (FlareSolverr)"
+    "message": "Timeout della richiesta (FlareSolverr)"
   },
   "option_request_timeout_flaresolverr_description": {
-    "message": "If a page does not load within this time, the request is considered failed."
+    "message": "Se una pagina non viene caricata entro questo tempo, la richiesta viene considerata non riuscita."
+  },
+  "option_flaresolverr_enabled": {
+    "message": "Usa FlareSolverr"
+  },
+  "option_flaresolverr_url": {
+    "message": "URL API di FlareSolverr"
+  },
+  "option_flaresolverr_description": {
+    "message": "Quando è attiva, la verifica dei link viene eseguita tramite questo server FlareSolverr. Mantieni privato il server."
+  },
+  "option_flaresolverr_json_error_direct_fallback": {
+    "message": "Riprova direttamente e ignora FlareSolverr per un dominio se la risposta JSON non è valida"
+  },
+  "option_flaresolverr_json_error_direct_fallback_description": {
+    "message": "Quando è attiva, una risposta JSON non valida contrassegna il dominio come accessibile solo direttamente per la verifica corrente e il link viene controllato di nuovo direttamente."
+  },
+  "option_request_delay": {
+    "message": "Ritardo tra le richieste"
+  },
+  "option_request_delay_description": {
+    "message": "Per quanto tempo attendere prima di verificare l’elemento successivo."
+  },
+  "option_request_timeout": {
+    "message": "Timeout della richiesta"
+  },
+  "option_request_timeout_description": {
+    "message": "Se una pagina non viene caricata entro questo tempo, la richiesta viene considerata non riuscita."
+  },
+  "seconds": {
+    "message": "secondi"
+  },
+  "redirect_result": {
+    "message": "Reindirizzamento rilevato"
   },
   "settings_button_title": {
     "message": "Impostazioni"
@@ -162,13 +195,13 @@
     "message": "Numero massimo di richieste di rete simultanee"
   },
   "permission_description": {
-    "message": "In order for the check for broken bookmarks to work, it is technically necessary to grant permission to access the data for all websites."
+    "message": "Per consentire il controllo dei segnalibri non funzionanti, è tecnicamente necessario concedere l’autorizzazione ad accedere ai dati di tutti i siti web."
   },
   "permission_grant_button": {
-    "message": "Grant permission"
+    "message": "Concedi autorizzazione"
   },
   "permission_needed": {
-    "message": "Permission required"
+    "message": "Autorizzazione necessaria"
   },
   "save_bookmark": {
     "message": "Salva"
@@ -180,7 +213,7 @@
     "message": "Sembra ci sia da far un po' di pulizia! "
   },
   "some_marked_bookmarks_title": {
-    "message": "Hey!"
+    "message": "Attenzione!"
   },
   "start_message": {
     "message": "Avvia qui…"

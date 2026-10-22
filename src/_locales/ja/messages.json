@@ -144,16 +144,49 @@
     "message": "確認メッセージを無効にする（非推奨）"
   },
   "option_request_timeout_direct": {
-    "message": "Request timeout"
+    "message": "リクエストのタイムアウト"
   },
   "option_request_timeout_direct_description": {
-    "message": "If a page does not load within this time, the request is considered failed."
+    "message": "この時間内にページが読み込まれない場合、リクエストは失敗とみなされます。"
   },
   "option_request_timeout_flaresolverr": {
-    "message": "Request timeout (FlareSolverr)"
+    "message": "リクエストのタイムアウト (FlareSolverr)"
   },
   "option_request_timeout_flaresolverr_description": {
-    "message": "If a page does not load within this time, the request is considered failed."
+    "message": "この時間内にページが読み込まれない場合、リクエストは失敗とみなされます。"
+  },
+  "option_flaresolverr_enabled": {
+    "message": "FlareSolverr を使用"
+  },
+  "option_flaresolverr_url": {
+    "message": "FlareSolverr API の URL"
+  },
+  "option_flaresolverr_description": {
+    "message": "有効にすると、リンクのチェックはこの FlareSolverr サーバー経由で行われます。サーバーは公開しないでください。"
+  },
+  "option_flaresolverr_json_error_direct_fallback": {
+    "message": "JSON 応答が無効な場合、FlareSolverr を経由せずドメインに直接再試行する"
+  },
+  "option_flaresolverr_json_error_direct_fallback_description": {
+    "message": "有効にすると、無効な JSON 応答があったドメインは現在のチェック中に直接接続のみとして扱われ、リンクを直接再試行します。"
+  },
+  "option_request_delay": {
+    "message": "リクエスト間の待ち時間"
+  },
+  "option_request_delay_description": {
+    "message": "次の項目をチェックするまでの待ち時間です。"
+  },
+  "option_request_timeout": {
+    "message": "リクエストのタイムアウト"
+  },
+  "option_request_timeout_description": {
+    "message": "この時間内にページが読み込まれない場合、リクエストは失敗とみなされます。"
+  },
+  "seconds": {
+    "message": "秒"
+  },
+  "redirect_result": {
+    "message": "リダイレクトを検出"
   },
   "settings_button_title": {
     "message": "設定"
@@ -162,13 +195,13 @@
     "message": "最大同時ネットワークリクエスト数"
   },
   "permission_description": {
-    "message": "In order for the check for broken bookmarks to work, it is technically necessary to grant permission to access the data for all websites."
+    "message": "壊れたブックマークをチェックするには、すべてのウェブサイトのデータにアクセスする権限が技術上必要です。"
   },
   "permission_grant_button": {
-    "message": "Grant permission"
+    "message": "権限を許可"
   },
   "permission_needed": {
-    "message": "Permission required"
+    "message": "権限が必要です"
   },
   "save_bookmark": {
     "message": "保存"

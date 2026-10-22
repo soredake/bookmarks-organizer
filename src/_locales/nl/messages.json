@@ -144,16 +144,49 @@
     "message": "Bevestigingsberichten uitschakelen (niet aanbevolen)"
   },
   "option_request_timeout_direct": {
-    "message": "Request timeout"
+    "message": "Time-out voor verzoeken"
   },
   "option_request_timeout_direct_description": {
-    "message": "If a page does not load within this time, the request is considered failed."
+    "message": "Als een pagina niet binnen deze tijd wordt geladen, wordt het verzoek als mislukt beschouwd."
   },
   "option_request_timeout_flaresolverr": {
-    "message": "Request timeout (FlareSolverr)"
+    "message": "Time-out voor verzoeken (FlareSolverr)"
   },
   "option_request_timeout_flaresolverr_description": {
-    "message": "If a page does not load within this time, the request is considered failed."
+    "message": "Als een pagina niet binnen deze tijd wordt geladen, wordt het verzoek als mislukt beschouwd."
+  },
+  "option_flaresolverr_enabled": {
+    "message": "FlareSolverr gebruiken"
+  },
+  "option_flaresolverr_url": {
+    "message": "FlareSolverr API-URL"
+  },
+  "option_flaresolverr_description": {
+    "message": "Als dit is ingeschakeld, worden links via deze FlareSolverr-server gecontroleerd. Houd de server privé."
+  },
+  "option_flaresolverr_json_error_direct_fallback": {
+    "message": "Rechtstreeks opnieuw proberen en FlareSolverr voor een domein omzeilen als het antwoord ongeldige JSON bevat"
+  },
+  "option_flaresolverr_json_error_direct_fallback_description": {
+    "message": "Als dit is ingeschakeld, wordt een domein bij een ongeldig JSON-antwoord tijdens de huidige controle gemarkeerd als alleen rechtstreeks bereikbaar en wordt de link rechtstreeks opnieuw gecontroleerd."
+  },
+  "option_request_delay": {
+    "message": "Vertraging tussen verzoeken"
+  },
+  "option_request_delay_description": {
+    "message": "Hoe lang te wachten voordat het volgende item wordt gecontroleerd."
+  },
+  "option_request_timeout": {
+    "message": "Time-out voor verzoeken"
+  },
+  "option_request_timeout_description": {
+    "message": "Als een pagina niet binnen deze tijd wordt geladen, wordt het verzoek als mislukt beschouwd."
+  },
+  "seconds": {
+    "message": "seconden"
+  },
+  "redirect_result": {
+    "message": "Omleiding gedetecteerd"
   },
   "settings_button_title": {
     "message": "Instellingen"
@@ -162,13 +195,13 @@
     "message": "Maximaal aantal gelijktijdige netwerkverzoeken"
   },
   "permission_description": {
-    "message": "In order for the check for broken bookmarks to work, it is technically necessary to grant permission to access the data for all websites."
+    "message": "Om kapotte bladwijzers te kunnen controleren, is het technisch noodzakelijk om toestemming te geven voor toegang tot gegevens van alle websites."
   },
   "permission_grant_button": {
-    "message": "Grant permission"
+    "message": "Toestemming geven"
   },
   "permission_needed": {
-    "message": "Permission required"
+    "message": "Toestemming vereist"
   },
   "save_bookmark": {
     "message": "Opslaan"

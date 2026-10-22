@@ -99,7 +99,7 @@
     "message": "Uyarılar"
   },
   "greeting": {
-    "message": "Hey!"
+    "message": "Merhaba!"
   },
   "intro_check": {
     "message": "Yer imlerinin kontrol edilmesi, seçilen mod'a, yer imlerinin sayısına ve İnternet hızına bağlı olarak birkaç dakika sürebilir. Bozuk yer imlerinin kontrolü sırasında web sitelerinin yüklenmesinin belirgin şekilde yavaşlayabileceğini lütfen unutmayın."
@@ -117,7 +117,7 @@
     "message": "Tüm yer imleri iyi durumda!"
   },
   "no_marked_bookmarks_title": {
-    "message": "Yay!"
+    "message": "Yaşasın!"
   },
   "omnibox_command_check_duplicates": {
     "message": "Çift yer imlerini bul"
@@ -144,16 +144,49 @@
     "message": "Onay mesajlarını devre dışı bırak (önerilmez)"
   },
   "option_request_timeout_direct": {
-    "message": "Request timeout"
+    "message": "İstek zaman aşımı"
   },
   "option_request_timeout_direct_description": {
-    "message": "If a page does not load within this time, the request is considered failed."
+    "message": "Bir sayfa bu süre içinde yüklenmezse istek başarısız sayılır."
   },
   "option_request_timeout_flaresolverr": {
-    "message": "Request timeout (FlareSolverr)"
+    "message": "İstek zaman aşımı (FlareSolverr)"
   },
   "option_request_timeout_flaresolverr_description": {
-    "message": "If a page does not load within this time, the request is considered failed."
+    "message": "Bir sayfa bu süre içinde yüklenmezse istek başarısız sayılır."
+  },
+  "option_flaresolverr_enabled": {
+    "message": "FlareSolverr kullan"
+  },
+  "option_flaresolverr_url": {
+    "message": "FlareSolverr API URL’si"
+  },
+  "option_flaresolverr_description": {
+    "message": "Etkinleştirildiğinde bağlantılar bu FlareSolverr sunucusu üzerinden denetlenir. Sunucuyu gizli tutun."
+  },
+  "option_flaresolverr_json_error_direct_fallback": {
+    "message": "Geçersiz JSON yanıtında doğrudan yeniden dene ve etki alanı için FlareSolverr’ı atla"
+  },
+  "option_flaresolverr_json_error_direct_fallback_description": {
+    "message": "Etkinleştirildiğinde geçersiz bir JSON yanıtı, etki alanını geçerli denetim süresince yalnızca doğrudan erişilebilir olarak işaretler ve bağlantı doğrudan yeniden denetlenir."
+  },
+  "option_request_delay": {
+    "message": "İstekler arasındaki gecikme"
+  },
+  "option_request_delay_description": {
+    "message": "Sonraki öğeyi denetlemeden önce beklenecek süre."
+  },
+  "option_request_timeout": {
+    "message": "İstek zaman aşımı"
+  },
+  "option_request_timeout_description": {
+    "message": "Bir sayfa bu süre içinde yüklenmezse istek başarısız sayılır."
+  },
+  "seconds": {
+    "message": "saniye"
+  },
+  "redirect_result": {
+    "message": "Yönlendirme algılandı"
   },
   "settings_button_title": {
     "message": "Ayarlar"
@@ -180,7 +213,7 @@
     "message": "Görünüşe göre burayı biraz temizleyebiliriz!"
   },
   "some_marked_bookmarks_title": {
-    "message": "Hey!"
+    "message": "Dikkat!"
   },
   "start_message": {
     "message": "Buradan başla "
