@@ -185,6 +185,9 @@
   "seconds": {
     "message": "saniye"
   },
+  "direct_cloudflare_blocked": {
+    "message": "Cloudflare tarafından engellendi; FlareSolverr gerekiyor"
+  },
   "redirect_result": {
     "message": "Yönlendirme algılandı"
   },

@@ -248,6 +248,9 @@
   "direct_result_label": {
     "message": "Direct request result"
   },
+  "direct_cloudflare_blocked": {
+    "message": "blocked by Cloudflare; FlareSolverr is required"
+  },
   "redirect_result": {
     "message": "Redirect detected"
   },

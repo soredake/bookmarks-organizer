@@ -185,6 +185,9 @@
   "seconds": {
     "message": "segundos"
   },
+  "direct_cloudflare_blocked": {
+    "message": "bloqueado pelo Cloudflare; o FlareSolverr é necessário"
+  },
   "redirect_result": {
     "message": "Redirecionamento detectado"
   },

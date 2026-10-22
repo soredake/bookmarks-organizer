@@ -185,6 +185,9 @@
   "seconds": {
     "message": "seconden"
   },
+  "direct_cloudflare_blocked": {
+    "message": "geblokkeerd door Cloudflare; FlareSolverr is vereist"
+  },
   "redirect_result": {
     "message": "Omleiding gedetecteerd"
   },

@@ -248,6 +248,9 @@
   "direct_result_label": {
     "message": "Результат прямого запиту"
   },
+  "direct_cloudflare_blocked": {
+    "message": "заблоковано Cloudflare; потрібен FlareSolverr"
+  },
   "redirect_result": {
     "message": "Виявлено перенаправлення"
   },

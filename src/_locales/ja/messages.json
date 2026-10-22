@@ -185,6 +185,9 @@
   "seconds": {
     "message": "秒"
   },
+  "direct_cloudflare_blocked": {
+    "message": "Cloudflare によりブロックされました。FlareSolverr が必要です"
+  },
   "redirect_result": {
     "message": "リダイレクトを検出"
   },

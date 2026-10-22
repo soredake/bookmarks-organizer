@@ -1080,8 +1080,14 @@ const bookmarksorganizer = {
         response.status === HTTP_FORBIDDEN_STATUS &&
         challenge;
       if (bookmarksorganizer.showRequestResults) {
-        // eslint-disable-next-line require-atomic-updates
-        bookmark.directRequestResult = response.redirected && response.url !== bookmark.url ? browser.i18n.getMessage('redirect_result') : `HTTP ${response.status}`;
+        if (response.status === HTTP_FORBIDDEN_STATUS && challenge && !bookmarksorganizer.useFlareSolverr) {
+          // eslint-disable-next-line require-atomic-updates
+          bookmark.directRequestResult = `HTTP ${response.status}, ${browser.i18n.getMessage('direct_cloudflare_blocked')}`;
+        }
+        else {
+          // eslint-disable-next-line require-atomic-updates
+          bookmark.directRequestResult = response.redirected && response.url !== bookmark.url ? browser.i18n.getMessage('redirect_result') : `HTTP ${response.status}`;
+        }
       }
       controller.abort();
       bookmarksorganizer.releaseDirectRequestSlot();

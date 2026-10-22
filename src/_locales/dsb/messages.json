@@ -185,6 +185,9 @@
   "seconds": {
     "message": "sekundy"
   },
+  "direct_cloudflare_blocked": {
+    "message": "wót Cloudflare blokěrowany; FlareSolverr jo trěbny"
+  },
   "redirect_result": {
     "message": "Dalejposrědnjenje namakane"
   },

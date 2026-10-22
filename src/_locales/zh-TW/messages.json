@@ -185,6 +185,9 @@
   "seconds": {
     "message": "秒"
   },
+  "direct_cloudflare_blocked": {
+    "message": "已遭 Cloudflare 封鎖；需要 FlareSolverr"
+  },
   "redirect_result": {
     "message": "偵測到重新導向"
   },

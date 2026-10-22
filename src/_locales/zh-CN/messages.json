@@ -185,6 +185,9 @@
   "seconds": {
     "message": "秒"
   },
+  "direct_cloudflare_blocked": {
+    "message": "已被 Cloudflare 拦截；需要 FlareSolverr"
+  },
   "redirect_result": {
     "message": "检测到重定向"
   },

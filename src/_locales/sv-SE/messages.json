@@ -185,6 +185,9 @@
   "seconds": {
     "message": "sekunder"
   },
+  "direct_cloudflare_blocked": {
+    "message": "blockerad av Cloudflare; FlareSolverr krävs"
+  },
   "redirect_result": {
     "message": "Omdirigering upptäckt"
   },
