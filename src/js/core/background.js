@@ -1052,7 +1052,7 @@ const bookmarksorganizer = {
         challenge;
       if (bookmarksorganizer.showRequestResults) {
         // eslint-disable-next-line require-atomic-updates
-        bookmark.directRequestResult = `HTTP ${response.status}`;
+        bookmark.directRequestResult = response.redirected && response.url !== bookmark.url ? browser.i18n.getMessage('redirect_result') : `HTTP ${response.status}`;
       }
       controller.abort();
       bookmarksorganizer.releaseDirectRequestSlot();
@@ -1814,7 +1814,7 @@ const bookmarksorganizer = {
       const { solution } = result;
       if (bookmarksorganizer.showRequestResults) {
         // eslint-disable-next-line require-atomic-updates
-        bookmark.flareSolverrResult = `HTTP ${solution.status}`;
+        bookmark.flareSolverrResult = solution.status !== STATUS.NOT_FOUND && solution.status < HTTP_ERROR_STATUS && solution.url && solution.url !== bookmark.url ? browser.i18n.getMessage('redirect_result') : `HTTP ${solution.status}`;
       }
 
       // eslint-disable-next-line require-atomic-updates

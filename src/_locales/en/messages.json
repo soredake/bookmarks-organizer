@@ -239,6 +239,9 @@
   "direct_result_label": {
     "message": "Direct request result"
   },
+  "redirect_result": {
+    "message": "Redirect detected"
+  },
   "flaresolverr_timeout": {
     "message": "Request timed out"
   },
