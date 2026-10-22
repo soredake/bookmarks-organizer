@@ -197,6 +197,12 @@
   "option_flaresolverr_show_result": {
     "message": "Visa resultat från direktförfrågningar och FlareSolverr under länkar"
   },
+  "option_cloudflare_domain_routing": {
+    "message": "Kom ihåg Cloudflare-skyddade domäner och fördela deras länkar under hela genomsökningen"
+  },
+  "option_cloudflare_domain_routing_description": {
+    "message": "När FlareSolverr är aktiverat sparas domäner som returnerar 403 med Cloudflare-markörer, och deras länkar fördelas under hela genomsökningen."
+  },
   "flaresolverr_result_label": {
     "message": "FlareSolverr-resultat"
   },

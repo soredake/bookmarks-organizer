@@ -197,6 +197,12 @@
   "option_flaresolverr_show_result": {
     "message": "Mostrar os resultados das solicitações diretas e do FlareSolverr abaixo dos links"
   },
+  "option_cloudflare_domain_routing": {
+    "message": "Lembrar domínios protegidos pelo Cloudflare e distribuir seus links durante a verificação"
+  },
+  "option_cloudflare_domain_routing_description": {
+    "message": "Com o FlareSolverr ativado, domínios que retornam 403 com marcadores do Cloudflare são salvos e seus links são distribuídos durante a verificação."
+  },
   "flaresolverr_result_label": {
     "message": "Resultado do FlareSolverr"
   },

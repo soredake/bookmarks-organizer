@@ -35,6 +35,7 @@ const options = {
   setFlareSolverrOptionsEnabled (enabled) {
     elFlareSolverrRequestTimeout.disabled = !enabled;
     elFlareSolverrUrl.disabled = !enabled;
+    elUseCloudflareDomainRouting.disabled = !enabled;
     elDirectFallbackFlareSolverrJsonError.disabled = !enabled;
   },
 

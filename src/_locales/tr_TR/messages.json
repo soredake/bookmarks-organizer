@@ -197,6 +197,12 @@
   "option_flaresolverr_show_result": {
     "message": "Doğrudan ve FlareSolverr isteklerinin sonuçlarını bağlantıların altında göster"
   },
+  "option_cloudflare_domain_routing": {
+    "message": "Cloudflare korumalı alan adlarını hatırla ve bağlantılarını denetim boyunca dağıt"
+  },
+  "option_cloudflare_domain_routing_description": {
+    "message": "FlareSolverr etkinleştirildiğinde, Cloudflare işaretçileriyle 403 döndüren alan adları kaydedilir ve bağlantıları denetim boyunca dağıtılır."
+  },
   "flaresolverr_result_label": {
     "message": "FlareSolverr sonucu"
   },

@@ -197,6 +197,12 @@
   "option_flaresolverr_show_result": {
     "message": "在連結下方顯示直接請求和 FlareSolverr 的結果"
   },
+  "option_cloudflare_domain_routing": {
+    "message": "記住受 Cloudflare 保護的網域，並在整個檢查過程中分散檢查其連結"
+  },
+  "option_cloudflare_domain_routing_description": {
+    "message": "啟用 FlareSolverr 後，會儲存回傳含有 Cloudflare 標記之 403 狀態的網域，並在整個檢查過程中分散其連結。"
+  },
   "flaresolverr_result_label": {
     "message": "FlareSolverr 結果"
   },

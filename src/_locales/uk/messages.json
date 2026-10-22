@@ -227,6 +227,12 @@
   "option_flaresolverr_show_result": {
     "message": "Показувати результати прямих запитів і FlareSolverr під посиланнями"
   },
+  "option_cloudflare_domain_routing": {
+    "message": "Запам’ятовувати домени, захищені Cloudflare, і розподіляти їхні посилання протягом перевірки"
+  },
+  "option_cloudflare_domain_routing_description": {
+    "message": "Коли FlareSolverr увімкнено, зберігаються домени, що повертають 403 з маркерами Cloudflare, а їхні посилання рівномірно розподіляються протягом перевірки."
+  },
   "flaresolverr_result_label": {
     "message": "Результат FlareSolverr"
   },

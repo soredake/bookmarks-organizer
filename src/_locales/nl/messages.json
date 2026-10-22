@@ -197,6 +197,12 @@
   "option_flaresolverr_show_result": {
     "message": "Resultaten van directe verzoeken en FlareSolverr onder links tonen"
   },
+  "option_cloudflare_domain_routing": {
+    "message": "Cloudflare-beveiligde domeinen onthouden en hun links over de controle verspreiden"
+  },
+  "option_cloudflare_domain_routing_description": {
+    "message": "Als FlareSolverr is ingeschakeld, worden domeinen opgeslagen die 403 met Cloudflare-markeringen retourneren en worden hun links over de controle verspreid."
+  },
   "flaresolverr_result_label": {
     "message": "FlareSolverr-resultaat"
   },

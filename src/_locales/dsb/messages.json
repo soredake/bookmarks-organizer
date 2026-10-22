@@ -197,6 +197,12 @@
   "option_flaresolverr_show_result": {
     "message": "Wuslědki direktnych napšašowanjow a FlareSolverr pód wotkazami pokazać"
   },
+  "option_cloudflare_domain_routing": {
+    "message": "Cloudflare šćitane domeny składowaś a jich wótkazy pśez cełu kontrolu rozrědowaś"
+  },
+  "option_cloudflare_domain_routing_description": {
+    "message": "Jolic FlareSolverr jo zmóžnjony, se domeny z Cloudflare-markěrami, kótarež wrośaju status 403, składuju a jich wótkazy se pśez cełu kontrolu rozrěduju."
+  },
   "flaresolverr_result_label": {
     "message": "Wuslědk FlareSolverr"
   },

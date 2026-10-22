@@ -144,10 +144,10 @@
     "message": "When enabled, link checks are sent through this FlareSolverr server. Keep the server private."
   },
   "option_cloudflare_domain_routing": {
-    "message": "Remember Cloudflare-protected domains and spread their checks throughout the scan"
+    "message": "Remember Cloudflare-protected domains and spread their links throughout the scan"
   },
   "option_cloudflare_domain_routing_description": {
-    "message": "When enabled with FlareSolverr, Cloudflare-challenged domains are saved and their links are distributed throughout the check."
+    "message": "When enabled with FlareSolverr, domains that return 403 with Cloudflare markers are saved and distributed throughout the check."
   },
   "option_flaresolverr_json_error_direct_fallback": {
     "message": "Retry directly and bypass FlareSolverr for a domain if its response is invalid JSON"

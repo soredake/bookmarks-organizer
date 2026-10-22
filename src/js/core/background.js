@@ -738,17 +738,16 @@ const bookmarksorganizer = {
     bookmarksorganizer.whitelist = options.whitelist;
     // eslint-disable-next-line require-atomic-updates
     bookmarksorganizer.cloudflareDomains = new Set(bookmarksorganizer.normalizeCloudflareDomains(options.cloudflare));
-    // eslint-disable-next-line require-atomic-updates
-    bookmarksorganizer.useCloudflareDomainRouting = options.useCloudflareDomainRouting !== false;
-    // eslint-disable-next-line require-atomic-updates
-    bookmarksorganizer.directFallbackFlareSolverrJsonError = options.directFallbackFlareSolverrJsonError === true;
-
     const parsedMaxConcurrentRequests = parseInt(options.maxConcurrentRequests);
     // eslint-disable-next-line require-atomic-updates
     bookmarksorganizer.maxConcurrentRequests = Number.isInteger(parsedMaxConcurrentRequests) && parsedMaxConcurrentRequests > 0 ? parsedMaxConcurrentRequests : bookmarksorganizer.QUEUE_SIZE;
 
     // eslint-disable-next-line require-atomic-updates
     bookmarksorganizer.useFlareSolverr = options.useFlareSolverr === true;
+    // eslint-disable-next-line require-atomic-updates
+    bookmarksorganizer.useCloudflareDomainRouting = bookmarksorganizer.useFlareSolverr && options.useCloudflareDomainRouting !== false;
+    // eslint-disable-next-line require-atomic-updates
+    bookmarksorganizer.directFallbackFlareSolverrJsonError = options.directFallbackFlareSolverrJsonError === true;
     // eslint-disable-next-line require-atomic-updates
     bookmarksorganizer.showRequestResults = options.showFlareSolverrResult === true;
     // eslint-disable-next-line require-atomic-updates

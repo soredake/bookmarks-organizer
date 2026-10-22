@@ -197,6 +197,12 @@
   "option_flaresolverr_show_result": {
     "message": "リンクの下に直接リクエストとFlareSolverrの結果を表示"
   },
+  "option_cloudflare_domain_routing": {
+    "message": "Cloudflare に保護されたドメインを記憶し、チェック全体にリンクを分散する"
+  },
+  "option_cloudflare_domain_routing_description": {
+    "message": "FlareSolverr が有効な場合、Cloudflare マーカー付きで 403 を返すドメインを保存し、そのリンクをチェック全体に分散します。"
+  },
   "flaresolverr_result_label": {
     "message": "FlareSolverrの結果"
   },

@@ -197,6 +197,12 @@
   "option_flaresolverr_show_result": {
     "message": "在链接下方显示直接请求和 FlareSolverr 的结果"
   },
+  "option_cloudflare_domain_routing": {
+    "message": "记住受 Cloudflare 保护的域名，并在整个检查过程中分散检查其链接"
+  },
+  "option_cloudflare_domain_routing_description": {
+    "message": "启用 FlareSolverr 后，会保存返回带有 Cloudflare 标记的 403 状态的域名，并在整个检查过程中分散其链接。"
+  },
   "flaresolverr_result_label": {
     "message": "FlareSolverr 结果"
   },

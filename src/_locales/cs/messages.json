@@ -197,6 +197,12 @@
   "option_flaresolverr_show_result": {
     "message": "Zobrazit výsledky přímých požadavků a FlareSolverr pod odkazy"
   },
+  "option_cloudflare_domain_routing": {
+    "message": "Zapamatovat si domény chráněné Cloudflare a rozložit jejich odkazy v průběhu kontroly"
+  },
+  "option_cloudflare_domain_routing_description": {
+    "message": "Je-li zapnutý FlareSolverr, ukládají se domény vracející kód 403 s indikátory Cloudflare a jejich odkazy se rozloží v průběhu kontroly."
+  },
   "flaresolverr_result_label": {
     "message": "Výsledek FlareSolverr"
   },
