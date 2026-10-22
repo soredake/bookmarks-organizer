@@ -38,8 +38,8 @@ higher is required for the latest version of Bookmarks Organizer).**
 - **Safer response handling:** Direct checks start with HEAD and fall back to GET when needed. A clean 404 is treated as
   a dead link; blocked responses, timeouts, and network errors are reported as unknown when they cannot establish that
   a link is dead. Retryable failures get one retry after a 30–60 second jittered delay; 429 and 503 responses retry
-  after five seconds. Clean 404 responses are not retried by default. FlareSolverr requests are not retried; JSON parse
-  failures put that host on a direct-only list for the current check and schedule a direct HEAD retry after five seconds.
+  after five seconds. Clean 404 responses are   not retried by default. FlareSolverr requests are not retried; optionally, JSON parse
+  failures can put that host on a direct-only list for the current check and schedule a direct HEAD retry after five seconds.
 - **Redirect and response details:** Follow redirects to their final destination and show the resulting URL. An option,
   enabled by default, displays the final HTTP result from both direct checks and FlareSolverr beneath each bookmark.
 - **Less predictable scan traffic:** Shuffle URLs before checking (enabled by default), spreading links from the same

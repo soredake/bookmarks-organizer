@@ -14,6 +14,7 @@ const elFlareSolverrRequestTimeout = document.getElementById('request-timeout-fl
 const elRequestDelay = document.getElementById('request-delay');
 const elUseFlareSolverr = document.getElementById('use-flaresolverr');
 const elUseCloudflareDomainRouting = document.getElementById('use-cloudflare-domain-routing');
+const elDirectFallbackFlareSolverrJsonError = document.getElementById('direct-fallback-flaresolverr-json-error');
 const elFlareSolverrUrl = document.getElementById('flaresolverr-url');
 const elShowFlareSolverrResult = document.getElementById('show-flaresolverr-result');
 const elShuffleUrls = document.getElementById('shuffle-urls');
@@ -34,6 +35,7 @@ const options = {
   setFlareSolverrOptionsEnabled (enabled) {
     elFlareSolverrRequestTimeout.disabled = !enabled;
     elFlareSolverrUrl.disabled = !enabled;
+    elDirectFallbackFlareSolverrJsonError.disabled = !enabled;
   },
 
   /**
@@ -54,6 +56,7 @@ const options = {
       requestDelay : DEFAULT_REQUEST_DELAY,
       useFlareSolverr : false,
       useCloudflareDomainRouting : true,
+      directFallbackFlareSolverrJsonError : false,
       flareSolverrUrl : DEFAULT_FLARESOLVERR_URL,
       showFlareSolverrResult : true,
       shuffleUrls : true
@@ -89,6 +92,7 @@ const options = {
     elRequestDelay.value = option.requestDelay;
     elUseFlareSolverr.checked = option.useFlareSolverr;
     elUseCloudflareDomainRouting.checked = option.useCloudflareDomainRouting !== false;
+    elDirectFallbackFlareSolverrJsonError.checked = option.directFallbackFlareSolverrJsonError === true;
     elFlareSolverrUrl.value = option.flareSolverrUrl;
     elShowFlareSolverrResult.checked = option.showFlareSolverrResult;
     options.setFlareSolverrOptionsEnabled(option.useFlareSolverr);
@@ -156,6 +160,10 @@ elUseFlareSolverr.addEventListener('change', async (e) => {
 
 elUseCloudflareDomainRouting.addEventListener('change', (e) => {
   browser.storage.local.set({ useCloudflareDomainRouting : e.target.checked });
+});
+
+elDirectFallbackFlareSolverrJsonError.addEventListener('change', (e) => {
+  browser.storage.local.set({ directFallbackFlareSolverrJsonError : e.target.checked });
 });
 
 elShowFlareSolverrResult.addEventListener('change', (e) => {

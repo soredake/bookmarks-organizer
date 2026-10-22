@@ -143,6 +143,12 @@
   "option_flaresolverr_description": {
     "message": "Якщо ввімкнено, перевірка посилань виконуватиметься через цей сервер FlareSolverr. Не відкривайте сервер для загального доступу з інтернету."
   },
+  "option_flaresolverr_json_error_direct_fallback": {
+    "message": "Якщо відповідь містить некоректний JSON, повторити перевірку напряму й обходити FlareSolverr для цього домену"
+  },
+  "option_flaresolverr_json_error_direct_fallback_description": {
+    "message": "Якщо ввімкнено, некоректна відповідь JSON позначає домен як доступний лише для прямих запитів на час поточної перевірки, після чого посилання перевіряється напряму."
+  },
   "option_request_delay": {
     "message": "Затримка між запитами"
   },

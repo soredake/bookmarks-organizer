@@ -149,6 +149,12 @@
   "option_cloudflare_domain_routing_description": {
     "message": "When enabled with FlareSolverr, Cloudflare-challenged domains are saved and their links are distributed throughout the check."
   },
+  "option_flaresolverr_json_error_direct_fallback": {
+    "message": "Retry directly and bypass FlareSolverr for a domain if its response is invalid JSON"
+  },
+  "option_flaresolverr_json_error_direct_fallback_description": {
+    "message": "When enabled, an invalid JSON response marks the domain as direct-only for the current check and retries the URL directly."
+  },
   "option_request_delay": {
     "message": "Delay between requests"
   },

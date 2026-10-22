@@ -143,6 +143,12 @@
   "option_flaresolverr_description": {
     "message": "При включении проверка ссылок будет выполняться через этот сервер FlareSolverr. Не открывайте сервер для общего доступа из интернета."
   },
+  "option_flaresolverr_json_error_direct_fallback": {
+    "message": "При некорректном JSON-ответе повторить проверку напрямую и обходить FlareSolverr для этого домена"
+  },
+  "option_flaresolverr_json_error_direct_fallback_description": {
+    "message": "При включении некорректный JSON-ответ помечает домен как доступный только для прямых запросов на время текущей проверки, после чего ссылка проверяется напрямую."
+  },
   "option_request_delay": {
     "message": "Задержка между запросами"
   },

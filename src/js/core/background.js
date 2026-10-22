@@ -111,6 +111,9 @@ const bookmarksorganizer = {
   /** @type {boolean} */
   useCloudflareDomainRouting : true,
 
+  /** @type {boolean} */
+  directFallbackFlareSolverrJsonError : false,
+
   /** @type {Set<string>} */
   cloudflareDomains : new Set(),
 
@@ -715,6 +718,7 @@ const bookmarksorganizer = {
       maxConcurrentRequests : bookmarksorganizer.QUEUE_SIZE,
       cloudflare : [],
       useCloudflareDomainRouting : true,
+      directFallbackFlareSolverrJsonError : false,
       directRequestTimeout : null,
       flareSolverrRequestTimeout : FLARESOLVERR_REQUEST_TIMEOUT_IN_SECONDS,
       requestTimeout : null,
@@ -736,6 +740,8 @@ const bookmarksorganizer = {
     bookmarksorganizer.cloudflareDomains = new Set(bookmarksorganizer.normalizeCloudflareDomains(options.cloudflare));
     // eslint-disable-next-line require-atomic-updates
     bookmarksorganizer.useCloudflareDomainRouting = options.useCloudflareDomainRouting !== false;
+    // eslint-disable-next-line require-atomic-updates
+    bookmarksorganizer.directFallbackFlareSolverrJsonError = options.directFallbackFlareSolverrJsonError === true;
 
     const parsedMaxConcurrentRequests = parseInt(options.maxConcurrentRequests);
     // eslint-disable-next-line require-atomic-updates
@@ -1864,7 +1870,7 @@ const bookmarksorganizer = {
 
         return bookmark;
       }
-      if (error instanceof SyntaxError) {
+      if (error instanceof SyntaxError && bookmarksorganizer.directFallbackFlareSolverrJsonError) {
         try {
           const hostname = new URL(bookmark.url).hostname.toLowerCase().replace(/^www\./, '').replace(/\.$/, '');
           bookmarksorganizer.directOnlyDomains.add(hostname);
