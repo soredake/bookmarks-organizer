@@ -104,7 +104,12 @@ const options = {
 document.addEventListener('DOMContentLoaded', options.load);
 
 elReturnBtn.addEventListener('click', () => {
-  window.location.assign('ui.html');
+  if (document.referrer === browser.runtime.getURL('html/ui.html')) {
+    window.history.back();
+  }
+  else {
+    window.location.assign('ui.html');
+  }
 });
 
 elDebugMode.addEventListener('change', (e) => {
