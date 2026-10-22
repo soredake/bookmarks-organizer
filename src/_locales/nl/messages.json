@@ -50,6 +50,15 @@
   "button_stop_check": {
     "message": "Controle stoppen"
   },
+  "button_show_flaresolverr_errors": {
+    "message": "FlareSolverr-fouten weergeven"
+  },
+  "flaresolverr_errors_title": {
+    "message": "FlareSolverr-fouten"
+  },
+  "flaresolverr_errors_empty": {
+    "message": "Er zijn geen FlareSolverr-JSON-fouten vastgelegd."
+  },
   "button_reset_whitelist": {
     "message": "witte lijst herinitialiseren…"
   },

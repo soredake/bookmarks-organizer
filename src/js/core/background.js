@@ -20,6 +20,7 @@ const FLARESOLVERR_MAX_CONCURRENT_REQUESTS = 2;
 const REQUEST_TIMEOUT_WATCHDOG_PREFIX = 'bookmarks-organizer-request-timeout-';
 const LEGACY_FLARESOLVERR_WATCHDOG_PREFIX = 'bookmarks-organizer-flaresolverr-timeout-';
 const ACTIVE_CHECK_SESSION_KEY = 'bookmarksOrganizerActiveCheckId';
+const FLARESOLVERR_JSON_ERRORS_SESSION_KEY = 'bookmarksOrganizerFlareSolverrJsonErrors';
 const STOP_TASK_DRAIN_TIMEOUT_IN_MS = 500;
 const RETRY_DELAY_MIN_IN_MS = 30000;
 const RETRY_DELAY_MAX_IN_MS = 60000;
@@ -283,6 +284,9 @@ const bookmarksorganizer = {
    * @type {Array.<Object>}
    */
   debug : [],
+
+  /** @type {Array<{url: string, responseText: string}>} */
+  flareSolverrJsonErrors : [],
 
   /**
    * State variable, contains the currently selected mode (broken-bookmarks, duplicates, empty-names).
@@ -693,9 +697,18 @@ const bookmarksorganizer = {
     bookmarksorganizer.lastPartialResultsCount = -1;
     bookmarksorganizer.additionalData = [];
     bookmarksorganizer.debug = [];
+    bookmarksorganizer.flareSolverrJsonErrors = [];
     bookmarksorganizer.mode = mode;
     bookmarksorganizer.type = type;
     bookmarksorganizer.checkId = `${Date.now()}-${++bookmarksorganizer.checkSequence}`;
+
+    try {
+      await browser.storage.session.remove(FLARESOLVERR_JSON_ERRORS_SESSION_KEY);
+    }
+    catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Unable to clear previous FlareSolverr JSON error details', error);
+    }
 
     try {
       if (mode === 'broken-bookmarks') {
@@ -1730,6 +1743,10 @@ const bookmarksorganizer = {
           });
         }
         catch (error) {
+          if (error instanceof SyntaxError) {
+            error.responseText = request.responseText;
+          }
+
           rejectOnce(error);
         }
       };
@@ -1878,6 +1895,12 @@ const bookmarksorganizer = {
         catch (urlError) {
           // A malformed bookmark URL cannot be added to the direct-only list.
         }
+      }
+      if (error instanceof SyntaxError && bookmarksorganizer.debugEnabled) {
+        bookmarksorganizer.flareSolverrJsonErrors.push({
+          url : bookmark.url,
+          responseText : error.responseText || ''
+        });
       }
       if (bookmarksorganizer.showRequestResults) {
         let flareSolverrResult = error.message;
@@ -2482,6 +2505,21 @@ const bookmarksorganizer = {
 
     const resultTree = bookmarksorganizer.buildResultArray(bookmarksorganizer.bookmarksResult);
     bookmarksorganizer.updateProgressUi();
+    let hasFlareSolverrJsonErrors = false;
+
+    if (bookmarksorganizer.debugEnabled && bookmarksorganizer.flareSolverrJsonErrors.length > 0) {
+      try {
+        await browser.storage.session.set({
+          [FLARESOLVERR_JSON_ERRORS_SESSION_KEY] : bookmarksorganizer.flareSolverrJsonErrors
+        });
+        hasFlareSolverrJsonErrors = true;
+      }
+      catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('Unable to save FlareSolverr JSON error details', error);
+      }
+    }
+
     browser.runtime.sendMessage({
       message : 'finished',
       mode : mode,
@@ -2492,6 +2530,7 @@ const bookmarksorganizer = {
       bookmarksWarnings : bookmarksorganizer.bookmarkWarnings,
       disableConfirmations : bookmarksorganizer.disableConfirmations,
       debug : bookmarksorganizer.debug,
+      hasFlareSolverrJsonErrors : hasFlareSolverrJsonErrors,
       stopped : bookmarksorganizer.stopRequested,
       checkId : checkId
     });

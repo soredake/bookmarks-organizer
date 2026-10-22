@@ -816,8 +816,32 @@ button#reset-whitelist {
   transition: background-color ease 250ms, color ease 250ms;
 }
 
+#show-flaresolverr-errors {
+  padding: 0 10px;
+  font-size: 14px;
+}
+
 #settings-button:hover {
   background-color: var(--color-body-background);
+}
+
+.flaresolverr-errors-page {
+  align-items: stretch;
+  flex-direction: column;
+  margin: 30px auto;
+  max-width: 1000px;
+  padding: 30px 20px;
+}
+
+.flaresolverr-error-entry {
+  margin-top: 24px;
+}
+
+.flaresolverr-error-entry pre {
+  overflow-wrap: anywhere;
+  padding: 12px;
+  white-space: pre-wrap;
+  background-color: var(--color-debug-background);
 }
 
 #options-form {

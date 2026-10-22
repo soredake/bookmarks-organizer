@@ -5,7 +5,6 @@
 const DELAY_SPINNER_TIMEOUT = 500;
 const HEADER_SWITCH_POSITION = 100;
 const MIN_PROGRESS = 0.01;
-
 const elBody = document.querySelector('body');
 const elBookmarksErrors = document.getElementById('bookmarks-errors');
 const elBookmarksWarnings = document.getElementById('bookmarks-warnings');
@@ -32,6 +31,7 @@ const elResults = document.getElementById('results');
 const elResultWrapper = document.getElementById('result-wrapper');
 const elSearch = document.getElementById('search');
 const elSettingsButton = document.getElementById('settings-button');
+const elShowFlareSolverrErrorsButton = document.getElementById('show-flaresolverr-errors');
 const elSpinner = document.getElementById('spinner');
 const elStart = document.getElementById('start');
 const elTotalBookmarks = document.getElementById('total-bookmarks');
@@ -137,6 +137,14 @@ const ui = {
    * @returns {void}
    */
   async init () {
+    try {
+      await browser.storage.session.remove('bookmarksOrganizerFlareSolverrJsonErrors');
+    }
+    catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Unable to clear previous FlareSolverr JSON error details', error);
+    }
+
     await ui.setupPermission();
 
     ui.uiscript();
@@ -396,6 +404,7 @@ const ui = {
       elCheckStatus.classList.add('hidden');
       elCheckStatus.textContent = '';
       elButton.classList.add('hidden');
+      elShowFlareSolverrErrorsButton.classList.add('hidden');
       elStopButton.classList.remove('hidden');
       elStopButton.disabled = false;
       elMask.classList.remove('is-hidden');
@@ -462,6 +471,10 @@ const ui = {
     }
     else if (response.message === 'finished') {
       if (response.checkId && response.checkId !== ui.checkId) {
+        if (!ui.checkId && response.hasFlareSolverrJsonErrors) {
+          elShowFlareSolverrErrorsButton.classList.remove('hidden');
+        }
+
         return;
       }
       ui.checkId = null;
@@ -518,6 +531,10 @@ const ui = {
       else {
         elDebugOutput.textContent = JSON.stringify(response.debug, null, 2);
         ui.showDebugOutput = true;
+      }
+
+      if (response.hasFlareSolverrJsonErrors) {
+        elShowFlareSolverrErrorsButton.classList.remove('hidden');
       }
 
       ui.doUiCleanup();
@@ -1250,8 +1267,11 @@ elFox.addEventListener('click', ui.handleFoxMessageClick);
 elRepairAllRedirects.addEventListener('click', ui.repairAllRedirects);
 elDeleteAllBookmarksWithErrors.addEventListener('click', ui.deleteAllBookmarksWithErrors);
 elSearch.addEventListener('input', ui.applySearchFieldFilter);
+elShowFlareSolverrErrorsButton.addEventListener('click', () => {
+  window.location.assign(browser.runtime.getURL('html/flaresolverr-errors.html'));
+});
 elSettingsButton.addEventListener('click', () => {
-  window.location.href = browser.runtime.getURL('html/options.html');
+  window.location.assign(browser.runtime.getURL('html/options.html'));
 });
 
 browser.runtime.onMessage.addListener(ui.handleResponse);

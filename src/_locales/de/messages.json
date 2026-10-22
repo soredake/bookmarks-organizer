@@ -50,6 +50,15 @@
   "button_stop_check": {
     "message": "Prüfung stoppen"
   },
+  "button_show_flaresolverr_errors": {
+    "message": "FlareSolverr-Fehler anzeigen"
+  },
+  "flaresolverr_errors_title": {
+    "message": "FlareSolverr-Fehler"
+  },
+  "flaresolverr_errors_empty": {
+    "message": "Es wurden keine JSON-Fehler von FlareSolverr erfasst."
+  },
   "button_reset_whitelist": {
     "message": "Whitelist zurücksetzen…"
   },

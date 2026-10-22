@@ -50,6 +50,15 @@
   "button_stop_check": {
     "message": "チェックを停止"
   },
+  "button_show_flaresolverr_errors": {
+    "message": "FlareSolverr のエラーを表示"
+  },
+  "flaresolverr_errors_title": {
+    "message": "FlareSolverr のエラー"
+  },
+  "flaresolverr_errors_empty": {
+    "message": "FlareSolverr の JSON エラーは記録されていません。"
+  },
   "button_reset_whitelist": {
     "message": "ホワイトリストをリセット…"
   },

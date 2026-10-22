@@ -50,6 +50,15 @@
   "button_stop_check": {
     "message": "Зупинити перевірку"
   },
+  "button_show_flaresolverr_errors": {
+    "message": "Показати помилки FlareSolverr"
+  },
+  "flaresolverr_errors_title": {
+    "message": "Помилки FlareSolverr"
+  },
+  "flaresolverr_errors_empty": {
+    "message": "Помилок JSON від FlareSolverr не виявлено."
+  },
   "button_reset_whitelist": {
     "message": "скинути білий список…"
   },

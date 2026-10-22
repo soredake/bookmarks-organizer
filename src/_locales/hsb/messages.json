@@ -50,6 +50,15 @@
   "button_stop_check": {
     "message": "Kontrolu zastajić"
   },
+  "button_show_flaresolverr_errors": {
+    "message": "FlareSolverr-zmylki pokazać"
+  },
+  "flaresolverr_errors_title": {
+    "message": "FlareSolverr-zmylki"
+  },
+  "flaresolverr_errors_empty": {
+    "message": "Žane JSON-zmylki FlareSolverr njejsu so zregistrěrowali."
+  },
   "button_reset_whitelist": {
     "message": "Běłu lisćinu wróćo stajić…"
   },

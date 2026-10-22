@@ -50,6 +50,15 @@
   "button_stop_check": {
     "message": "Stoppa kontrollen"
   },
+  "button_show_flaresolverr_errors": {
+    "message": "Visa FlareSolverr-fel"
+  },
+  "flaresolverr_errors_title": {
+    "message": "FlareSolverr-fel"
+  },
+  "flaresolverr_errors_empty": {
+    "message": "Inga JSON-fel från FlareSolverr registrerades."
+  },
   "button_reset_whitelist": {
     "message": "Återställ vitlistan…"
   },
