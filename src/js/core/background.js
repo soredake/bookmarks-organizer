@@ -183,6 +183,12 @@ const bookmarksorganizer = {
   /** @type {Set<AbortController>} */
   activeControllers : new Set(),
 
+  /** @type {Map<string, number>} */
+  activeDirectRequestUrls : new Map(),
+
+  /** @type {Map<string, string>} */
+  directRequestNetworkErrors : new Map(),
+
   /** @type {number} */
   activeFlareSolverrRequests : 0,
 
@@ -678,6 +684,8 @@ const bookmarksorganizer = {
     bookmarksorganizer.stopRequested = false;
     bookmarksorganizer.checkFinalized = false;
     bookmarksorganizer.activeControllers.clear();
+    bookmarksorganizer.activeDirectRequestUrls.clear();
+    bookmarksorganizer.directRequestNetworkErrors.clear();
     bookmarksorganizer.stopPromise = new Promise((resolve) => {
       bookmarksorganizer.resolveStop = resolve;
     });
@@ -1043,6 +1051,15 @@ const bookmarksorganizer = {
       controller = new AbortController();
       bookmarksorganizer.activeControllers.add(controller);
       const { signal } = controller;
+      const requestUrl = bookmarksorganizer.normalizeRequestUrl(bookmark.url);
+      const activeRequestsForUrl = bookmarksorganizer.activeDirectRequestUrls.get(requestUrl) || 0;
+      if (activeRequestsForUrl === 0) {
+        bookmarksorganizer.directRequestNetworkErrors.delete(requestUrl);
+      }
+      bookmarksorganizer.activeDirectRequestUrls.set(
+        requestUrl,
+        activeRequestsForUrl + 1
+      );
 
       const { response, challenge } = await bookmarksorganizer.withRequestTimeout(() => (async () => {
         const directResponse = await fetch(bookmark.url, {
@@ -1192,9 +1209,13 @@ const bookmarksorganizer = {
         // eslint-disable-next-line require-atomic-updates
         bookmark.status = STATUS.FETCH_ERROR;
       }
+      let fetchErrorMessage = error.message;
+      if (error.name !== 'AbortError') {
+        fetchErrorMessage = bookmarksorganizer.directRequestNetworkErrors.get(bookmarksorganizer.normalizeRequestUrl(bookmark.url)) || error.message;
+      }
       if (bookmarksorganizer.showRequestResults) {
         // eslint-disable-next-line require-atomic-updates
-        bookmark.directRequestResult = error.name === 'AbortError' ? browser.i18n.getMessage('flaresolverr_timeout') : error.message;
+        bookmark.directRequestResult = error.name === 'AbortError' ? browser.i18n.getMessage('flaresolverr_timeout') : fetchErrorMessage;
       }
 
       if (bookmarksorganizer.debugEnabled) {
@@ -1208,7 +1229,7 @@ const bookmarksorganizer = {
           },
           method : method,
           cause : cause,
-          response : error.message
+          response : error.name === 'AbortError' ? error.message : fetchErrorMessage
         });
       }
 
@@ -1221,6 +1242,15 @@ const bookmarksorganizer = {
       }
     }
     finally {
+      const requestUrl = bookmarksorganizer.normalizeRequestUrl(bookmark.url);
+      const activeRequests = bookmarksorganizer.activeDirectRequestUrls.get(requestUrl) || 0;
+      if (activeRequests <= 1) {
+        bookmarksorganizer.activeDirectRequestUrls.delete(requestUrl);
+      }
+      else {
+        bookmarksorganizer.activeDirectRequestUrls.set(requestUrl, activeRequests - 1);
+      }
+
       if (controller) {
         bookmarksorganizer.activeControllers.delete(controller);
       }
@@ -1230,6 +1260,35 @@ const bookmarksorganizer = {
     }
 
     return bookmark;
+  },
+
+  /**
+   * Normalizes request URLs so webRequest events can be matched to fetch failures.
+   *
+   * @param {string} url - request URL
+   * @returns {string} normalized URL, or the original value if it is invalid
+   */
+  normalizeRequestUrl (url) {
+    try {
+      return new URL(url).href;
+    }
+    catch (error) {
+      return url;
+    }
+  },
+
+  /**
+   * Captures the browser-provided network error code for active direct requests.
+   *
+   * @param {Object} details - webRequest error details
+   * @returns {void}
+   */
+  onDirectRequestNetworkError (details) {
+    const requestUrl = bookmarksorganizer.normalizeRequestUrl(details.url);
+
+    if (bookmarksorganizer.activeDirectRequestUrls.has(requestUrl) && details.error) {
+      bookmarksorganizer.directRequestNetworkErrors.set(requestUrl, details.error);
+    }
   },
 
   /**
@@ -2600,6 +2659,9 @@ browser.omnibox.onInputEntered.addListener(bookmarksorganizer.callOmniboxAction)
 browser.omnibox.setDefaultSuggestion({ description : browser.i18n.getMessage('omnibox_default_description') });
 browser.alarms.onAlarm.addListener((alarm) => bookmarksorganizer.handleFlareSolverrTimeoutAlarm(alarm));
 browser.runtime.onMessage.addListener(bookmarksorganizer.handleResponse);
+browser.webRequest.onErrorOccurred.addListener(bookmarksorganizer.onDirectRequestNetworkError, {
+  urls : ['<all_urls>']
+});
 
 bookmarksorganizer.recoverFlareSolverrTimeoutWatchdogs().catch(() => false);
 
