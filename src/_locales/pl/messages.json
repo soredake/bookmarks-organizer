@@ -51,7 +51,7 @@
     "message": "Zatrzymaj sprawdzanie"
   },
   "button_show_flaresolverr_errors": {
-    "message": "Pokaż błędy FlareSolverr"
+    "message": "Otwórz dzienniki FlareSolverr"
   },
   "flaresolverr_errors_title": {
     "message": "Błędy FlareSolverr"
@@ -253,6 +253,9 @@
   },
   "direct_result_label": {
     "message": "Wynik bezpośredniego żądania"
+  },
+  "flaresolverr_returned_error": {
+    "message": "FlareSolverr zwrócił błąd; sprawdź dzienniki FlareSolverr"
   },
   "flaresolverr_timeout": {
     "message": "Przekroczono limit czasu żądania"

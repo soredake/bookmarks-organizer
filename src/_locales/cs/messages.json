@@ -51,7 +51,7 @@
     "message": "Zastavit kontrolu"
   },
   "button_show_flaresolverr_errors": {
-    "message": "Zobrazit chyby FlareSolverr"
+    "message": "Otevřít protokoly FlareSolverr"
   },
   "flaresolverr_errors_title": {
     "message": "Chyby FlareSolverr"
@@ -253,6 +253,9 @@
   },
   "direct_result_label": {
     "message": "Výsledek přímého požadavku"
+  },
+  "flaresolverr_returned_error": {
+    "message": "FlareSolverr vrátil chybu; zkontrolujte jeho protokoly"
   },
   "flaresolverr_timeout": {
     "message": "Vypršel časový limit požadavku"

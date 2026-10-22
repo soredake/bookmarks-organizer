@@ -22,6 +22,7 @@ const LEGACY_FLARESOLVERR_WATCHDOG_PREFIX = 'bookmarks-organizer-flaresolverr-ti
 const ACTIVE_CHECK_SESSION_KEY = 'bookmarksOrganizerActiveCheckId';
 const FLARESOLVERR_JSON_ERRORS_SESSION_KEY = 'bookmarksOrganizerFlareSolverrJsonErrors';
 const STOP_TASK_DRAIN_TIMEOUT_IN_MS = 500;
+const NETWORK_ERROR_EVENT_WAIT_IN_MS = 250;
 const RETRY_DELAY_MIN_IN_MS = 30000;
 const RETRY_DELAY_MAX_IN_MS = 60000;
 const RATE_LIMIT_RETRY_DELAY_IN_MS = 5000;
@@ -1217,7 +1218,14 @@ const bookmarksorganizer = {
       }
       let fetchErrorMessage = error.message;
       if (error.name !== 'AbortError') {
-        fetchErrorMessage = bookmarksorganizer.directRequestNetworkErrors.get(bookmarksorganizer.normalizeRequestUrl(bookmark.url)) || error.message;
+        const requestUrl = bookmarksorganizer.normalizeRequestUrl(bookmark.url);
+        fetchErrorMessage = bookmarksorganizer.directRequestNetworkErrors.get(requestUrl) || error.message;
+        if (fetchErrorMessage === error.message && error.message.toLowerCase().includes('networkerror')) {
+          await new Promise((resolve) => {
+            setTimeout(resolve, NETWORK_ERROR_EVENT_WAIT_IN_MS);
+          });
+          fetchErrorMessage = bookmarksorganizer.directRequestNetworkErrors.get(requestUrl) || error.message;
+        }
       }
       if (bookmarksorganizer.showRequestResults) {
         // eslint-disable-next-line require-atomic-updates
@@ -1276,7 +1284,10 @@ const bookmarksorganizer = {
    */
   normalizeRequestUrl (url) {
     try {
-      return new URL(url).href;
+      const normalizedUrl = new URL(url);
+      normalizedUrl.hash = '';
+
+      return normalizedUrl.href;
     }
     catch (error) {
       return url;
@@ -1969,7 +1980,10 @@ const bookmarksorganizer = {
       }
       if (bookmarksorganizer.showRequestResults) {
         let flareSolverrResult = error.message;
-        if (error.name === 'AbortError') {
+        if (error instanceof SyntaxError) {
+          flareSolverrResult = browser.i18n.getMessage('flaresolverr_returned_error');
+        }
+        else if (error.name === 'AbortError') {
           flareSolverrResult = browser.i18n.getMessage('flaresolverr_timeout');
         }
 
@@ -1991,7 +2005,7 @@ const bookmarksorganizer = {
           },
           method : 'GET (FlareSolverr)',
           cause : error.name === 'AbortError' ? 'timeout' : 'fetch-error',
-          response : error.message
+          response : error instanceof SyntaxError ? browser.i18n.getMessage('flaresolverr_returned_error') : error.message
         });
       }
     }

@@ -51,7 +51,7 @@
     "message": "Detener comprobación"
   },
   "button_show_flaresolverr_errors": {
-    "message": "Mostrar errores de FlareSolverr"
+    "message": "Abrir registros de FlareSolverr"
   },
   "flaresolverr_errors_title": {
     "message": "Errores de FlareSolverr"
@@ -253,6 +253,9 @@
   },
   "direct_result_label": {
     "message": "Resultado de la solicitud directa"
+  },
+  "flaresolverr_returned_error": {
+    "message": "FlareSolverr devolvió un error; comprueba sus registros"
   },
   "flaresolverr_timeout": {
     "message": "La solicitud agotó el tiempo de espera"

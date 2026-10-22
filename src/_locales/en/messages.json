@@ -51,7 +51,7 @@
     "message": "Stop check"
   },
   "button_show_flaresolverr_errors": {
-    "message": "Show FlareSolverr errors"
+    "message": "Open FlareSolverr logs"
   },
   "flaresolverr_errors_title": {
     "message": "FlareSolverr errors"
@@ -253,6 +253,9 @@
   },
   "redirect_result": {
     "message": "Redirect detected"
+  },
+  "flaresolverr_returned_error": {
+    "message": "FlareSolverr returned an error; check the FlareSolverr logs"
   },
   "flaresolverr_timeout": {
     "message": "Request timed out"

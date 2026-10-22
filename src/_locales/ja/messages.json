@@ -51,7 +51,7 @@
     "message": "チェックを停止"
   },
   "button_show_flaresolverr_errors": {
-    "message": "FlareSolverr のエラーを表示"
+    "message": "FlareSolverr のログを開く"
   },
   "flaresolverr_errors_title": {
     "message": "FlareSolverr のエラー"
@@ -253,6 +253,9 @@
   },
   "direct_result_label": {
     "message": "直接リクエストの結果"
+  },
+  "flaresolverr_returned_error": {
+    "message": "FlareSolverr がエラーを返しました。FlareSolverr のログを確認してください"
   },
   "flaresolverr_timeout": {
     "message": "リクエストがタイムアウトしました"

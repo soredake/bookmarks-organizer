@@ -51,7 +51,7 @@
     "message": "Stoppa kontrollen"
   },
   "button_show_flaresolverr_errors": {
-    "message": "Visa FlareSolverr-fel"
+    "message": "Öppna FlareSolverr-loggar"
   },
   "flaresolverr_errors_title": {
     "message": "FlareSolverr-fel"
@@ -253,6 +253,9 @@
   },
   "direct_result_label": {
     "message": "Resultat från direktförfrågan"
+  },
+  "flaresolverr_returned_error": {
+    "message": "FlareSolverr returnerade ett fel; kontrollera FlareSolverr-loggarna"
   },
   "flaresolverr_timeout": {
     "message": "Tidsgränsen för begäran överskreds"

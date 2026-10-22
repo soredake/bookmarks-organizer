@@ -51,7 +51,7 @@
     "message": "Denetimi durdur"
   },
   "button_show_flaresolverr_errors": {
-    "message": "FlareSolverr hatalarını göster"
+    "message": "FlareSolverr günlüklerini aç"
   },
   "flaresolverr_errors_title": {
     "message": "FlareSolverr hataları"
@@ -253,6 +253,9 @@
   },
   "direct_result_label": {
     "message": "Doğrudan istek sonucu"
+  },
+  "flaresolverr_returned_error": {
+    "message": "FlareSolverr hata döndürdü; FlareSolverr günlüklerini kontrol edin"
   },
   "flaresolverr_timeout": {
     "message": "İstek zaman aşımına uğradı"

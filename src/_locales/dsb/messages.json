@@ -51,7 +51,7 @@
     "message": "Kontrolu zastajić"
   },
   "button_show_flaresolverr_errors": {
-    "message": "FlareSolverr-zmólki pokazać"
+    "message": "Protokole FlareSolverr wócyniś"
   },
   "flaresolverr_errors_title": {
     "message": "FlareSolverr-zmólki"
@@ -253,6 +253,9 @@
   },
   "direct_result_label": {
     "message": "Wuslědk direktneho napšašowanja"
+  },
+  "flaresolverr_returned_error": {
+    "message": "FlareSolverr jo zmólku wrośił; pśeglědajśo protokole FlareSolverr"
   },
   "flaresolverr_timeout": {
     "message": "Čas za napšašowanje je wotběženy"

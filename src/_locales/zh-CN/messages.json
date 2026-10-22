@@ -51,7 +51,7 @@
     "message": "停止检查"
   },
   "button_show_flaresolverr_errors": {
-    "message": "显示 FlareSolverr 错误"
+    "message": "打开 FlareSolverr 日志"
   },
   "flaresolverr_errors_title": {
     "message": "FlareSolverr 错误"
@@ -253,6 +253,9 @@
   },
   "direct_result_label": {
     "message": "直接请求结果"
+  },
+  "flaresolverr_returned_error": {
+    "message": "FlareSolverr 返回了错误；请检查 FlareSolverr 日志"
   },
   "flaresolverr_timeout": {
     "message": "请求超时"

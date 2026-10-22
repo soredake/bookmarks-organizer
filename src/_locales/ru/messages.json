@@ -51,7 +51,7 @@
     "message": "Остановить проверку"
   },
   "button_show_flaresolverr_errors": {
-    "message": "Показать ошибки FlareSolverr"
+    "message": "Открыть журналы FlareSolverr"
   },
   "flaresolverr_errors_title": {
     "message": "Ошибки FlareSolverr"
@@ -253,6 +253,9 @@
   },
   "redirect_result": {
     "message": "Обнаружено перенаправление"
+  },
+  "flaresolverr_returned_error": {
+    "message": "FlareSolverr вернул ошибку; проверьте журналы FlareSolverr"
   },
   "flaresolverr_timeout": {
     "message": "Время ожидания запроса истекло"

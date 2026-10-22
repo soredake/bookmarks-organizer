@@ -51,7 +51,7 @@
     "message": "停止檢查"
   },
   "button_show_flaresolverr_errors": {
-    "message": "顯示 FlareSolverr 錯誤"
+    "message": "開啟 FlareSolverr 記錄"
   },
   "flaresolverr_errors_title": {
     "message": "FlareSolverr 錯誤"
@@ -253,6 +253,9 @@
   },
   "direct_result_label": {
     "message": "直接請求結果"
+  },
+  "flaresolverr_returned_error": {
+    "message": "FlareSolverr 傳回錯誤；請檢查 FlareSolverr 記錄"
   },
   "flaresolverr_timeout": {
     "message": "要求逾時"

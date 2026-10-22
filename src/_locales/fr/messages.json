@@ -51,7 +51,7 @@
     "message": "Arrêter la vérification"
   },
   "button_show_flaresolverr_errors": {
-    "message": "Afficher les erreurs FlareSolverr"
+    "message": "Ouvrir les journaux FlareSolverr"
   },
   "flaresolverr_errors_title": {
     "message": "Erreurs FlareSolverr"
@@ -253,6 +253,9 @@
   },
   "direct_result_label": {
     "message": "Résultat de la requête directe"
+  },
+  "flaresolverr_returned_error": {
+    "message": "FlareSolverr a renvoyé une erreur ; consultez ses journaux"
   },
   "flaresolverr_timeout": {
     "message": "Délai de la requête dépassé"

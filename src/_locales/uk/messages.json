@@ -51,7 +51,7 @@
     "message": "Зупинити перевірку"
   },
   "button_show_flaresolverr_errors": {
-    "message": "Показати помилки FlareSolverr"
+    "message": "Відкрити журнали FlareSolverr"
   },
   "flaresolverr_errors_title": {
     "message": "Помилки FlareSolverr"
@@ -253,6 +253,9 @@
   },
   "redirect_result": {
     "message": "Виявлено перенаправлення"
+  },
+  "flaresolverr_returned_error": {
+    "message": "FlareSolverr повернув помилку; перевірте журнали FlareSolverr"
   },
   "flaresolverr_timeout": {
     "message": "Час очікування запиту вичерпано"

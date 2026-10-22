@@ -51,7 +51,7 @@
     "message": "Prüfung stoppen"
   },
   "button_show_flaresolverr_errors": {
-    "message": "FlareSolverr-Fehler anzeigen"
+    "message": "FlareSolverr-Protokolle öffnen"
   },
   "flaresolverr_errors_title": {
     "message": "FlareSolverr-Fehler"
@@ -253,6 +253,9 @@
   },
   "direct_result_label": {
     "message": "Ergebnis der direkten Anfrage"
+  },
+  "flaresolverr_returned_error": {
+    "message": "FlareSolverr hat einen Fehler zurückgegeben; prüfe die FlareSolverr-Protokolle"
   },
   "flaresolverr_timeout": {
     "message": "Zeitüberschreitung der Anfrage"

@@ -51,7 +51,7 @@
     "message": "Controle stoppen"
   },
   "button_show_flaresolverr_errors": {
-    "message": "FlareSolverr-fouten weergeven"
+    "message": "FlareSolverr-logboeken openen"
   },
   "flaresolverr_errors_title": {
     "message": "FlareSolverr-fouten"
@@ -253,6 +253,9 @@
   },
   "direct_result_label": {
     "message": "Resultaat van direct verzoek"
+  },
+  "flaresolverr_returned_error": {
+    "message": "FlareSolverr heeft een fout geretourneerd; controleer de FlareSolverr-logboeken"
   },
   "flaresolverr_timeout": {
     "message": "Time-out bij aanvraag"

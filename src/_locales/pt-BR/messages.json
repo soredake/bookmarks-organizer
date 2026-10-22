@@ -51,7 +51,7 @@
     "message": "Parar verificação"
   },
   "button_show_flaresolverr_errors": {
-    "message": "Mostrar erros do FlareSolverr"
+    "message": "Abrir logs do FlareSolverr"
   },
   "flaresolverr_errors_title": {
     "message": "Erros do FlareSolverr"
@@ -253,6 +253,9 @@
   },
   "direct_result_label": {
     "message": "Resultado da solicitação direta"
+  },
+  "flaresolverr_returned_error": {
+    "message": "O FlareSolverr retornou um erro; verifique os logs do FlareSolverr"
   },
   "flaresolverr_timeout": {
     "message": "Tempo limite da solicitação excedido"

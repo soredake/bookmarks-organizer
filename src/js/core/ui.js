@@ -471,7 +471,7 @@ const ui = {
     }
     else if (response.message === 'finished') {
       if (response.checkId && response.checkId !== ui.checkId) {
-        if (!ui.checkId && response.hasFlareSolverrJsonErrors) {
+        if (response.hasFlareSolverrJsonErrors && (!ui.checkId || response.stopped)) {
           elShowFlareSolverrErrorsButton.classList.remove('hidden');
         }
 
